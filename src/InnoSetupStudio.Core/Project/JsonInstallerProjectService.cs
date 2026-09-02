@@ -7,13 +7,27 @@ public sealed class JsonInstallerProjectService : IInstallerProjectService
 {
     private static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = true };
 
+    // Een .issproj is een klein JSON-bestand met alleen instellingen (nooit meer dan enkele KB in
+    // de praktijk). Deze limiet voorkomt dat een (per ongeluk of moedwillig) enorm bestand
+    // volledig in het geheugen wordt gedeserialiseerd voordat het als project wordt afgewezen.
+    private const long MaxProjectFileSizeBytes = 10 * 1024 * 1024;
+
     public async Task<InstallerProject> LoadAsync(string filePath)
     {
         try
         {
             using var stream = await OpenReadWithRetryAsync(filePath);
-            var loaded = await JsonSerializer.DeserializeAsync<InstallerProject>(stream);
-            return loaded ?? InstallerProject.CreateNew();
+
+            if (stream.Length > MaxProjectFileSizeBytes)
+            {
+                throw new IOException(
+                    $"Het bestand is te groot ({stream.Length / (1024 * 1024)} MB) om een geldig projectbestand te zijn " +
+                    $"(maximum {MaxProjectFileSizeBytes / (1024 * 1024)} MB).");
+            }
+
+            var loaded = await JsonSerializer.DeserializeAsync<InstallerProject>(stream)
+                ?? throw new JsonException("Het projectbestand bevat geen geldig project (JSON null).");
+            return loaded;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
         {

@@ -67,6 +67,56 @@ public class InstallerProjectTests
     }
 
     [Fact]
+    public async Task LoadAsyncRejectsFileLargerThanConfiguredLimit()
+    {
+        // Voorkomt dat een enorm (per ongeluk of moedwillig groot) bestand volledig gedeserialiseerd
+        // wordt voordat het als ongeldig projectbestand wordt afgewezen (CWE-400).
+        var service = new JsonInstallerProjectService();
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.issproj");
+
+        // Ruim boven de 10 MB-limiet in JsonInstallerProjectService, met geldige lege JSON-inhoud
+        // eromheen zodat alleen de bestandsgrootte de reden van afwijzing kan zijn.
+        var padding = new string(' ', 11 * 1024 * 1024);
+        await File.WriteAllTextAsync(path, "{\"AppName\":\"" + padding + "\"}");
+
+        try
+        {
+            var ex = await Assert.ThrowsAsync<IOException>(() => service.LoadAsync(path));
+            Assert.Contains("te groot", ex.Message, StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task LoadAsyncRejectsJsonNullInsteadOfSilentlyCreatingNewProject()
+    {
+        // Een bestand met JSON null mag niet stilzwijgend als nieuw project (met een vers AppId)
+        // worden behandeld: dat zou een volgende save het bestaande, ongeldige bestand laten
+        // overschrijven zonder dat de gebruiker iets merkt.
+        var service = new JsonInstallerProjectService();
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.issproj");
+        await File.WriteAllTextAsync(path, "null");
+
+        try
+        {
+            await Assert.ThrowsAsync<IOException>(() => service.LoadAsync(path));
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
+
+    [Fact]
     public async Task SaveAsyncRetriesAndSucceedsWhenDestinationBrieflyLocked()
     {
         // Reproduceert het scenario dat Herbert tegenkwam: resaven van een bestaand

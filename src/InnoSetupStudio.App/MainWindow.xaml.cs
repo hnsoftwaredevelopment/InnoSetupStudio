@@ -36,6 +36,12 @@ public partial class MainWindow : Window
 
     private bool _isInitializing = true;
 
+    // Bijgehouden zodra een project succesvol is opgeslagen via ProjectSettingsWindow, zodat
+    // toekomstige functionaliteit (zoals "Installer bouwen") weet welk project actief is zonder
+    // het bestand opnieuw van schijf te hoeven laden.
+    private InstallerProject? _activeProject;
+    private string? _activeProjectFilePath;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -99,7 +105,7 @@ public partial class MainWindow : Window
     {
         var dialog = new OpenFileDialog
         {
-            Filter = "Inno Setup Studio-project (*.issproj)|*.issproj",
+            Filter = LocalizationManager.Instance["DialogFilterProjectFiles"],
         };
 
         if (dialog.ShowDialog() != true)
@@ -125,6 +131,13 @@ public partial class MainWindow : Window
     {
         var viewModel = new ProjectSettingsViewModel(project, _projectService, projectFilePath);
         var window = new ProjectSettingsWindow(viewModel) { Owner = this };
-        window.ShowDialog();
+
+        if (window.ShowDialog() == true)
+        {
+            // Alleen bij een succesvolle Opslaan (DialogResult true) zijn SavedProject en
+            // SavedProjectFilePath gevuld; bij Annuleren blijft het vorige actieve project intact.
+            _activeProject = viewModel.SavedProject;
+            _activeProjectFilePath = viewModel.SavedProjectFilePath;
+        }
     }
 }

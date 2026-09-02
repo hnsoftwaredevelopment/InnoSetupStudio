@@ -158,7 +158,10 @@ combinatie; staat open als aandachtspunt voor een latere fase.
 ### 11.2 Fase 2: projectinstellingen (2026-09-02)
 
 `InstallerProject`-model, JSON-opslag (`.issproj`) en het projectinstellingen-scherm gebouwd en
-lokaal getest (`build\Build.ps1`, `dotnet test` inclusief 3 nieuwe tests voor het projectmodel en de
-opslag, app handmatig gestart en weer gesloten). Nog niet automatisch getest: het scherm zelf
+lokaal getest (`build\Build.ps1`, `dotnet test`, app handmatig gestart en weer gesloten).
+`InstallerProjectTests` voegt zeven nieuwe fase-2-tests toe (twee voor `AppId`-generatie, één
+round-trip-test voor de JSON-opslag, twee voor het retry-gedrag bij vergrendelde bestanden en twee
+voor het afwijzen van een ongeldig projectbestand — te groot of JSON null); samen met
+`AppSettingsTests` uit fase 1 telt de suite in totaal acht tests. Nog niet automatisch getest: het scherm zelf
 (velden invullen, bladeren-knoppen, opslaan/annuleren) — dat vraagt om handmatige verificatie in de
 draaiende app, zie de testpunten in de pull request.

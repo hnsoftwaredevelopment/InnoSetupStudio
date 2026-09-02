@@ -2,6 +2,7 @@ using System.IO;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using InnoSetupStudio.App.Localization;
 using InnoSetupStudio.Core.Project;
 using Microsoft.Win32;
 
@@ -36,6 +37,11 @@ public sealed partial class ProjectSettingsViewModel : ObservableObject
     /// <summary>Wordt gevuld zodra <see cref="SaveCommand"/> succesvol heeft opgeslagen, zodat de
     /// aanroepende code (MainWindow) weet welk projectbestand actief is geworden.</summary>
     public string? SavedProjectFilePath { get; private set; }
+
+    /// <summary>Het exacte project zoals het net is opgeslagen, zodat de aanroepende code
+    /// (MainWindow) dit als actief project kan bijhouden zonder het bestand opnieuw te hoeven
+    /// inlezen.</summary>
+    public InstallerProject? SavedProject { get; private set; }
 
     /// <summary>Vuurt wanneer het venster moet sluiten: true bij Opslaan, false bij Annuleren.</summary>
     public event EventHandler<bool>? RequestClose;
@@ -91,7 +97,7 @@ public sealed partial class ProjectSettingsViewModel : ObservableObject
     {
         var dialog = new OpenFileDialog
         {
-            Filter = "Icon-bestanden (*.ico)|*.ico|Alle bestanden (*.*)|*.*",
+            Filter = LocalizationManager.Instance["DialogFilterIconFiles"],
         };
 
         if (!string.IsNullOrWhiteSpace(SetupIconFile))
@@ -115,8 +121,8 @@ public sealed partial class ProjectSettingsViewModel : ObservableObject
         {
             var dialog = new SaveFileDialog
             {
-                Filter = "Inno Setup Studio-project (*.issproj)|*.issproj",
-                FileName = string.IsNullOrWhiteSpace(AppName) ? "Nieuw project" : AppName,
+                Filter = LocalizationManager.Instance["DialogFilterProjectFiles"],
+                FileName = string.IsNullOrWhiteSpace(AppName) ? LocalizationManager.Instance["DialogDefaultNewProjectName"] : AppName,
             };
 
             if (dialog.ShowDialog() != true)
@@ -158,6 +164,7 @@ public sealed partial class ProjectSettingsViewModel : ObservableObject
         // opnieuw om een locatie vraagt.
         ProjectFilePath = targetPath;
         SavedProjectFilePath = targetPath;
+        SavedProject = project;
         RequestClose?.Invoke(this, true);
     }
 

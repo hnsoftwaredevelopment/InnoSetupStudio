@@ -108,4 +108,13 @@
   <data name="ButtonCancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="DialogFilterProjectFiles" xml:space="preserve">
+    <value>Inno Setup Studio project (*.issproj)|*.issproj</value>
+  </data>
+  <data name="DialogFilterIconFiles" xml:space="preserve">
+    <value>Icon files (*.ico)|*.ico|All files (*.*)|*.*</value>
+  </data>
+  <data name="DialogDefaultNewProjectName" xml:space="preserve">
+    <value>New project</value>
+  </data>
 </root>
