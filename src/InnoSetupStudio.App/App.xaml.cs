@@ -30,6 +30,11 @@ public partial class App : Application
         // het hoofdvenster ooit verschijnt.
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
+        // Alles vóór een zichtbaar hoofdvenster valt onder dezelfde foutafhandeling: ook een
+        // fout in het construeren/tonen van SplashWindow of MainWindow zelf (bijvoorbeeld een
+        // XAML- of resource-fout) mag nooit een onzichtbaar "zombie"-proces opleveren. Zolang
+        // ShutdownMode op OnExplicitShutdown staat, moet elk pad hier eindigen in ofwel een
+        // zichtbaar hoofdvenster, ofwel een expliciete Shutdown(-1).
         try
         {
             LicenseService.TryRegisterSyncfusionLicense();
@@ -40,36 +45,33 @@ public partial class App : Application
             // frame nog met de systeemstandaard totdat de gebruiker zelf iets wisselt.
             ThemeManager.ApplyTheme(Settings.Current.Theme);
             LocalizationManager.Instance.SetLanguage(Settings.Current.Language);
+
+            var splash = new SplashWindow();
+            splash.Show();
+
+            // Plek voor toekomstige zwaardere opstart-stappen (project laden, etc.); voor de
+            // scaffolding-fase is er niets te wachten, dus het splashscreen is kort zichtbaar.
+            await Task.Delay(600);
+
+            var mainWindow = new MainWindow();
+            MainWindow = mainWindow;
+            mainWindow.Show();
+
+            splash.Close();
+
+            // Vanaf hier is er een hoofdvenster: normaal gedrag herstellen zodat de app afsluit
+            // zodra de gebruiker dat venster sluit.
+            ShutdownMode = ShutdownMode.OnMainWindowClose;
         }
         catch (Exception ex)
         {
-            // Een fout in deze opstartstappen mag nooit een onzichtbaar "zombie"-proces
-            // opleveren: toon de fout en sluit expliciet af met een foutcode.
             MessageBox.Show(
                 ex.Message,
                 "Inno Setup Studio",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
             Shutdown(-1);
-            return;
         }
-
-        var splash = new SplashWindow();
-        splash.Show();
-
-        // Plek voor toekomstige zwaardere opstart-stappen (project laden, etc.); voor de
-        // scaffolding-fase is er niets te wachten, dus het splashscreen is kort zichtbaar.
-        await Task.Delay(600);
-
-        var mainWindow = new MainWindow();
-        MainWindow = mainWindow;
-        mainWindow.Show();
-
-        splash.Close();
-
-        // Vanaf hier is er een hoofdvenster: normaal gedrag herstellen zodat de app afsluit
-        // zodra de gebruiker dat venster sluit.
-        ShutdownMode = ShutdownMode.OnMainWindowClose;
     }
 
     private static void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
