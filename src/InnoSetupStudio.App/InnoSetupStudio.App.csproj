@@ -15,6 +15,13 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <!-- Herbert wil de gebouwde .exe direct terugvinden als InnoSetupStudio.exe in Builds\<Configuration>\,
+         niet als InnoSetupStudio.App.exe weggestopt in bin\<Configuration>\net10.0-windows\. AssemblyName
+         bepaalt alleen de bestandsnaam van de output, niet de C#/XAML-namespace (die volgt uit
+         RootNamespace, dat standaard op de projectnaam blijft staan; geen code-aanpassingen nodig). -->
+    <AssemblyName>InnoSetupStudio</AssemblyName>
+    <OutputPath>$(MSBuildThisFileDirectory)..\..\Builds\$(Configuration)\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
 </Project>
