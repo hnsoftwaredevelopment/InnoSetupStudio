@@ -117,4 +117,46 @@
   <data name="DialogDefaultNewProjectName" xml:space="preserve">
     <value>Nieuw project</value>
   </data>
+  <data name="ButtonWizardScreens" xml:space="preserve">
+    <value>Wizardschermen</value>
+  </data>
+  <data name="WizardScreensTitle" xml:space="preserve">
+    <value>Wizardschermen</value>
+  </data>
+  <data name="WizardScreensIntro" xml:space="preserve">
+    <value>Kies welke standaardschermen de installer toont. De volgorde hieronder is de volgorde waarin Inno Setup ze doorloopt.</value>
+  </data>
+  <data name="WizardScreenWelcome" xml:space="preserve">
+    <value>Welkom</value>
+  </data>
+  <data name="WizardScreenLicense" xml:space="preserve">
+    <value>Licentieovereenkomst</value>
+  </data>
+  <data name="WizardScreenInfoBefore" xml:space="preserve">
+    <value>Informatie vooraf</value>
+  </data>
+  <data name="WizardScreenUserInfo" xml:space="preserve">
+    <value>Gebruikersgegevens</value>
+  </data>
+  <data name="WizardScreenSelectDestination" xml:space="preserve">
+    <value>Installatiemap kiezen</value>
+  </data>
+  <data name="WizardScreenSelectComponents" xml:space="preserve">
+    <value>Onderdelen selecteren</value>
+  </data>
+  <data name="WizardScreenSelectProgramGroup" xml:space="preserve">
+    <value>Startmenu-map kiezen</value>
+  </data>
+  <data name="WizardScreenSelectTasks" xml:space="preserve">
+    <value>Taken selecteren</value>
+  </data>
+  <data name="WizardScreenReady" xml:space="preserve">
+    <value>Klaar om te installeren</value>
+  </data>
+  <data name="WizardScreenInfoAfter" xml:space="preserve">
+    <value>Informatie achteraf</value>
+  </data>
+  <data name="WizardScreenFinished" xml:space="preserve">
+    <value>Installatie voltooid</value>
+  </data>
 </root>

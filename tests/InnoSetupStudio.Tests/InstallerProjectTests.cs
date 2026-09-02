@@ -37,6 +37,20 @@ public class InstallerProjectTests
         project.OutputPath = @"C:\Output";
         project.CustomImagesPath = @"C:\Images";
         project.SetupIconFile = @"C:\Icons\setup.ico";
+        project.WizardScreens = new WizardScreenSelection
+        {
+            ShowWelcomePage = false,
+            ShowLicensePage = true,
+            ShowInfoBeforePage = true,
+            ShowUserInfoPage = true,
+            ShowSelectDestinationPage = false,
+            ShowSelectComponentsPage = true,
+            ShowSelectProgramGroupPage = false,
+            ShowSelectTasksPage = true,
+            ShowReadyPage = false,
+            ShowInfoAfterPage = true,
+            ShowFinishedPage = false,
+        };
 
         var service = new JsonInstallerProjectService();
         var tempPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.issproj");
@@ -56,6 +70,17 @@ public class InstallerProjectTests
             Assert.Equal(project.OutputPath, loaded.OutputPath);
             Assert.Equal(project.CustomImagesPath, loaded.CustomImagesPath);
             Assert.Equal(project.SetupIconFile, loaded.SetupIconFile);
+            Assert.Equal(project.WizardScreens.ShowWelcomePage, loaded.WizardScreens.ShowWelcomePage);
+            Assert.Equal(project.WizardScreens.ShowLicensePage, loaded.WizardScreens.ShowLicensePage);
+            Assert.Equal(project.WizardScreens.ShowInfoBeforePage, loaded.WizardScreens.ShowInfoBeforePage);
+            Assert.Equal(project.WizardScreens.ShowUserInfoPage, loaded.WizardScreens.ShowUserInfoPage);
+            Assert.Equal(project.WizardScreens.ShowSelectDestinationPage, loaded.WizardScreens.ShowSelectDestinationPage);
+            Assert.Equal(project.WizardScreens.ShowSelectComponentsPage, loaded.WizardScreens.ShowSelectComponentsPage);
+            Assert.Equal(project.WizardScreens.ShowSelectProgramGroupPage, loaded.WizardScreens.ShowSelectProgramGroupPage);
+            Assert.Equal(project.WizardScreens.ShowSelectTasksPage, loaded.WizardScreens.ShowSelectTasksPage);
+            Assert.Equal(project.WizardScreens.ShowReadyPage, loaded.WizardScreens.ShowReadyPage);
+            Assert.Equal(project.WizardScreens.ShowInfoAfterPage, loaded.WizardScreens.ShowInfoAfterPage);
+            Assert.Equal(project.WizardScreens.ShowFinishedPage, loaded.WizardScreens.ShowFinishedPage);
         }
         finally
         {
