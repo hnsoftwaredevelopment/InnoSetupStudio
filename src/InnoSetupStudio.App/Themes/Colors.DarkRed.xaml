@@ -1,0 +1,28 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Color x:Key="Color.Background">#FF1C1113</Color>
+    <Color x:Key="Color.Surface">#FF241618</Color>
+    <Color x:Key="Color.SurfaceAlt">#FF2E1B1E</Color>
+    <Color x:Key="Color.Border">#FF44262A</Color>
+    <Color x:Key="Color.TextPrimary">#FFF5E9EA</Color>
+    <Color x:Key="Color.TextSecondary">#FFC4A0A4</Color>
+    <Color x:Key="Color.Accent">#FFE0554F</Color>
+    <Color x:Key="Color.AccentHover">#FFEB6E68</Color>
+    <Color x:Key="Color.Success">#FF3FBF77</Color>
+    <Color x:Key="Color.Danger">#FFFF6E66</Color>
+    <Color x:Key="Color.Warning">#FFE0A233</Color>
+
+    <SolidColorBrush x:Key="Brush.Background" Color="{StaticResource Color.Background}" />
+    <SolidColorBrush x:Key="Brush.Surface" Color="{StaticResource Color.Surface}" />
+    <SolidColorBrush x:Key="Brush.SurfaceAlt" Color="{StaticResource Color.SurfaceAlt}" />
+    <SolidColorBrush x:Key="Brush.Border" Color="{StaticResource Color.Border}" />
+    <SolidColorBrush x:Key="Brush.TextPrimary" Color="{StaticResource Color.TextPrimary}" />
+    <SolidColorBrush x:Key="Brush.TextSecondary" Color="{StaticResource Color.TextSecondary}" />
+    <SolidColorBrush x:Key="Brush.Accent" Color="{StaticResource Color.Accent}" />
+    <SolidColorBrush x:Key="Brush.AccentHover" Color="{StaticResource Color.AccentHover}" />
+    <SolidColorBrush x:Key="Brush.Success" Color="{StaticResource Color.Success}" />
+    <SolidColorBrush x:Key="Brush.Danger" Color="{StaticResource Color.Danger}" />
+    <SolidColorBrush x:Key="Brush.Warning" Color="{StaticResource Color.Warning}" />
+
+</ResourceDictionary>

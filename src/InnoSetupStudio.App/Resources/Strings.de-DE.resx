@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AppTitle" xml:space="preserve">
+    <value>Inno Setup Studio</value>
+  </data>
+  <data name="MenuLanguage" xml:space="preserve">
+    <value>Sprache</value>
+  </data>
+  <data name="MenuTheme" xml:space="preserve">
+    <value>Design</value>
+  </data>
+  <data name="ThemeLight" xml:space="preserve">
+    <value>Hell</value>
+  </data>
+  <data name="ThemeDark" xml:space="preserve">
+    <value>Dunkel</value>
+  </data>
+  <data name="ThemeLightBlue" xml:space="preserve">
+    <value>Blau</value>
+  </data>
+  <data name="ThemeDarkBlue" xml:space="preserve">
+    <value>Blau dunkel</value>
+  </data>
+  <data name="ThemeRed" xml:space="preserve">
+    <value>Rot</value>
+  </data>
+  <data name="ThemeDarkRed" xml:space="preserve">
+    <value>Rot dunkel</value>
+  </data>
+  <data name="ThemeGreen" xml:space="preserve">
+    <value>Grün</value>
+  </data>
+  <data name="ThemeDarkGreen" xml:space="preserve">
+    <value>Grün dunkel</value>
+  </data>
+  <data name="ThemeSepia" xml:space="preserve">
+    <value>Sepia</value>
+  </data>
+  <data name="WelcomeMessage" xml:space="preserve">
+    <value>Willkommen bei Inno Setup Studio</value>
+  </data>
+  <data name="ButtonNewProject" xml:space="preserve">
+    <value>Neues Projekt</value>
+  </data>
+  <data name="ButtonOpenProject" xml:space="preserve">
+    <value>Projekt öffnen…</value>
+  </data>
+  <data name="ButtonBuildInstaller" xml:space="preserve">
+    <value>Installer erstellen</value>
+  </data>
+</root>

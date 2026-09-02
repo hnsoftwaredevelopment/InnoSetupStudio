@@ -1,0 +1,22 @@
+<Project>
+
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NeutralLanguage>nl-NL</NeutralLanguage>
+    <Company>HN Software Development</Company>
+    <Product>Inno Setup Studio</Product>
+  </PropertyGroup>
+
+  <!-- Wordt geschreven door build\Update-Version.ps1 (zie build\Build.ps1). -->
+  <Import Project="$(MSBuildThisFileDirectory)version.generated.props"
+          Condition="Exists('$(MSBuildThisFileDirectory)version.generated.props')" />
+
+  <PropertyGroup Condition="'$(AssemblyVersion)' == ''">
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <InformationalVersion>1.0.0.0 (dev)</InformationalVersion>
+  </PropertyGroup>
+
+</Project>
