@@ -37,6 +37,10 @@ bld/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
+
+# Gebouwde InnoSetupStudio.App-output (zie InnoSetupStudio.App.csproj: OutputPath), losstaand van
+# de standaard bin/obj-mappen hierboven.
+/Builds/
 # Uncomment if you have tasks that create the project's static files in wwwroot
 #wwwroot/
 
