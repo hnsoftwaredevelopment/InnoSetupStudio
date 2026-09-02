@@ -52,14 +52,24 @@ in de lokalisatie-verfijningsfase (feature/screen-editor of later), niet in de s
 
 Formaat `YYYY.MM.dd.xxx`. `build\buildnumber.txt` houdt de laatste builddatum en teller bij
 (teller opnieuw op 1 bij een nieuwe dag). `build\Update-Version.ps1` berekent het nummer en
-schrijft `version.generated.props` (niet in git), dat `Directory.Build.props` importeert zodat elk
-project dezelfde `AssemblyVersion`/`FileVersion`/`InformationalVersion` krijgt. `build\Build.ps1`
+schrijft `version.generated.props` (niet in git), dat `Directory.Build.targets` importeert zodat elk
+project dezelfde `AssemblyVersion`/`FileVersion`/`InformationalVersion` krijgt (zie hieronder voor
+waarom `.targets` en niet `.props`). `build\Build.ps1`
 roept dit vóór `dotnet build` aan, dus het nummer is al correct binnen diezelfde build — een
 build via Visual Studio zelf (zonder `build\Build.ps1`) hoogt de teller niet verder op en gebruikt
 het laatst berekende nummer uit `version.generated.props`. Die fallback werkt dus alleen als dat
 bestand al eerder door `build\Build.ps1` is aangemaakt; bestaat het nog niet (bijvoorbeeld een
 verse clone die nog nooit via `build\Build.ps1` is gebouwd), dan valt `Directory.Build.props` terug
 op `1.0.0.0 (dev)`. Zie §8 voor deze afweging.
+
+`version.generated.props` wordt bewust geïmporteerd vanuit `Directory.Build.targets`, niet vanuit
+`Directory.Build.props`. De SDK importeert `.props`-bestanden vóór en `.targets`-bestanden ná de
+inhoud van het eigen `.csproj`; staat het berekende versienummer in `.props`, dan wint een
+letterlijke `AssemblyVersion`/`FileVersion` die ergens in een `.csproj` terechtkomt (bijvoorbeeld
+via Visual Studio's Assembly Information/Package-scherm) altijd. Dat is precies gebeurd tijdens het
+testen van fase 1: Visual Studio had `2026.9.2.4` als vaste waarde in beide `.csproj`-bestanden
+weggeschreven, waardoor `FileVersion` niet meer meegroeide met nieuwe builds. Door de import in
+`.targets` te zetten, wint het berekende versienummer altijd, ook als dat opnieuw gebeurt.
 
 ## 7. Syncfusion-licentie
 

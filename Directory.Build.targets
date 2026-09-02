@@ -1,0 +1,21 @@
+<Project>
+
+  <!--
+    Bewust een .targets bestand, geen .props: de .NET SDK importeert Directory.Build.props
+    VOOR de inhoud van het eigen .csproj, maar Directory.Build.targets PAS ERNA. Zet je het
+    berekende versienummer in Directory.Build.props (zoals eerst het geval was), dan wint een
+    letterlijke <AssemblyVersion>/<FileVersion> die ergens in een .csproj terechtkomt altijd,
+    ook per ongeluk. Dat gebeurde hier al een keer: Visual Studio had 2026.9.2.4 als vaste
+    waarde in twee .csproj bestanden weggeschreven (vermoedelijk via het Assembly
+    Information/Package eigenschappenscherm), waardoor FileVersion nooit meer meegroeide met
+    nieuwe builds, terwijl het zichtbare versienummer op het splashscreen toevallig wel bleef
+    kloppen omdat dat uit InformationalVersion komt, een veld dat niet was aangeraakt.
+
+    Door dit bestand pas hierna te laten importeren, wint build\Update-Version.ps1 zijn
+    berekende AssemblyVersion/FileVersion/InformationalVersion altijd, ook als een toekomstige
+    Visual Studio-actie die drie velden opnieuw als letterlijke tekst in een .csproj zet.
+  -->
+  <Import Project="$(MSBuildThisFileDirectory)version.generated.props"
+          Condition="Exists('$(MSBuildThisFileDirectory)version.generated.props')" />
+
+</Project>

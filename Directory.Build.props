@@ -12,10 +12,9 @@
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 
-  <!-- Wordt geschreven door build\Update-Version.ps1 (zie build\Build.ps1). -->
-  <Import Project="$(MSBuildThisFileDirectory)version.generated.props"
-          Condition="Exists('$(MSBuildThisFileDirectory)version.generated.props')" />
-
+  <!-- Alleen de standaardwaarde voor een verse clone die nog nooit via build\Build.ps1 is
+       gebouwd. Het echte, berekende versienummer wordt bewust pas in Directory.Build.targets
+       geïmporteerd (zie dat bestand voor waarom), niet hier. -->
   <PropertyGroup Condition="'$(AssemblyVersion)' == ''">
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
