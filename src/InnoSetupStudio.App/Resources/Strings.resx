@@ -60,4 +60,61 @@
   <data name="ButtonBuildInstaller" xml:space="preserve">
     <value>Installer bouwen</value>
   </data>
+  <data name="ProjectSettingsTitle" xml:space="preserve">
+    <value>Projectinstellingen</value>
+  </data>
+  <data name="SectionGeneral" xml:space="preserve">
+    <value>Algemeen</value>
+  </data>
+  <data name="SectionFileLocations" xml:space="preserve">
+    <value>Bestandslocaties</value>
+  </data>
+  <data name="LabelAppId" xml:space="preserve">
+    <value>Applicatie-ID</value>
+  </data>
+  <data name="LabelAppName" xml:space="preserve">
+    <value>Naam applicatie</value>
+  </data>
+  <data name="LabelAppVersion" xml:space="preserve">
+    <value>Versie</value>
+  </data>
+  <data name="LabelPublisher" xml:space="preserve">
+    <value>Ontwikkelaar</value>
+  </data>
+  <data name="LabelPublisherEmail" xml:space="preserve">
+    <value>E-mailadres</value>
+  </data>
+  <data name="LabelPublisherUrl" xml:space="preserve">
+    <value>Website</value>
+  </data>
+  <data name="LabelSourceFilesPath" xml:space="preserve">
+    <value>Bronbestanden</value>
+  </data>
+  <data name="LabelOutputPath" xml:space="preserve">
+    <value>Installer-uitvoer</value>
+  </data>
+  <data name="LabelCustomImagesPath" xml:space="preserve">
+    <value>Eigen afbeeldingen</value>
+  </data>
+  <data name="LabelSetupIconFile" xml:space="preserve">
+    <value>Installer-icon</value>
+  </data>
+  <data name="ButtonBrowse" xml:space="preserve">
+    <value>Bladeren…</value>
+  </data>
+  <data name="ButtonSave" xml:space="preserve">
+    <value>Opslaan</value>
+  </data>
+  <data name="ButtonCancel" xml:space="preserve">
+    <value>Annuleren</value>
+  </data>
+  <data name="DialogFilterProjectFiles" xml:space="preserve">
+    <value>Inno Setup Studio-project (*.issproj)|*.issproj</value>
+  </data>
+  <data name="DialogFilterIconFiles" xml:space="preserve">
+    <value>Icon-bestanden (*.ico)|*.ico|Alle bestanden (*.*)|*.*</value>
+  </data>
+  <data name="DialogDefaultNewProjectName" xml:space="preserve">
+    <value>Nieuw project</value>
+  </data>
 </root>

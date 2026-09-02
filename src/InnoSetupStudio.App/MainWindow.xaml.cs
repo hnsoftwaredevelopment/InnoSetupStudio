@@ -3,11 +3,17 @@ using System.Windows;
 using System.Windows.Controls;
 using InnoSetupStudio.App.Localization;
 using InnoSetupStudio.App.Themes;
+using InnoSetupStudio.App.ViewModels;
+using InnoSetupStudio.App.Views;
+using InnoSetupStudio.Core.Project;
+using Microsoft.Win32;
 
 namespace InnoSetupStudio.App;
 
 public partial class MainWindow : Window
 {
+    private readonly IInstallerProjectService _projectService = new JsonInstallerProjectService();
+
     private static readonly (string CultureName, string DisplayName)[] Languages =
     [
         ("nl-NL", "Nederlands"),
@@ -29,6 +35,12 @@ public partial class MainWindow : Window
     ];
 
     private bool _isInitializing = true;
+
+    // Bijgehouden zodra een project succesvol is opgeslagen via ProjectSettingsWindow, zodat
+    // toekomstige functionaliteit (zoals "Installer bouwen") weet welk project actief is zonder
+    // het bestand opnieuw van schijf te hoeven laden.
+    private InstallerProject? _activeProject;
+    private string? _activeProjectFilePath;
 
     public MainWindow()
     {
@@ -84,5 +96,48 @@ public partial class MainWindow : Window
         ThemeManager.ApplyTheme(themeKey);
         App.Settings.Current.Theme = themeKey;
         await App.Settings.SaveAsync();
+    }
+
+    private void NewProjectButton_Click(object sender, RoutedEventArgs e) =>
+        OpenProjectSettings(InstallerProject.CreateNew(), projectFilePath: null);
+
+    private async void OpenProjectButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog
+        {
+            Filter = LocalizationManager.Instance["DialogFilterProjectFiles"],
+        };
+
+        if (dialog.ShowDialog() != true)
+        {
+            return;
+        }
+
+        InstallerProject project;
+        try
+        {
+            project = await _projectService.LoadAsync(dialog.FileName);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Inno Setup Studio", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+
+        OpenProjectSettings(project, dialog.FileName);
+    }
+
+    private void OpenProjectSettings(InstallerProject project, string? projectFilePath)
+    {
+        var viewModel = new ProjectSettingsViewModel(project, _projectService, projectFilePath);
+        var window = new ProjectSettingsWindow(viewModel) { Owner = this };
+
+        if (window.ShowDialog() == true)
+        {
+            // Alleen bij een succesvolle Opslaan (DialogResult true) zijn SavedProject en
+            // SavedProjectFilePath gevuld; bij Annuleren blijft het vorige actieve project intact.
+            _activeProject = viewModel.SavedProject;
+            _activeProjectFilePath = viewModel.SavedProjectFilePath;
+        }
     }
 }

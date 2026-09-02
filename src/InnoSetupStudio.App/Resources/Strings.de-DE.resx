@@ -60,4 +60,61 @@
   <data name="ButtonBuildInstaller" xml:space="preserve">
     <value>Installer erstellen</value>
   </data>
+  <data name="ProjectSettingsTitle" xml:space="preserve">
+    <value>Projekteinstellungen</value>
+  </data>
+  <data name="SectionGeneral" xml:space="preserve">
+    <value>Allgemein</value>
+  </data>
+  <data name="SectionFileLocations" xml:space="preserve">
+    <value>Dateispeicherorte</value>
+  </data>
+  <data name="LabelAppId" xml:space="preserve">
+    <value>Anwendungs-ID</value>
+  </data>
+  <data name="LabelAppName" xml:space="preserve">
+    <value>Anwendungsname</value>
+  </data>
+  <data name="LabelAppVersion" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="LabelPublisher" xml:space="preserve">
+    <value>Entwickler</value>
+  </data>
+  <data name="LabelPublisherEmail" xml:space="preserve">
+    <value>E-Mail-Adresse</value>
+  </data>
+  <data name="LabelPublisherUrl" xml:space="preserve">
+    <value>Website</value>
+  </data>
+  <data name="LabelSourceFilesPath" xml:space="preserve">
+    <value>Quelldateien</value>
+  </data>
+  <data name="LabelOutputPath" xml:space="preserve">
+    <value>Installer-Ausgabe</value>
+  </data>
+  <data name="LabelCustomImagesPath" xml:space="preserve">
+    <value>Eigene Bilder</value>
+  </data>
+  <data name="LabelSetupIconFile" xml:space="preserve">
+    <value>Installer-Symbol</value>
+  </data>
+  <data name="ButtonBrowse" xml:space="preserve">
+    <value>Durchsuchen…</value>
+  </data>
+  <data name="ButtonSave" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="ButtonCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="DialogFilterProjectFiles" xml:space="preserve">
+    <value>Inno Setup Studio-Projekt (*.issproj)|*.issproj</value>
+  </data>
+  <data name="DialogFilterIconFiles" xml:space="preserve">
+    <value>Symboldateien (*.ico)|*.ico|Alle Dateien (*.*)|*.*</value>
+  </data>
+  <data name="DialogDefaultNewProjectName" xml:space="preserve">
+    <value>Neues Projekt</value>
+  </data>
 </root>
