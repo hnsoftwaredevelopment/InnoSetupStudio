@@ -21,9 +21,11 @@ scripttekst, inclusief het compileren en direct kunnen draaien van de installer.
 ## 3. Projectstructuur (solution)
 
 - `InnoSetupStudio.Core` — datamodel van een .iss-project en instellingen, geen UI-afhankelijkheden.
+  `Project/` bevat het projectmodel (`InstallerProject`) en de opslag ervan (zie §10).
 - `InnoSetupStudio.App` — WPF-shell: `Themes/` (9 kleurthema's + Styles.xaml + ThemeManager),
   `Localization/` (LocalizationManager + LocExtension), `Resources/` (Strings.*.resx + Icons.xaml),
-  `Services/` (LicenseService), `Views/` (SplashWindow, MainWindow).
+  `Services/` (LicenseService), `ViewModels/` (CommunityToolkit.Mvvm-gebaseerde viewmodels),
+  `Views/` (SplashWindow, MainWindow, ProjectSettingsWindow).
 - `InnoSetupStudio.Tests` — xUnit-tests voor Core.
 
 ## 4. Theming-systeem
@@ -37,6 +39,13 @@ bijbehorende `Brush.*`-versies. `ThemeManager.ApplyTheme` verwisselt de dictiona
 `DynamicResource`, dus een themawissel werkt direct, zonder herstart. Licht/Donker/Blauw/Blauw
 donker/Rood donker/Groen donker/Sepia zijn hergebruikt uit FontManager voor een consistente
 look tussen de HNSoftware-apps; Rood en Groen (de lichte varianten) zijn nieuw voor dit project.
+
+Naamgeving is bewust: "Blauw"/"Rood"/"Groen" zijn de lichte (Light) varianten met een gekleurd
+accent, "Blauw donker"/"Rood donker"/"Groen donker" zijn de bijbehorende donkere (Dark) varianten
+met dezelfde accentkleur. Strikt genomen zou "Blauw" dus "Blauw licht" moeten heten, maar de
+suffix "donker" is gekozen als het enige onderscheid tussen de light/dark-paren, zodat in één
+oogopslag duidelijk is welke van de twee de donkere variant is. Dit is een expliciete keuze van
+Herbert, geen inconsistentie.
 
 ## 5. Lokalisatie (i18n)
 
@@ -117,9 +126,26 @@ PDF-handleiding per taal, te openen via een help-knop.
 - Naamgeving/mapstructuur is afgestemd op de bestaande HNSoftware-projecten (FontManager,
   SVGViewer): Core/App/Tests-split, Themes-map, Localization-map, ResXManager.config.xml.
 
-## 10. Status
+## 10. Projectmodel en -bestand
 
-### 10.1 Fase 1: solution scaffolding (2026-09-02)
+`InstallerProject` (in `InnoSetupStudio.Core/Project/`) bevat de algemene projectinformatie uit
+fase 2: `AppId` (vast GUID, eenmalig gegenereerd via `InstallerProject.CreateNew`, nodig zodat Inno
+Setup een upgrade van een eerdere installatie herkent in plaats van een dubbele installatie),
+`AppName`, `AppVersion`, `Publisher`, `PublisherEmail`, `PublisherUrl`, en de bestandslocaties
+`SourceFilesPath`, `OutputPath`, `CustomImagesPath` en `SetupIconFile`. Dit model breidt in latere
+fasen uit met schermselectie (fase 3) en schermelementen (fase 4); de uiteindelijke generator
+(fase 5) zet het geheel om naar een `.iss`-bestand.
+
+`JsonInstallerProjectService` bewaart een project als JSON naar een bestand met extensie
+`.issproj` (niet te verwarren met het uiteindelijk gegenereerde `.iss`-bestand zelf), met hetzelfde
+tijdelijk-bestand-dan-verplaatsen patroon als `JsonSettingsService` voor de app-instellingen.
+`ProjectSettingsViewModel`/`ProjectSettingsWindow` (CommunityToolkit.Mvvm) vormen het scherm eromheen,
+geopend vanuit `MainWindow` via "Nieuw project" (leeg project, vers AppId) of "Project openen…"
+(bestaand `.issproj`-bestand inladen).
+
+## 11. Status
+
+### 11.1 Fase 1: solution scaffolding (2026-09-02)
 
 Solution met `InnoSetupStudio.Core`, `InnoSetupStudio.App` en `InnoSetupStudio.Tests` opgezet op
 .NET 10. Thema's, lokalisatie, splashscreen, automatische versienummering en de Syncfusion-licentie
@@ -128,3 +154,11 @@ gesloten). Bewuste vereenvoudiging: de taaldropdown toont nog geen vlaggen (zie 
 een latere fase. Nog niet gecontroleerd: de leesbaarheid van de lichte Rood- en Groen-thema's is
 alleen visueel steekproefsgewijs bekeken, geen aparte contrastcheck per tekst/achtergrond-
 combinatie; staat open als aandachtspunt voor een latere fase.
+
+### 11.2 Fase 2: projectinstellingen (2026-09-02)
+
+`InstallerProject`-model, JSON-opslag (`.issproj`) en het projectinstellingen-scherm gebouwd en
+lokaal getest (`build\Build.ps1`, `dotnet test` inclusief 3 nieuwe tests voor het projectmodel en de
+opslag, app handmatig gestart en weer gesloten). Nog niet automatisch getest: het scherm zelf
+(velden invullen, bladeren-knoppen, opslaan/annuleren) — dat vraagt om handmatige verificatie in de
+draaiende app, zie de testpunten in de pull request.
