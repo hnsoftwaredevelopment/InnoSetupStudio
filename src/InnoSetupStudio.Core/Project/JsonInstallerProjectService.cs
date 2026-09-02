@@ -9,9 +9,16 @@ public sealed class JsonInstallerProjectService : IInstallerProjectService
 
     public async Task<InstallerProject> LoadAsync(string filePath)
     {
-        using var stream = File.OpenRead(filePath);
-        var loaded = await JsonSerializer.DeserializeAsync<InstallerProject>(stream);
-        return loaded ?? InstallerProject.CreateNew();
+        try
+        {
+            using var stream = await OpenReadWithRetryAsync(filePath);
+            var loaded = await JsonSerializer.DeserializeAsync<InstallerProject>(stream);
+            return loaded ?? InstallerProject.CreateNew();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+        {
+            throw new IOException($"Kan het projectbestand niet laden vanaf '{filePath}'. {ex.Message}", ex);
+        }
     }
 
     public async Task SaveAsync(string filePath, InstallerProject project)
@@ -19,11 +26,87 @@ public sealed class JsonInstallerProjectService : IInstallerProjectService
         // Zelfde tijdelijk-bestand-dan-verplaatsen patroon als JsonSettingsService: voorkomt een
         // half weggeschreven, corrupt projectbestand bij een crash of stroomstoring.
         var tempPath = filePath + ".tmp";
-        using (var stream = File.Create(tempPath))
+
+        try
         {
-            await JsonSerializer.SerializeAsync(stream, project, SerializerOptions);
+            using (var stream = File.Create(tempPath))
+            {
+                await JsonSerializer.SerializeAsync(stream, project, SerializerOptions);
+            }
+
+            // Deze laatste stap (hernoemen naar de echte bestandsnaam) kan kortstondig falen
+            // doordat Windows, een virusscanner of een cloud-synchronisatieclient (bijvoorbeeld
+            // OneDrive, wat bij deze projectfolder het geval bleek) het doelbestand net na het
+            // schrijven eventjes vasthoudt. Een paar keer kort opnieuw proberen lost dat in de
+            // praktijk vrijwel altijd op; de ene keer dat dit gebeurde, bleef zonder deze retry
+            // een ".tmp"-bestand achter zonder dat de gebruiker een bruikbare foutmelding kreeg.
+            await MoveWithRetryAsync(tempPath, filePath);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            TryDeleteTempFile(tempPath);
+            throw new IOException($"Kan het projectbestand niet opslaan naar '{filePath}'. {ex.Message}", ex);
+        }
+    }
+
+    private static async Task<FileStream> OpenReadWithRetryAsync(string filePath)
+    {
+        const int maxAttempts = 5;
+        var delay = TimeSpan.FromMilliseconds(150);
+
+        for (var attempt = 1; attempt < maxAttempts; attempt++)
+        {
+            try
+            {
+                return File.OpenRead(filePath);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                await Task.Delay(delay);
+                delay += delay;
+            }
         }
 
+        // Laatste poging: laat een eventuele uitzondering nu wél doorkomen naar de aanroeper.
+        return File.OpenRead(filePath);
+    }
+
+    private static async Task MoveWithRetryAsync(string tempPath, string filePath)
+    {
+        const int maxAttempts = 5;
+        var delay = TimeSpan.FromMilliseconds(150);
+
+        for (var attempt = 1; attempt < maxAttempts; attempt++)
+        {
+            try
+            {
+                File.Move(tempPath, filePath, overwrite: true);
+                return;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                await Task.Delay(delay);
+                delay += delay;
+            }
+        }
+
+        // Laatste poging: laat een eventuele uitzondering nu wél doorkomen naar de aanroeper.
         File.Move(tempPath, filePath, overwrite: true);
+    }
+
+    private static void TryDeleteTempFile(string tempPath)
+    {
+        try
+        {
+            if (File.Exists(tempPath))
+            {
+                File.Delete(tempPath);
+            }
+        }
+        catch
+        {
+            // Opruimen is best-effort: een falende delete van het tijdelijke bestand mag de
+            // eigenlijke foutmelding aan de gebruiker niet overschaduwen.
+        }
     }
 }

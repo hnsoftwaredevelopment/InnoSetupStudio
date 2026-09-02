@@ -107,7 +107,17 @@ public partial class MainWindow : Window
             return;
         }
 
-        var project = await _projectService.LoadAsync(dialog.FileName);
+        InstallerProject project;
+        try
+        {
+            project = await _projectService.LoadAsync(dialog.FileName);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Inno Setup Studio", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+
         OpenProjectSettings(project, dialog.FileName);
     }
 

@@ -1,4 +1,5 @@
 using System.IO;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using InnoSetupStudio.Core.Project;
@@ -140,8 +141,22 @@ public sealed partial class ProjectSettingsViewModel : ObservableObject
             SetupIconFile = SetupIconFile,
         };
 
-        await _projectService.SaveAsync(targetPath, project);
+        try
+        {
+            await _projectService.SaveAsync(targetPath, project);
+        }
+        catch (Exception ex)
+        {
+            // Specifieke, bruikbare foutmelding tonen in plaats van de wijzigingen stilzwijgend
+            // te verliezen: het venster blijft open zodat de gebruiker het opnieuw kan proberen.
+            MessageBox.Show(ex.Message, "Inno Setup Studio", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
 
+        // Bij een nieuw project (nog geen ProjectFilePath) onthouden welk bestand net via de
+        // Opslaan-dialoog is gekozen, zodat een volgende Opslaan-klik in dezelfde sessie niet
+        // opnieuw om een locatie vraagt.
+        ProjectFilePath = targetPath;
         SavedProjectFilePath = targetPath;
         RequestClose?.Invoke(this, true);
     }

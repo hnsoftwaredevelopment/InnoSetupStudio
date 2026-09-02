@@ -65,4 +65,70 @@ public class InstallerProjectTests
             }
         }
     }
+
+    [Fact]
+    public async Task SaveAsyncRetriesAndSucceedsWhenDestinationBrieflyLocked()
+    {
+        // Reproduceert het scenario dat Herbert tegenkwam: resaven van een bestaand
+        // .issproj-bestand terwijl iets anders (in de praktijk: OneDrive) het doelbestand
+        // eventjes exclusief vasthoudt vlak nadat het geschreven is.
+        var project = InstallerProject.CreateNew();
+        project.AppName = "Vergrendeld project";
+
+        var service = new JsonInstallerProjectService();
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.issproj");
+        await File.WriteAllTextAsync(path, "{}");
+
+        var lockStream = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+        try
+        {
+            var saveTask = service.SaveAsync(path, project);
+
+            // Simuleert dat de vergrendeling na een fractie van een seconde weer loslaat, ruim
+            // binnen het retry-venster van SaveAsync.
+            await Task.Delay(300);
+            lockStream.Dispose();
+
+            await saveTask;
+
+            var loaded = await service.LoadAsync(path);
+            Assert.Equal("Vergrendeld project", loaded.AppName);
+            Assert.False(File.Exists(path + ".tmp"), "Geen .tmp-bestand mag achterblijven na een geslaagde save.");
+        }
+        finally
+        {
+            lockStream.Dispose();
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task SaveAsyncCleansUpTempFileAndThrowsClearErrorWhenDestinationStaysLocked()
+    {
+        var project = InstallerProject.CreateNew();
+        var service = new JsonInstallerProjectService();
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.issproj");
+        await File.WriteAllTextAsync(path, "{}");
+
+        var lockStream = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+
+        try
+        {
+            var ex = await Assert.ThrowsAsync<IOException>(() => service.SaveAsync(path, project));
+
+            Assert.Contains(path, ex.Message);
+            Assert.False(File.Exists(path + ".tmp"), "Het tijdelijke bestand moet opgeruimd worden na een mislukte save.");
+        }
+        finally
+        {
+            lockStream.Dispose();
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
 }
