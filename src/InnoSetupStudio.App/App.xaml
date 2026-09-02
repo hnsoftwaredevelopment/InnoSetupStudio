@@ -1,0 +1,15 @@
+<Application x:Class="InnoSetupStudio.App.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:InnoSetupStudio.App">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Kleurendictionary wordt door ThemeManager tijdens OnStartup ingevoegd op
+                     index 0, vóórdat dit venster iets rendert. -->
+                <ResourceDictionary Source="Themes/Styles.xaml" />
+                <ResourceDictionary Source="Resources/Icons.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

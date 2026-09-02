@@ -1,0 +1,17 @@
+<Window x:Class="InnoSetupStudio.App.Views.SplashWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="clr-namespace:InnoSetupStudio.App.Localization"
+        WindowStyle="None" ResizeMode="NoResize" WindowStartupLocation="CenterScreen"
+        ShowInTaskbar="False" Topmost="True"
+        Width="420" Height="220"
+        Background="{DynamicResource Brush.Background}">
+    <Border BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="12" Margin="1">
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+            <TextBlock Text="{loc:Loc AppTitle}" FontSize="24" FontWeight="Bold"
+                       HorizontalAlignment="Center" Foreground="{DynamicResource Brush.TextPrimary}" />
+            <TextBlock x:Name="VersionText" FontSize="13" Margin="0,10,0,0"
+                       HorizontalAlignment="Center" Foreground="{DynamicResource Brush.TextSecondary}" />
+        </StackPanel>
+    </Border>
+</Window>
