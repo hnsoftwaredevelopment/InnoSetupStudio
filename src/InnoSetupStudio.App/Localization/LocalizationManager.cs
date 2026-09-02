@@ -34,10 +34,22 @@ public sealed class LocalizationManager : INotifyPropertyChanged
 
     public string CurrentLanguage => _activeCulture.Name;
 
+    /// <summary>De enige cultuurnamen waarvoor dit project vertalingen bijhoudt (§5, Strings*.resx).</summary>
+    private static readonly HashSet<string> SupportedCultures = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "nl-NL", "en-US", "de-DE",
+    };
+
+    private const string FallbackCultureName = "nl-NL";
+
     /// <summary>Wisselt de actieve UI-taal en vernieuwt alle gebonden teksten in de UI.</summary>
     public void SetLanguage(string cultureName)
     {
-        var culture = new CultureInfo(cultureName);
+        // Een onbekende of beschadigde instelling (bijvoorbeeld handmatig aangepast
+        // settings.json) mag nooit een CultureInfo-exception geven; val dan terug op Nederlands.
+        var culture = SupportedCultures.Contains(cultureName)
+            ? new CultureInfo(cultureName)
+            : new CultureInfo(FallbackCultureName);
         _activeCulture = culture;
 
         CultureInfo.CurrentUICulture = culture;

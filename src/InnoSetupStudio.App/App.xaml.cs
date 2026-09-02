@@ -24,14 +24,35 @@ public partial class App : Application
         // app hard crashen. Toon de fout en blijf draaien in plaats van af te sluiten.
         DispatcherUnhandledException += OnDispatcherUnhandledException;
 
-        LicenseService.TryRegisterSyncfusionLicense();
+        // Zolang er nog geen enkel venster staat, mag WPF niet zelf afsluiten zodra het
+        // splashscreen straks weer dichtgaat (standaard ShutdownMode.OnLastWindowClose). Zonder
+        // dit kan een trage of falende opstartstap de app onzichtbaar laten verdwijnen voordat
+        // het hoofdvenster ooit verschijnt.
+        ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
-        await Settings.LoadAsync();
+        try
+        {
+            LicenseService.TryRegisterSyncfusionLicense();
 
-        // Taal/thema moeten vaststaan VOORDAT er iets wordt getoond, anders rendert de eerste
-        // frame nog met de systeemstandaard totdat de gebruiker zelf iets wisselt.
-        ThemeManager.ApplyTheme(Settings.Current.Theme);
-        LocalizationManager.Instance.SetLanguage(Settings.Current.Language);
+            await Settings.LoadAsync();
+
+            // Taal/thema moeten vaststaan VOORDAT er iets wordt getoond, anders rendert de eerste
+            // frame nog met de systeemstandaard totdat de gebruiker zelf iets wisselt.
+            ThemeManager.ApplyTheme(Settings.Current.Theme);
+            LocalizationManager.Instance.SetLanguage(Settings.Current.Language);
+        }
+        catch (Exception ex)
+        {
+            // Een fout in deze opstartstappen mag nooit een onzichtbaar "zombie"-proces
+            // opleveren: toon de fout en sluit expliciet af met een foutcode.
+            MessageBox.Show(
+                ex.Message,
+                "Inno Setup Studio",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            Shutdown(-1);
+            return;
+        }
 
         var splash = new SplashWindow();
         splash.Show();
@@ -45,6 +66,10 @@ public partial class App : Application
         mainWindow.Show();
 
         splash.Close();
+
+        // Vanaf hier is er een hoofdvenster: normaal gedrag herstellen zodat de app afsluit
+        // zodra de gebruiker dat venster sluit.
+        ShutdownMode = ShutdownMode.OnMainWindowClose;
     }
 
     private static void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)

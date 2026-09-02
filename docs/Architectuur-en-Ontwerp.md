@@ -10,7 +10,10 @@ scripttekst, inclusief het compileren en direct kunnen draaien van de installer.
 
 - .NET 10 (LTS, ondersteund tot november 2028) met WPF.
 - MVVM via CommunityToolkit.Mvvm.
-- Syncfusion 34.x waar een control écht toegevoegde waarde heeft; geen harde afhankelijkheid.
+- Syncfusion 34.x waar een control écht toegevoegde waarde heeft; geen harde eis om Syncfusion-
+  controls te gébruiken. `Syncfusion.Licensing` zelf is wel een vaste `PackageReference` (nodig om
+  de licentie te registreren zodra ergens een Syncfusion-control wordt toegevoegd), niet iets wat
+  pas later optioneel binnenkomt.
 - Kleurthema's en lokalisatie volgens hetzelfde patroon als FontManager/SVGViewer: losse
   `ResourceDictionary`-bestanden per thema (`DynamicResource`, geen herstart nodig) en een
   `LocalizationManager` + `{loc:Loc ...}`-markup-extensie voor live taalwissel.
@@ -53,7 +56,10 @@ schrijft `version.generated.props` (niet in git), dat `Directory.Build.props` im
 project dezelfde `AssemblyVersion`/`FileVersion`/`InformationalVersion` krijgt. `build\Build.ps1`
 roept dit vóór `dotnet build` aan, dus het nummer is al correct binnen diezelfde build — een
 build via Visual Studio zelf (zonder `build\Build.ps1`) hoogt de teller niet verder op en gebruikt
-het laatst berekende nummer. Zie §8 voor deze afweging.
+het laatst berekende nummer uit `version.generated.props`. Die fallback werkt dus alleen als dat
+bestand al eerder door `build\Build.ps1` is aangemaakt; bestaat het nog niet (bijvoorbeeld een
+verse clone die nog nooit via `build\Build.ps1` is gebouwd), dan valt `Directory.Build.props` terug
+op `1.0.0.0 (dev)`. Zie §8 voor deze afweging.
 
 ## 7. Syncfusion-licentie
 
@@ -109,4 +115,6 @@ Solution met `InnoSetupStudio.Core`, `InnoSetupStudio.App` en `InnoSetupStudio.T
 .NET 10. Thema's, lokalisatie, splashscreen, automatische versienummering en de Syncfusion-licentie
 zijn gebouwd en lokaal getest (`build\Build.ps1`, `dotnet test`, app handmatig gestart en weer
 gesloten). Bewuste vereenvoudiging: de taaldropdown toont nog geen vlaggen (zie §5); dat volgt in
-een latere fase.
+een latere fase. Nog niet gecontroleerd: de leesbaarheid van de lichte Rood- en Groen-thema's is
+alleen visueel steekproefsgewijs bekeken, geen aparte contrastcheck per tekst/achtergrond-
+combinatie; staat open als aandachtspunt voor een latere fase.

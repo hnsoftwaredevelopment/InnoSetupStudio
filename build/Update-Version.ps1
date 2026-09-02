@@ -47,7 +47,7 @@ $year = [int]$parts[0]
 $month = [int]$parts[1]
 $day = [int]$parts[2]
 
-$displayVersion = "{0}.{1:D2}.{2:D2}.{3}" -f $year, $month, $day, $counter
+$displayVersion = "{0}.{1:D2}.{2:D2}.{3:D3}" -f $year, $month, $day, $counter
 $numericVersion = "$year.$month.$day.$counter"
 
 $propsPath = Join-Path $RepoRoot 'version.generated.props'

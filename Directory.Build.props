@@ -7,6 +7,9 @@
     <NeutralLanguage>nl-NL</NeutralLanguage>
     <Company>HN Software Development</Company>
     <Product>Inno Setup Studio</Product>
+    <!-- Anders plakt de .NET SDK automatisch "+<git-commit-sha>" achter InformationalVersion,
+         wat op het splashscreen een lelijke lange hash naast het releasenummer laat zien. -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 
   <!-- Wordt geschreven door build\Update-Version.ps1 (zie build\Build.ps1). -->
