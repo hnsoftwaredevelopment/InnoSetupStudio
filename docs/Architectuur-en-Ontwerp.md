@@ -21,11 +21,13 @@ scripttekst, inclusief het compileren en direct kunnen draaien van de installer.
 ## 3. Projectstructuur (solution)
 
 - `InnoSetupStudio.Core` — datamodel van een .iss-project en instellingen, geen UI-afhankelijkheden.
-  `Project/` bevat het projectmodel (`InstallerProject`) en de opslag ervan (zie §10).
+  `Project/` bevat het projectmodel (`InstallerProject`, `WizardScreenSelection`) en de opslag
+  ervan (zie §10).
 - `InnoSetupStudio.App` — WPF-shell: `Themes/` (9 kleurthema's + Styles.xaml + ThemeManager),
   `Localization/` (LocalizationManager + LocExtension), `Resources/` (Strings.*.resx + Icons.xaml),
-  `Services/` (LicenseService), `ViewModels/` (CommunityToolkit.Mvvm-gebaseerde viewmodels),
-  `Views/` (SplashWindow, MainWindow, ProjectSettingsWindow).
+  `Converters/` (`IconKeyToGeometryConverter`), `Services/` (LicenseService), `ViewModels/`
+  (CommunityToolkit.Mvvm-gebaseerde viewmodels), `Views/` (SplashWindow, MainWindow,
+  ProjectSettingsWindow, WizardScreensWindow).
 - `InnoSetupStudio.Tests` — xUnit-tests voor Core.
 
 ## 4. Theming-systeem
@@ -94,11 +96,12 @@ Solution/projectstructuur, 9 kleurthema's, lokalisatie NL/EN/DE, splashscreen me
 automatische versienummering, Syncfusion-licentie verplaatst en ingeladen, startvenster met
 werkende thema-/taalwissel als bewijs dat alles live doorwerkt.
 
-**Fase 2 — Projectinstellingen**
+**Fase 2 — Projectinstellingen (gebouwd)**
 Scherm voor naam, ontwikkelaar, contactgegevens, bestandslocaties en installer-icon.
 
-**Fase 3 — Schermselectie**
-Overzicht met checkboxen en preview-thumbnails om wizardschermen aan/uit te zetten.
+**Fase 3 — Schermselectie (gebouwd)**
+Overzicht met checkboxen en herkenningsiconen om wizardschermen aan/uit te zetten (zie §11.3 voor
+de scope-afbakening ten opzichte van de pixel-perfecte preview uit fase 4).
 
 **Fase 4 — Schermeditor**
 Klikbare elementen per wizardscherm, property panel, live doorwerken in de preview.
@@ -132,22 +135,34 @@ PDF-handleiding per taal, te openen via een help-knop.
 fase 2: `AppId` (vast GUID, eenmalig gegenereerd via `InstallerProject.CreateNew`, nodig zodat Inno
 Setup een upgrade van een eerdere installatie herkent in plaats van een dubbele installatie),
 `AppName`, `AppVersion`, `Publisher`, `PublisherEmail`, `PublisherUrl`, en de bestandslocaties
-`SourceFilesPath`, `OutputPath`, `CustomImagesPath` en `SetupIconFile`. Dit model breidt in latere
-fasen uit met schermselectie (fase 3) en schermelementen (fase 4); de uiteindelijke generator
-(fase 5) zet het geheel om naar een `.iss`-bestand.
+`SourceFilesPath`, `OutputPath`, `CustomImagesPath` en `SetupIconFile`. Sinds fase 3 bevat het ook
+`WizardScreens` (`WizardScreenSelection`): welke van de elf standaard Inno Setup-wizardschermen de
+installer toont. Dit model breidt in fase 4 verder uit met schermelementen; de uiteindelijke
+generator (fase 5) zet het geheel om naar een `.iss`-bestand.
 
 `JsonInstallerProjectService` bewaart een project als JSON naar een bestand met extensie
 `.issproj` (niet te verwarren met het uiteindelijk gegenereerde `.iss`-bestand zelf), met hetzelfde
 tijdelijk-bestand-dan-verplaatsen patroon als `JsonSettingsService` voor de app-instellingen.
 `ProjectSettingsViewModel`/`ProjectSettingsWindow` (CommunityToolkit.Mvvm) vormen het scherm eromheen,
 geopend vanuit `MainWindow` via "Nieuw project" (leeg project, vers AppId) of "Project openen…"
-(bestaand `.issproj`-bestand inladen). De knop naast Opslaan heet "Openen" bij een al bestaand
-project (die knop sluit dan alleen het venster, het project blijft actief) en "Annuleren" bij een
-nieuw, nog niet opgeslagen project (die knop verwerpt het project dan echt) — `CancelButtonText`
-bepaalt dit eenmalig bij het openen van het venster op basis van of er een projectbestandspad is
-meegegeven. Opslaan is pas enabled zodra de gebruiker daadwerkelijk een veld wijzigt (dirty-vlag,
-bijgehouden via de `On<Property>Changed`-hooks van CommunityToolkit.Mvvm); het openen van een
-bestaand project zonder iets te wijzigen laat Opslaan dus uitgeschakeld staan.
+(bestaand `.issproj`-bestand inladen). Zodra een project actief is (nieuw en opgeslagen, of
+geopend) onthoudt `MainWindow` het in `_activeProject`/`_activeProjectFilePath` en schakelt de knop
+"Wizardschermen" in. De knop naast Opslaan heet "Openen" bij een al bestaand project (die knop
+sluit dan alleen het venster, het project blijft actief) en "Annuleren" bij een nieuw, nog niet
+opgeslagen project (die knop verwerpt het project dan echt) — `CancelButtonText` bepaalt dit
+eenmalig bij het openen van het venster op basis van of er een projectbestandspad is meegegeven.
+Opslaan is pas enabled zodra de gebruiker daadwerkelijk een veld wijzigt (dirty-vlag, bijgehouden
+via de `On<Property>Changed`-hooks van CommunityToolkit.Mvvm); het openen van een bestaand project
+zonder iets te wijzigen laat Opslaan dus uitgeschakeld staan.
+
+`WizardScreensViewModel`/`WizardScreensWindow` vormen het schermenoverzicht uit fase 3: één rij per
+standaard wizardscherm (in de volgorde waarin Inno Setup ze doorloopt) met een vinkje, een klein
+herkenningsicoon (`Icons.xaml`: `Document`, `Folder`, `List` of `Check`, via
+`IconKeyToGeometryConverter`) en een vertaalde naam. Dit is bewust geen pixel-perfecte
+voorvertoning van elk scherm — dat is de eigen WPF-nabootsing die in fase 4 wordt gebouwd (zie §1
+van de kickoff: Inno Setup heeft geen API om zijn eigen wizardschermen te hergebruiken) — maar een
+klein herkenningsicoon per scherm. Opslaan schrijft de gekozen `WizardScreenSelection` terug
+naar `_activeProject` en bewaart die meteen naar het actieve `.issproj`-bestand.
 
 ## 11. Status
 
@@ -172,7 +187,23 @@ voor het afwijzen van een ongeldig projectbestand — te groot of JSON null); sa
 (velden invullen, bladeren-knoppen, opslaan/annuleren) — dat vraagt om handmatige verificatie in de
 draaiende app, zie de testpunten in de pull request.
 
-### 11.3 UX-verfijning: projectinstellingen-scherm (2026-09-03)
+### 11.3 Fase 3: wizardschermen-selectie (2026-09-02)
+
+`WizardScreenSelection`-model, het schermenoverzicht (`WizardScreensViewModel`/
+`WizardScreensWindow`) en de knop "Wizardschermen" in `MainWindow` gebouwd en lokaal getest
+(`build\Build.ps1`, `dotnet test`, app handmatig gestart en weer gesloten). De round-trip-test voor
+`JsonInstallerProjectService` is uitgebreid met alle elf `WizardScreenSelection`-velden; geen
+nieuwe test-methoden, dus de suite blijft op acht tests. `WizardScreensViewModel` heeft, net als
+`ProjectSettingsViewModel` in fase 2, geen eigen unit tests: de weinige logica erin (rijen opbouwen,
+`ToSelection`) leent zich niet goed voor losstaand testen zonder de WPF-app zelf op te starten, dat
+vraagt net als het scherm zelf om handmatige verificatie in de draaiende app. Bewuste
+vereenvoudiging: de knop "Wizardschermen" wordt pas actief zodra een project actief is (nieuw
+project opgeslagen, of een bestaand project geopend); dat raakt ook een bestaande beperking uit
+fase 2 die hier verholpen is — een geopend project werd pas "actief" na een expliciete Opslaan-klik
+in het projectinstellingen-scherm, ook als de gebruiker daar niets wilde wijzigen en meteen
+Annuleren klikte.
+
+### 11.4 UX-verfijning: projectinstellingen-scherm (2026-09-03)
 
 Naar aanleiding van handmatig testen: de knop naast Opslaan heette altijd "Annuleren", terwijl die
 bij een al geopend (bestaand) project feitelijk alleen het venster sluit zonder iets te wijzigen —
@@ -183,4 +214,8 @@ zodra alleen de naam ingevuld is: een net geopend, ongewijzigd project liet Opsl
 enabled zien terwijl er niets te bewaren viel. Beide punten zitten in `ProjectSettingsViewModel`
 (`CancelButtonText`, dirty-tracking via `_isDirty`/`MarkDirty`) en zijn niet los geautomatiseerd
 getest — net als de rest van dit scherm vraagt dit om handmatige verificatie in de draaiende app.
-Build en de bestaande testsuite (acht tests) blijven ongewijzigd groen.
+Build en de bestaande testsuite (acht tests) blijven ongewijzigd groen. Een CodeRabbit-review op
+deze wijziging vond nog een regressie (de "Openen"-knop zette het project niet meer actief, een
+bijwerkingsfout van het hernoemen zonder de onderliggende logica aan te passen) en twee kleinere
+punten (Opslaan kon actief blijven staan na het leegmaken van AppName; de invoervelden waren niet
+beschermd tegen een wijziging tijdens de lopende save); alle drie gefixt vóór het mergen naar main.

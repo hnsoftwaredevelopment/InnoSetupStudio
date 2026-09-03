@@ -120,4 +120,46 @@
   <data name="DialogDefaultNewProjectName" xml:space="preserve">
     <value>Neues Projekt</value>
   </data>
+  <data name="ButtonWizardScreens" xml:space="preserve">
+    <value>Assistentenseiten</value>
+  </data>
+  <data name="WizardScreensTitle" xml:space="preserve">
+    <value>Assistentenseiten</value>
+  </data>
+  <data name="WizardScreensIntro" xml:space="preserve">
+    <value>Wählen Sie, welche Standardseiten das Installationsprogramm zeigt. Die Reihenfolge unten entspricht der Reihenfolge von Inno Setup.</value>
+  </data>
+  <data name="WizardScreenWelcome" xml:space="preserve">
+    <value>Willkommen</value>
+  </data>
+  <data name="WizardScreenLicense" xml:space="preserve">
+    <value>Lizenzvereinbarung</value>
+  </data>
+  <data name="WizardScreenInfoBefore" xml:space="preserve">
+    <value>Informationen vorab</value>
+  </data>
+  <data name="WizardScreenUserInfo" xml:space="preserve">
+    <value>Benutzerinformationen</value>
+  </data>
+  <data name="WizardScreenSelectDestination" xml:space="preserve">
+    <value>Zielordner wählen</value>
+  </data>
+  <data name="WizardScreenSelectComponents" xml:space="preserve">
+    <value>Komponenten auswählen</value>
+  </data>
+  <data name="WizardScreenSelectProgramGroup" xml:space="preserve">
+    <value>Startmenü-Ordner wählen</value>
+  </data>
+  <data name="WizardScreenSelectTasks" xml:space="preserve">
+    <value>Aufgaben auswählen</value>
+  </data>
+  <data name="WizardScreenReady" xml:space="preserve">
+    <value>Bereit zur Installation</value>
+  </data>
+  <data name="WizardScreenInfoAfter" xml:space="preserve">
+    <value>Informationen danach</value>
+  </data>
+  <data name="WizardScreenFinished" xml:space="preserve">
+    <value>Installation abgeschlossen</value>
+  </data>
 </root>

@@ -101,6 +101,46 @@ public partial class MainWindow : Window
     private void NewProjectButton_Click(object sender, RoutedEventArgs e) =>
         OpenProjectSettings(InstallerProject.CreateNew(), projectFilePath: null);
 
+    private async void WizardScreensButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_activeProject is null)
+        {
+            return;
+        }
+
+        var viewModel = new WizardScreensViewModel(_activeProject.WizardScreens);
+        var window = new WizardScreensWindow(viewModel) { Owner = this };
+
+        if (window.ShowDialog() != true)
+        {
+            return;
+        }
+
+        _activeProject.WizardScreens = viewModel.ToSelection();
+
+        if (string.IsNullOrWhiteSpace(_activeProjectFilePath))
+        {
+            return;
+        }
+
+        // Knop uitschakelen tijdens het opslaan: zonder deze guard kan een tweede klik tijdens de
+        // lopende await hetzelfde .tmp-tijdelijke bestand gebruiken als de eerste, wat tot een
+        // conflict tussen beide schrijfacties kan leiden.
+        WizardScreensButton.IsEnabled = false;
+        try
+        {
+            await _projectService.SaveAsync(_activeProjectFilePath, _activeProject);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Inno Setup Studio", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            WizardScreensButton.IsEnabled = true;
+        }
+    }
+
     private async void OpenProjectButton_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new OpenFileDialog
@@ -124,6 +164,12 @@ public partial class MainWindow : Window
             return;
         }
 
+        // Een geopend (dus al bestaand, geldig opgeslagen) project is meteen het actieve project,
+        // ook als de gebruiker het zojuist geopende projectinstellingen-scherm annuleert: die
+        // annulering betekent alleen dat de algemene instellingen niet gewijzigd zijn, niet dat
+        // het project niet meer "open" is.
+        SetActiveProject(project, dialog.FileName);
+
         OpenProjectSettings(project, dialog.FileName);
     }
 
@@ -136,8 +182,7 @@ public partial class MainWindow : Window
         {
             // Alleen bij een succesvolle Opslaan (DialogResult true) zijn SavedProject en
             // SavedProjectFilePath gevuld.
-            _activeProject = viewModel.SavedProject;
-            _activeProjectFilePath = viewModel.SavedProjectFilePath;
+            SetActiveProject(viewModel.SavedProject, viewModel.SavedProjectFilePath);
         }
         else if (!string.IsNullOrWhiteSpace(projectFilePath))
         {
@@ -147,8 +192,14 @@ public partial class MainWindow : Window
             // stonden vóór dit scherm werd geopend. Alleen bij een nieuw, nog niet opgeslagen
             // project (projectFilePath null) betekent Annuleren wél het project verwerpen, dus
             // blijft er dan geen actief project achter.
-            _activeProject = project;
-            _activeProjectFilePath = projectFilePath;
+            SetActiveProject(project, projectFilePath);
         }
+    }
+
+    private void SetActiveProject(InstallerProject? project, string? projectFilePath)
+    {
+        _activeProject = project;
+        _activeProjectFilePath = projectFilePath;
+        WizardScreensButton.IsEnabled = _activeProject is not null;
     }
 }

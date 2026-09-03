@@ -120,4 +120,46 @@
   <data name="DialogDefaultNewProjectName" xml:space="preserve">
     <value>New project</value>
   </data>
+  <data name="ButtonWizardScreens" xml:space="preserve">
+    <value>Wizard screens</value>
+  </data>
+  <data name="WizardScreensTitle" xml:space="preserve">
+    <value>Wizard screens</value>
+  </data>
+  <data name="WizardScreensIntro" xml:space="preserve">
+    <value>Choose which standard screens the installer shows. The order below is the order Inno Setup shows them in.</value>
+  </data>
+  <data name="WizardScreenWelcome" xml:space="preserve">
+    <value>Welcome</value>
+  </data>
+  <data name="WizardScreenLicense" xml:space="preserve">
+    <value>License agreement</value>
+  </data>
+  <data name="WizardScreenInfoBefore" xml:space="preserve">
+    <value>Information before</value>
+  </data>
+  <data name="WizardScreenUserInfo" xml:space="preserve">
+    <value>User information</value>
+  </data>
+  <data name="WizardScreenSelectDestination" xml:space="preserve">
+    <value>Select destination folder</value>
+  </data>
+  <data name="WizardScreenSelectComponents" xml:space="preserve">
+    <value>Select components</value>
+  </data>
+  <data name="WizardScreenSelectProgramGroup" xml:space="preserve">
+    <value>Select start menu folder</value>
+  </data>
+  <data name="WizardScreenSelectTasks" xml:space="preserve">
+    <value>Select tasks</value>
+  </data>
+  <data name="WizardScreenReady" xml:space="preserve">
+    <value>Ready to install</value>
+  </data>
+  <data name="WizardScreenInfoAfter" xml:space="preserve">
+    <value>Information after</value>
+  </data>
+  <data name="WizardScreenFinished" xml:space="preserve">
+    <value>Setup finished</value>
+  </data>
 </root>

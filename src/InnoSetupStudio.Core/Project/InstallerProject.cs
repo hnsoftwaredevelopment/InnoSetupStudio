@@ -38,6 +38,9 @@ public sealed class InstallerProject
     /// <summary>Pad naar het .ico-bestand dat als installer-icon wordt gebruikt.</summary>
     public string SetupIconFile { get; set; } = string.Empty;
 
+    /// <summary>Welke standaard wizardschermen deze installer toont (fase 3).</summary>
+    public WizardScreenSelection WizardScreens { get; set; } = new();
+
     /// <summary>Maakt een nieuw, leeg project met een vers gegenereerd AppId.</summary>
     public static InstallerProject CreateNew() => new()
     {
