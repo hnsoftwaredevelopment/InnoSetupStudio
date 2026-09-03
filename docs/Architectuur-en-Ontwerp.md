@@ -398,4 +398,17 @@ plus een directe controle dat de twee standaardafbeeldingen daadwerkelijk als
 `InnoSetupStudio.Wizard.dll` terechtkomen (via `ResourceReader` op de manifest-resources), dus
 precies op het pad dat de pack-URI in `WizardImageResolver` verwacht. De daadwerkelijke visuele
 weergave in de schermeditor is, zoals gebruikelijk bij dit soort WPF-schermen in dit project, aan
-Herbert om in de draaiende app te bevestigen.
+Herbert om in de draaiende app te bevestigen — bevestigd: "de schermen zien er nu uit als uit de
+installer".
+
+**Aandachtspunt voor later (nog niet opgepakt):** Herbert vroeg zich af of de Vorige/Volgende-
+knoppen (die de schermeditor gebruikt om tussen schermen te navigeren, en die ook in een echte
+installer voorkomen) net als de wizardafbeeldingen aanpasbaar zijn. Gecontroleerd in de
+runtime-broncode (`Projects/Src/Compiler.ScriptClasses.pas` in `jrsoftware/issrc`):
+`WizardForm.NextButton`/`BackButton`/`CancelButton` zijn inderdaad benaderbaar vanuit Pascal
+Script, als `TNewButton` (afgeleid van het standaard `TButton`), dus een scriptauteur kan
+bijvoorbeeld de knoptekst, zichtbaarheid of lettertype aanpassen (typisch in
+`InitializeWizard`/`CurPageChanged`). Dit is dus geen declaratieve `[Setup]`-instelling zoals
+`WizardImageFile`, maar puur Pascal Scripting — net als de al eerder besproken rechtsklik-
+bewerkpatroon-visie voor afbeeldingen. Voor later: of en hoe dit in de schermeditor wordt
+blootgesteld.
