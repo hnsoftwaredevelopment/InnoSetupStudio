@@ -147,7 +147,13 @@ tijdelijk-bestand-dan-verplaatsen patroon als `JsonSettingsService` voor de app-
 geopend vanuit `MainWindow` via "Nieuw project" (leeg project, vers AppId) of "Project openen…"
 (bestaand `.issproj`-bestand inladen). Zodra een project actief is (nieuw en opgeslagen, of
 geopend) onthoudt `MainWindow` het in `_activeProject`/`_activeProjectFilePath` en schakelt de knop
-"Wizardschermen" in.
+"Wizardschermen" in. De knop naast Opslaan heet "Openen" bij een al bestaand project (die knop
+sluit dan alleen het venster, het project blijft actief) en "Annuleren" bij een nieuw, nog niet
+opgeslagen project (die knop verwerpt het project dan echt) — `CancelButtonText` bepaalt dit
+eenmalig bij het openen van het venster op basis van of er een projectbestandspad is meegegeven.
+Opslaan is pas enabled zodra de gebruiker daadwerkelijk een veld wijzigt (dirty-vlag, bijgehouden
+via de `On<Property>Changed`-hooks van CommunityToolkit.Mvvm); het openen van een bestaand project
+zonder iets te wijzigen laat Opslaan dus uitgeschakeld staan.
 
 `WizardScreensViewModel`/`WizardScreensWindow` vormen het schermenoverzicht uit fase 3: één rij per
 standaard wizardscherm (in de volgorde waarin Inno Setup ze doorloopt) met een vinkje, een klein
@@ -196,3 +202,20 @@ project opgeslagen, of een bestaand project geopend); dat raakt ook een bestaand
 fase 2 die hier verholpen is — een geopend project werd pas "actief" na een expliciete Opslaan-klik
 in het projectinstellingen-scherm, ook als de gebruiker daar niets wilde wijzigen en meteen
 Annuleren klikte.
+
+### 11.4 UX-verfijning: projectinstellingen-scherm (2026-09-03)
+
+Naar aanleiding van handmatig testen: de knop naast Opslaan heette altijd "Annuleren", terwijl die
+bij een al geopend (bestaand) project feitelijk alleen het venster sluit zonder iets te wijzigen —
+het project blijft actief, er wordt niets verworpen. De knop toont nu "Openen" in dat geval en
+"Annuleren" alleen nog bij een nieuw, nog niet opgeslagen project (waar de knop het project wél
+echt verwerpt). Daarnaast staat Opslaan pas aan zodra er echt een veld gewijzigd is, in plaats van
+zodra alleen de naam ingevuld is: een net geopend, ongewijzigd project liet Opslaan eerder al
+enabled zien terwijl er niets te bewaren viel. Beide punten zitten in `ProjectSettingsViewModel`
+(`CancelButtonText`, dirty-tracking via `_isDirty`/`MarkDirty`) en zijn niet los geautomatiseerd
+getest — net als de rest van dit scherm vraagt dit om handmatige verificatie in de draaiende app.
+Build en de bestaande testsuite (acht tests) blijven ongewijzigd groen. Een CodeRabbit-review op
+deze wijziging vond nog een regressie (de "Openen"-knop zette het project niet meer actief, een
+bijwerkingsfout van het hernoemen zonder de onderliggende logica aan te passen) en twee kleinere
+punten (Opslaan kon actief blijven staan na het leegmaken van AppName; de invoervelden waren niet
+beschermd tegen een wijziging tijdens de lopende save); alle drie gefixt vóór het mergen naar main.

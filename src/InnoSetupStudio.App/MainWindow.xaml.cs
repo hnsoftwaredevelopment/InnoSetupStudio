@@ -181,8 +181,18 @@ public partial class MainWindow : Window
         if (window.ShowDialog() == true)
         {
             // Alleen bij een succesvolle Opslaan (DialogResult true) zijn SavedProject en
-            // SavedProjectFilePath gevuld; bij Annuleren blijft het vorige actieve project intact.
+            // SavedProjectFilePath gevuld.
             SetActiveProject(viewModel.SavedProject, viewModel.SavedProjectFilePath);
+        }
+        else if (!string.IsNullOrWhiteSpace(projectFilePath))
+        {
+            // Een al bestaand project sluit dit scherm via de knop die nu "Openen" heet in plaats
+            // van "Annuleren" (zie ProjectSettingsViewModel.CancelButtonText): het project wordt
+            // dan niet verworpen, het blijft gewoon actief met de instellingen zoals ze op schijf
+            // stonden vóór dit scherm werd geopend. Alleen bij een nieuw, nog niet opgeslagen
+            // project (projectFilePath null) betekent Annuleren wél het project verwerpen, dus
+            // blijft er dan geen actief project achter.
+            SetActiveProject(project, projectFilePath);
         }
     }
 
