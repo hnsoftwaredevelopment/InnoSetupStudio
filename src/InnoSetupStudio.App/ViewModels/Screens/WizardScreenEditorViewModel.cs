@@ -1,3 +1,4 @@
+using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace InnoSetupStudio.App.ViewModels.Screens;
@@ -29,4 +30,17 @@ public abstract class WizardScreenEditorViewModel : ObservableObject
 
     /// <summary>Iconsleutel uit Icons.xaml, getoond naast de naam in de linkerlijst.</summary>
     public string IconKey { get; }
+
+    // De twee wizardafbeeldingen staan hier op de basisklasse (in plaats van alleen op de
+    // schermen die ze nodig hebben) omdat het projectbrede instellingen zijn (Inno Setup's
+    // WizardImageFile/WizardSmallImageFile), niet iets per scherm: WizardEditorViewModel bepaalt
+    // ze één keer bij het openen van de schermeditor (zie WizardImageResolver) en geeft ze aan elk
+    // scherm door, zodat een toekomstig scherm dat ze nodig heeft ze automatisch al beschikbaar
+    // heeft. Alleen-lezen: binnen één schermeditor-sessie wijzigen deze niet, ze veranderen pas
+    // wanneer de gebruiker in de projectinstellingen een andere afbeelding kiest en de
+    // schermeditor opnieuw opent.
+    public required ImageSource WizardImage { get; init; }
+
+    /// <summary>Zie <see cref="WizardImage"/>, maar dan de kleine afbeelding rechtsboven.</summary>
+    public required ImageSource WizardSmallImage { get; init; }
 }

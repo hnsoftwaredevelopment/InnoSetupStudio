@@ -99,6 +99,12 @@
   <data name="LabelSetupIconFile" xml:space="preserve">
     <value>Installer icon</value>
   </data>
+  <data name="LabelWizardImageFile" xml:space="preserve">
+    <value>Wizard image (large)</value>
+  </data>
+  <data name="LabelWizardSmallImageFile" xml:space="preserve">
+    <value>Wizard image (small)</value>
+  </data>
   <data name="ButtonBrowse" xml:space="preserve">
     <value>Browse…</value>
   </data>
@@ -119,6 +125,9 @@
   </data>
   <data name="DialogFilterIconFiles" xml:space="preserve">
     <value>Icon files (*.ico)|*.ico|All files (*.*)|*.*</value>
+  </data>
+  <data name="DialogFilterImageFiles" xml:space="preserve">
+    <value>Images (*.bmp;*.png)|*.bmp;*.png|All files (*.*)|*.*</value>
   </data>
   <data name="DialogDefaultNewProjectName" xml:space="preserve">
     <value>New project</value>

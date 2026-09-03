@@ -10,13 +10,21 @@
         Inno Setup Studio zelf, dus deze voorvertoning moet er ook zo uitzien, ongeacht welk
         Inno Setup Studio-thema de gebruiker net heeft gekozen. Zie ScreenEditorPreviewDisclaimer
         in de vertalingen voor de bijbehorende toelichting in het venster zelf.
+
+        De afbeelding links over de volledige hoogte is Inno Setup's eigen WizardImageFile
+        (164:314 breedte:hoogte-verhouding, vandaar Width="150" bij deze 290px hoge voorvertoning);
+        WizardImage komt van de projectinstellingen of anders een meegeleverde standaardafbeelding
+        (zie WizardImageResolver in InnoSetupStudio.App). Ontbrak in de eerste versie van deze
+        pagina, wat niet overeenkwam met een echte Inno Setup-installer.
     -->
-    <Grid Background="White">
-        <StackPanel Margin="40,32,32,32" VerticalAlignment="Center">
+    <DockPanel Background="White">
+        <Image DockPanel.Dock="Left" Source="{Binding WizardImage}" Stretch="UniformToFill"
+               Width="150" HorizontalAlignment="Left" VerticalAlignment="Stretch" />
+        <StackPanel Margin="24,32,32,32" VerticalAlignment="Center">
             <TextBlock Text="{Binding WelcomeTitle}" FontSize="17" FontWeight="Bold"
                        TextWrapping="Wrap" Foreground="Black" />
             <TextBlock Text="{Binding WelcomeBody}" Margin="0,18,0,0"
                        TextWrapping="Wrap" Foreground="Black" LineHeight="20" />
         </StackPanel>
-    </Grid>
+    </DockPanel>
 </UserControl>

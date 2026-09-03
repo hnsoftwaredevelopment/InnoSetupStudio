@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using InnoSetupStudio.App.Services;
 using InnoSetupStudio.App.ViewModels.Screens;
 using InnoSetupStudio.Core.Project;
 
@@ -21,20 +22,39 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
     {
         BeginInit();
 
+        // Eén keer bepaald voor de hele schermeditor-sessie en aan elk scherm doorgegeven (zie
+        // WizardScreenEditorViewModel.WizardImage/WizardSmallImage): dit zijn projectbrede
+        // instellingen (Inno Setup's WizardImageFile/WizardSmallImageFile), geen scherm-specifieke
+        // data, dus ze hoeven maar één keer opgezocht/geladen te worden.
+        var wizardImage = WizardImageResolver.ResolveWizardImage(project.WizardImageFile);
+        var wizardSmallImage = WizardImageResolver.ResolveWizardSmallImage(project.WizardSmallImageFile);
+
         _screens = [];
         if (project.WizardScreens.ShowWelcomePage)
         {
-            _screens.Add(new WelcomePageEditorViewModel(project.AppName, project.AppVersion));
+            _screens.Add(new WelcomePageEditorViewModel(project.AppName, project.AppVersion)
+            {
+                WizardImage = wizardImage,
+                WizardSmallImage = wizardSmallImage,
+            });
         }
 
         if (project.WizardScreens.ShowLicensePage)
         {
-            _screens.Add(new LicensePageEditorViewModel(project.LicenseFilePath, projectFilePath, assetService));
+            _screens.Add(new LicensePageEditorViewModel(project.LicenseFilePath, projectFilePath, assetService)
+            {
+                WizardImage = wizardImage,
+                WizardSmallImage = wizardSmallImage,
+            });
         }
 
         if (project.WizardScreens.ShowSelectDestinationPage)
         {
-            _screens.Add(new SelectDestinationPageEditorViewModel(project.AppName, project.DefaultDirName, project.AllowUserToChangeDir));
+            _screens.Add(new SelectDestinationPageEditorViewModel(project.AppName, project.DefaultDirName, project.AllowUserToChangeDir)
+            {
+                WizardImage = wizardImage,
+                WizardSmallImage = wizardSmallImage,
+            });
         }
 
         // Elk scherm is een los object (geen [ObservableProperty] van deze klasse zelf), dus we

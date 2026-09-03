@@ -62,6 +62,22 @@ public sealed class InstallerProject
     /// </summary>
     public bool AllowUserToChangeDir { get; set; } = true;
 
+    /// <summary>
+    /// Pad naar de afbeelding die over de volledige hoogte links op de Welkomst- en
+    /// Voltooid-pagina's staat, Inno Setup's <c>WizardImageFile</c>-richtlijn. Leeg betekent: nog
+    /// niet aangepast door de gebruiker. De schermeditor toont in dat geval een meegeleverde
+    /// standaardafbeelding (zie WizardImageResolver), maar dit veld blijft leeg totdat de
+    /// gebruiker in de projectinstellingen echt een eigen bestand kiest.
+    /// </summary>
+    public string WizardImageFile { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Pad naar de kleine afbeelding rechtsboven op de overige wizardpagina's, Inno Setup's
+    /// <c>WizardSmallImageFile</c>-richtlijn. Zelfde leeg-betekent-nog-niet-aangepast-gedrag als
+    /// <see cref="WizardImageFile"/>.
+    /// </summary>
+    public string WizardSmallImageFile { get; set; } = string.Empty;
+
     /// <summary>Maakt een nieuw, leeg project met een vers gegenereerd AppId.</summary>
     public static InstallerProject CreateNew() => new()
     {

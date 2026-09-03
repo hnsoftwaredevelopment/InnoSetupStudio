@@ -4,6 +4,16 @@
     <ProjectReference Include="..\InnoSetupStudio.Core\InnoSetupStudio.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Meegeleverde standaardafbeeldingen voor WizardImageFile/WizardSmallImageFile, gebruikt
+         zolang het project geen eigen afbeelding heeft gekozen (zie WizardImageResolver in
+         InnoSetupStudio.App). Als WPF-Resource ingebed, zodat andere projecten die naar deze
+         assembly verwijzen (InnoSetupStudio.App) ze via een pack-URI kunnen laden zonder dat dit
+         project zelf iets van InnoSetupStudio.App hoeft te weten. -->
+    <Resource Include="Assets\WizardImage-Default.bmp" />
+    <Resource Include="Assets\WizardSmallImage-Default.bmp" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net10.0-windows</TargetFramework>
     <Nullable>enable</Nullable>

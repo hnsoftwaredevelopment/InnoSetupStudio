@@ -6,9 +6,23 @@
              mc:Ignorable="d" d:DesignWidth="455" d:DesignHeight="290">
     <!-- Zelfde vaste wit/zwart-kleurstelling als WelcomePagePreview, zie de toelichting daar. -->
     <DockPanel Background="White" Margin="20,16,20,20">
-        <TextBlock DockPanel.Dock="Top" Text="License Agreement" FontWeight="Bold" FontSize="13" Foreground="Black" />
-        <TextBlock DockPanel.Dock="Top" Margin="0,4,0,12" Foreground="Black" TextWrapping="Wrap"
-                   Text="Please read the following License Agreement. You must accept the terms of this agreement before continuing with the installation." />
+        <!-- Kop met titel/omschrijving links en Inno Setup's kleine wizardafbeelding (55x55,
+             WizardSmallImageFile) rechtsboven, met een dunne scheidingslijn eronder — zo ziet
+             elke niet-Welkomst/Voltooid-pagina er in een echte Inno Setup-installer uit. -->
+        <Grid DockPanel.Dock="Top" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <TextBlock Text="License Agreement" FontWeight="Bold" FontSize="13" Foreground="Black" />
+                <TextBlock Margin="0,4,0,0" Foreground="Black" TextWrapping="Wrap"
+                           Text="Please read the following License Agreement. You must accept the terms of this agreement before continuing with the installation." />
+            </StackPanel>
+            <Image Grid.Column="1" Source="{Binding WizardSmallImage}" Stretch="Uniform"
+                   Width="55" Height="55" Margin="12,0,0,0" VerticalAlignment="Top" />
+        </Grid>
+        <Border DockPanel.Dock="Top" Height="1" Background="#FFACA899" Margin="0,0,0,12" />
 
         <StackPanel DockPanel.Dock="Bottom" Margin="0,10,0,0">
             <!-- Decoratief: dit zijn Inno Setup's eigen keuzerondjes op de echte licentiepagina,

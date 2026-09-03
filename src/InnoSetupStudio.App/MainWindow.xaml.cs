@@ -216,7 +216,7 @@ public partial class MainWindow : Window
 
     private void OpenProjectSettings(InstallerProject project, string? projectFilePath)
     {
-        var viewModel = new ProjectSettingsViewModel(project, _projectService, projectFilePath);
+        var viewModel = new ProjectSettingsViewModel(project, _projectService, projectFilePath, _assetService);
         var window = new ProjectSettingsWindow(viewModel) { Owner = this };
 
         if (window.ShowDialog() == true)
