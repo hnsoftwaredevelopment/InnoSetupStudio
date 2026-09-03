@@ -412,3 +412,31 @@ bijvoorbeeld de knoptekst, zichtbaarheid of lettertype aanpassen (typisch in
 `WizardImageFile`, maar puur Pascal Scripting — net als de al eerder besproken rechtsklik-
 bewerkpatroon-visie voor afbeeldingen. Voor later: of en hoe dit in de schermeditor wordt
 blootgesteld.
+
+**CodeRabbit-ronde op PR #9:** twee van de vier opmerkingen tegen de actuele code geverifieerd en
+verwerkt. (1) `WizardImageResolver.Resolve` decodeerde een gekozen afbeelding op volle
+bronresolutie voordat de voorvertoning hem verkleind toont (150×290/55×55) — bij een grote foto
+als bronbestand onnodig geheugengebruik. Opgelost met `DecodePixelHeight`, ingesteld tussen
+`BeginInit`/`EndInit`, op Inno Setup's eigen afmetingen (314 voor de grote afbeelding, 55 voor de
+kleine) in plaats van de voorvertoning se eigen pixelmaat, zodat dit losstaat van eventuele
+toekomstige lay-outwijzigingen. (2) Zelfde UNC-padrisico als eerder bij `LicenseFilePath`:
+`WizardImageResolver` deed `File.Exists`/`BitmapImage.UriSource` rechtstreeks op een pad dat ook
+uit een geladen projectbestand kan komen, dus een UNC-pad in een gedeeld project zou zonder
+gebruikersactie een SMB-verbinding opzetten. Geblokkeerd met dezelfde `IsUncOrDevicePath`-check
+als `LicensePageEditorViewModel`.
+
+Bewust nog niet opgepakt, allebei een uitbreiding van al bestaande, al eerder afgewogen punten:
+(3) `ProjectAssetService.Import` wordt in `BrowseForImage` al bij het klikken op Bladeren
+aangeroepen (niet pas bij Opslaan), dus bij Annuleren na een keuze kan een ongebruikte kopie in
+`Assets` achterblijven, en bij een nog niet opgeslagen project wordt het externe pad ongewijzigd
+bewaard. Precies hetzelfde patroon zit al in `LicensePageEditorViewModel.Browse` sinds PR #8 en is
+daar door Herbert getest en goedgekeurd; dit nu alleen voor de twee nieuwe afbeeldingsvelden
+anders maken zou die twee bladeerknoppen inconsistent met de licentiepagina maken. Hoort bij een
+bredere herziening van `ProjectAssetService` (importeren pas bij Opslaan, wezen opruimen bij een
+mislukte save), niet bij deze PR. (4) Zelfde projectrelatieve-paden-punt als bij `LicenseFilePath`
+in PR #8 (zie hierboven), nu ook van toepassing op `WizardImageFile`/`WizardSmallImageFile` omdat
+die dezelfde `ProjectAssetService.Import` gebruiken. Blijft één en dezelfde openstaande
+architectuurvraag, niet drie losse.
+
+Build (0 warnings, 0 errors), bestaande testsuite (13/13 groen) en het opstarten van de app zonder
+crash zijn opnieuw geverifieerd na deze wijzigingen.
