@@ -15,16 +15,31 @@
                     <TextBlock Text="{loc:Loc ButtonSave}" />
                 </StackPanel>
             </Button>
-            <Button Command="{Binding CancelCommand}" ToolTip="{loc:Loc ButtonCancel}">
+            <Button Command="{Binding CancelCommand}" ToolTip="{Binding CancelButtonText}">
                 <StackPanel Orientation="Horizontal">
-                    <Path Data="{StaticResource Close}" Fill="{DynamicResource Brush.TextPrimary}"
-                          Stretch="Uniform" Width="14" Height="14" Margin="0,0,8,0" />
-                    <TextBlock Text="{loc:Loc ButtonCancel}" />
+                    <Path Fill="{DynamicResource Brush.TextPrimary}"
+                          Stretch="Uniform" Width="14" Height="14" Margin="0,0,8,0">
+                        <Path.Style>
+                            <Style TargetType="Path">
+                                <Setter Property="Data" Value="{StaticResource Close}" />
+                                <Style.Triggers>
+                                    <!-- Zelfde map-icoon als de Bladeren-knoppen hieronder: bij een
+                                         al bestaand project sluit deze knop alleen het venster
+                                         (het project blijft open), dus een kruis-icoon past dan
+                                         niet meer bij het "Openen"-label. -->
+                                    <DataTrigger Binding="{Binding IsExistingProject}" Value="True">
+                                        <Setter Property="Data" Value="{StaticResource Folder}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Path.Style>
+                    </Path>
+                    <TextBlock Text="{Binding CancelButtonText}" />
                 </StackPanel>
             </Button>
         </StackPanel>
 
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" IsEnabled="{Binding CanEdit}">
             <StackPanel>
                 <TextBlock Text="{loc:Loc SectionGeneral}" FontSize="15" FontWeight="Bold" Margin="0,0,0,12" />
 
