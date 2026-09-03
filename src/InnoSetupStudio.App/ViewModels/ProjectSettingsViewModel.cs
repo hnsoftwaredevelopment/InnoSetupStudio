@@ -17,9 +17,19 @@ public sealed partial class ProjectSettingsViewModel : ObservableObject
 {
     private readonly IInstallerProjectService _projectService;
 
+    // Zolang dit venster de velden nog vult vanuit het meegegeven project (in de constructor) mag
+    // dat niet als een wijziging door de gebruiker tellen: anders staat Opslaan meteen aan voor
+    // een net geopend, ongewijzigd project.
+    private readonly bool _isInitializing;
+
+    // True zodra de gebruiker daadwerkelijk iets heeft aangepast sinds het openen van dit venster.
+    // Opslaan is alleen zinvol (en dus alleen enabled) als hier iets te bewaren valt.
+    private bool _isDirty;
+
     public ProjectSettingsViewModel(InstallerProject project, IInstallerProjectService projectService, string? projectFilePath)
     {
         _projectService = projectService;
+        _isInitializing = true;
         _projectFilePath = projectFilePath;
 
         AppId = project.AppId;
@@ -32,6 +42,17 @@ public sealed partial class ProjectSettingsViewModel : ObservableObject
         OutputPath = project.OutputPath;
         CustomImagesPath = project.CustomImagesPath;
         SetupIconFile = project.SetupIconFile;
+
+        _isInitializing = false;
+
+        // Bij een al bestaand (opgeslagen) project doet Annuleren feitelijk niets anders dan het
+        // venster sluiten zonder de instellingen te wijzigen — het project blijft gewoon actief.
+        // "Openen" beschrijft dat beter dan "Annuleren"; bij een nieuw, nog niet opgeslagen
+        // project betekent dezelfde knop wel echt het project verwerpen, dus daar blijft
+        // "Annuleren" staan.
+        CancelButtonText = string.IsNullOrWhiteSpace(projectFilePath)
+            ? LocalizationManager.Instance["ButtonCancel"]
+            : LocalizationManager.Instance["ButtonOpen"];
     }
 
     /// <summary>Wordt gevuld zodra <see cref="SaveCommand"/> succesvol heeft opgeslagen, zodat de
@@ -46,6 +67,11 @@ public sealed partial class ProjectSettingsViewModel : ObservableObject
     /// <summary>Vuurt wanneer het venster moet sluiten: true bij Opslaan, false bij Annuleren.</summary>
     public event EventHandler<bool>? RequestClose;
 
+    /// <summary>Label voor de knop naast Opslaan: "Openen" bij een al bestaand project (de knop
+    /// sluit dan alleen het venster, het project blijft actief), "Annuleren" bij een nieuw,
+    /// nog niet opgeslagen project (de knop verwerpt het dan echt).</summary>
+    public string CancelButtonText { get; }
+
     [ObservableProperty]
     private string? _projectFilePath;
 
@@ -55,7 +81,6 @@ public sealed partial class ProjectSettingsViewModel : ObservableObject
     [ObservableProperty]
     private string _appId = string.Empty;
 
-    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
     [ObservableProperty]
     private string _appName = string.Empty;
 
@@ -111,7 +136,39 @@ public sealed partial class ProjectSettingsViewModel : ObservableObject
         }
     }
 
-    private bool CanSave() => !string.IsNullOrWhiteSpace(AppName);
+    private bool CanSave() => _isDirty && !string.IsNullOrWhiteSpace(AppName);
+
+    // Eén gedeelde hook voor alle bewerkbare velden: zet de dirty-vlag zodra de gebruiker
+    // daadwerkelijk iets wijzigt (dus niet tijdens het vullen van de velden in de constructor) en
+    // laat Opslaan meteen herevalueren of het al enabled mag worden.
+    private void MarkDirty()
+    {
+        if (_isInitializing || _isDirty)
+        {
+            return;
+        }
+
+        _isDirty = true;
+        SaveCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnAppNameChanged(string value) => MarkDirty();
+
+    partial void OnAppVersionChanged(string value) => MarkDirty();
+
+    partial void OnPublisherChanged(string value) => MarkDirty();
+
+    partial void OnPublisherEmailChanged(string value) => MarkDirty();
+
+    partial void OnPublisherUrlChanged(string value) => MarkDirty();
+
+    partial void OnSourceFilesPathChanged(string value) => MarkDirty();
+
+    partial void OnOutputPathChanged(string value) => MarkDirty();
+
+    partial void OnCustomImagesPathChanged(string value) => MarkDirty();
+
+    partial void OnSetupIconFileChanged(string value) => MarkDirty();
 
     [RelayCommand(CanExecute = nameof(CanSave))]
     private async Task SaveAsync()
@@ -165,6 +222,7 @@ public sealed partial class ProjectSettingsViewModel : ObservableObject
         ProjectFilePath = targetPath;
         SavedProjectFilePath = targetPath;
         SavedProject = project;
+        _isDirty = false;
         RequestClose?.Invoke(this, true);
     }
 

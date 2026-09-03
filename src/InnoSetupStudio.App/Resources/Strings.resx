@@ -108,6 +108,9 @@
   <data name="ButtonCancel" xml:space="preserve">
     <value>Annuleren</value>
   </data>
+  <data name="ButtonOpen" xml:space="preserve">
+    <value>Openen</value>
+  </data>
   <data name="DialogFilterProjectFiles" xml:space="preserve">
     <value>Inno Setup Studio-project (*.issproj)|*.issproj</value>
   </data>
