@@ -111,6 +111,9 @@
   <data name="ButtonOpen" xml:space="preserve">
     <value>Open</value>
   </data>
+  <data name="ButtonClose" xml:space="preserve">
+    <value>Close</value>
+  </data>
   <data name="DialogFilterProjectFiles" xml:space="preserve">
     <value>Inno Setup Studio project (*.issproj)|*.issproj</value>
   </data>

@@ -32,6 +32,15 @@
         <Geometry>M19,6.41 L17.59,5 12,10.59 6.41,5 5,6.41 10.59,12 5,17.59 6.41,19 12,13.41 17.59,19 19,17.59 13.41,12 Z</Geometry>
     </GeometryGroup>
 
+    <!-- Neutraal terug-pijltje: gebruikt door DirtyTrackingViewModel voor de knop naast Opslaan
+         zodra er niets te verliezen valt (label "Sluiten"), als tegenhanger van het kruis-icoon
+         dat voor "Annuleren" (wél iets weggooien) blijft staan. Gevulde driehoek (pijlpunt) plus
+         rechthoek (schacht), zoals Close/Check ook gevulde vormen zijn in plaats van een dunne
+         lijn — een open pad zonder oppervlak toont niets bij Fill. -->
+    <GeometryGroup x:Key="ArrowLeft">
+        <Geometry>M6,12 L14,6 L14,18 Z M12,10 L20,10 L20,14 L12,14 Z</Geometry>
+    </GeometryGroup>
+
     <!-- Nieuwe iconen voor fase 3 (wizardschermen-selectie): zelfde stijl, rechte lijnen op een
          24x24 grid, gebruikt als klein herkenningspictogram per schermtype in het overzicht. -->
 

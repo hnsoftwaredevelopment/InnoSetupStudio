@@ -11,7 +11,7 @@ namespace InnoSetupStudio.App.ViewModels;
 /// pixel-perfecte voorvertoning van elk scherm (dat is de eigen WPF-nabootsing uit fase 4), maar
 /// een herkenbaar icoon en naam per scherm.
 /// </summary>
-public sealed partial class WizardScreensViewModel : ObservableObject
+public sealed partial class WizardScreensViewModel : DirtyTrackingViewModel
 {
     public WizardScreensViewModel(WizardScreenSelection selection)
     {
@@ -29,6 +29,17 @@ public sealed partial class WizardScreensViewModel : ObservableObject
             CreateRow("ShowInfoAfterPage", "WizardScreenInfoAfter", "Document", selection.ShowInfoAfterPage),
             CreateRow("ShowFinishedPage", "WizardScreenFinished", "Check", selection.ShowFinishedPage),
         ];
+
+        // Elke rij is een los object (geen [ObservableProperty] van deze klasse zelf), dus de
+        // On<Property>Changed-hooks die DirtyTrackingViewModel elders gebruikt werken hier niet;
+        // in plaats daarvan luisteren we naar PropertyChanged van elke rij. De rijen zijn hierboven
+        // al met hun beginwaarde aangemaakt (rechtstreeks via de constructor-parameter, niet via de
+        // property-setter), dus dit abonneren zelf triggert nog geen PropertyChanged en dus ook
+        // geen valse dirty-melding.
+        foreach (var screen in Screens)
+        {
+            screen.PropertyChanged += (_, _) => MarkDirty();
+        }
     }
 
     /// <summary>De elf standaard wizardschermen, in de volgorde waarin Inno Setup ze toont.</summary>
