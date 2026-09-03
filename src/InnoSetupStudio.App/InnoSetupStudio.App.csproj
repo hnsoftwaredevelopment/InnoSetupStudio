@@ -6,7 +6,19 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <!-- Alleen voor het renderen van het app-icoon (Resources\AppIcon.svg) op het splashscreen:
+         het bronbestand heeft radiale/lineaire gradients en boogsegmenten die zich niet lenen
+         voor handgeschreven, rechte-lijnen Geometry zoals de UI-iconen in Icons.xaml. -->
+    <PackageReference Include="SharpVectors.Wpf" Version="1.8.5" />
     <PackageReference Include="Syncfusion.Licensing" Version="34.2.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Expliciet als Resource (in plaats van te vertrouwen op automatische SDK-globbing, die
+         .ico/.svg niet vanzelf als WPF-resource meeneemt zoals wel gebeurt met .xaml): nodig
+         zodat Window.Icon en de SvgViewbox op het splashscreen ze via een pack-URI kunnen vinden. -->
+    <Resource Include="Resources\AppIcon.ico" />
+    <Resource Include="Resources\AppIcon.svg" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -22,6 +34,10 @@
     <AssemblyName>InnoSetupStudio</AssemblyName>
     <OutputPath>$(MSBuildThisFileDirectory)..\..\Builds\$(Configuration)\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <!-- Icoon van de gebouwde .exe zelf (Verkenner, Alt+Tab, taakbalk vóór het eerste venster
+         verschijnt). Window.Icon (zie MainWindow/SplashWindow e.a.) regelt het icoon ván een
+         geopend venster daarna; dat is een los mechanisme, vandaar beide. -->
+    <ApplicationIcon>Resources\AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
 
 </Project>
