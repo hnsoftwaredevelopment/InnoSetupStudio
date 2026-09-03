@@ -304,3 +304,38 @@ in de projectmap staat, gebeurt er niets. Deze voorziening is nu gekoppeld aan d
 Bladeren-knop van de licentiepagina; toekomstige "kies een bestand"-knoppen (zoals een
 achtergrondafbeelding) kunnen dezelfde voorziening hergebruiken in plaats van elk hun eigen
 kopieerlogica te bouwen.
+
+**CodeRabbit-ronde op dezelfde PR:** vijf van de zes opmerkingen zijn tegen de actuele code
+geverifieerd en direct verwerkt: (1) `ProjectSettingsViewModel.SaveAsync` bouwde een nieuw
+`InstallerProject` op zonder `LicenseFilePath`/`DefaultDirName`/`AllowUserToChangeDir` mee te
+nemen (hetzelfde patroon als `_wizardScreens` al oploste voor de wizardschermen-selectie) —
+zonder deze fix zette het simpelweg openen en opslaan van het algemene instellingenscherm de net
+in de schermeditor gekozen licentie/installatiemap-instellingen stilzwijgend terug; opgelost door
+dezelfde bewaar-en-hernemen-aanpak als `_wizardScreens`. (2) `LicensePageEditorViewModel` las
+`LicenseFilePath` rechtstreeks met `File.ReadAllText`, ook wanneer dat pad uit een geladen
+`.issproj`-bestand komt in plaats van de eigen bladerdialoog; een UNC-pad (`\\host\share\...`) in
+een gedeeld projectbestand zou dan zonder gebruikersactie een SMB-verbinding naar die host
+opzetten — geblokkeerd met een kleine `IsUncOrDevicePath`-check vóór elke bestandstoegang. (3) de
+Bladeren-knop in de schermeditor had geen `AutomationProperties.Name` (een `ToolTip` is geen
+vervanging voor wat schermlezers gebruiken). (4) de twee decoratieve keuzerondjes in de
+licentievoorvertoning waren met `IsHitTestVisible="False"` wel muisveilig maar nog met Tab te
+focussen; `Focusable`/`IsTabStop` op `False` toegevoegd. (5) de "Bladeren"-knop in de
+installatiemap-voorvertoning stond vast op `IsEnabled="False"`; deze volgt nu
+`AllowUserToChangeDir` (met `IsHitTestVisible`/`Focusable` op `False` blijft de voorvertoning zelf
+niet-interactief), zodat de voorvertoning laat zien dat Inno Setup deze knop uitschakelt wanneer de
+gebruiker de installatiemap niet mag wijzigen.
+
+Bewust nog niet opgepakt: CodeRabbit's zesde punt dat `ProjectAssetService.Import` een absoluut pad
+teruggeeft, waardoor een `LicenseFilePath`-verwijzing na het verplaatsen van de hele projectmap naar
+een andere locatie op dezelfde schijf niet meer klopt. Projectrelatieve paden oplossen is een
+grotere aanpassing (elke lezer van zo'n pad, inclusief de latere iss-generatie in fase 5, moet dan
+tegen de actuele projectmap resolven) die beter in samenhang met die fase 5 wordt ontworpen dan er
+nu apart doorheen gefietst; dit is een openstaand punt om apart met Herbert te bespreken.
+
+Ook bewust niet toegevoegd: een geautomatiseerde regressietest voor fix (1). De testsuite dekt tot
+nu toe alleen `InnoSetupStudio.Core`; ViewModels in `InnoSetupStudio.App` (zoals
+`ProjectSettingsViewModel`) hebben nog geen enkele testdekking, en dat gat dichten vergt een eigen
+afweging (project-referentie vanuit de test-assembly naar een WPF-project, mogelijk een STA-thread
+in de testrunner) die niet in deze CodeRabbit-opruiming hoort. Handmatig geverifieerd: build (0
+warnings, 0 errors), bestaande testsuite (13/13 groen, ongewijzigd) en het opstarten van de app
+zonder crash.

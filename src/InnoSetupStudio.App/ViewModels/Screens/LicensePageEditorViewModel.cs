@@ -61,7 +61,7 @@ public sealed partial class LicensePageEditorViewModel : WizardScreenEditorViewM
 
     private static string LoadLicenseText(string path)
     {
-        if (string.IsNullOrWhiteSpace(path))
+        if (string.IsNullOrWhiteSpace(path) || IsUncOrDevicePath(path))
         {
             return LocalizationManager.Instance["ScreenEditorLicenseNoFile"];
         }
@@ -77,4 +77,11 @@ public sealed partial class LicensePageEditorViewModel : WizardScreenEditorViewM
             return LocalizationManager.Instance["ScreenEditorLicenseNoFile"];
         }
     }
+
+    // LicenseFilePath komt niet alleen uit de eigen bladerdialoog van de gebruiker, maar ook
+    // rechtstreeks uit een geladen .issproj-projectbestand. Zonder deze check zou het openen van
+    // een projectbestand met een UNC-pad (\\host\share\...) hier automatisch, zonder verdere
+    // gebruikersactie, een SMB-verbinding naar die host opzetten. Blokkeer daarom UNC- en
+    // apparaatpaden (die beginnen alle met "\\") vóór elke bestandstoegang.
+    private static bool IsUncOrDevicePath(string path) => path.StartsWith(@"\\", StringComparison.Ordinal);
 }

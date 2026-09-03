@@ -14,8 +14,8 @@
             <!-- Decoratief: dit zijn Inno Setup's eigen keuzerondjes op de echte licentiepagina,
                  geen bewerkbare instelling van dit project. De eerste optie staat hier vast op
                  "aangevinkt" om te laten zien hoe de pagina er dan uitziet. -->
-            <RadioButton Content="I accept the agreement" IsChecked="True" IsHitTestVisible="False" GroupName="LicensePreviewAccept" Foreground="Black" />
-            <RadioButton Content="I do not accept the agreement" Margin="0,4,0,0" IsHitTestVisible="False" GroupName="LicensePreviewAccept" Foreground="Black" />
+            <RadioButton Content="I accept the agreement" IsChecked="True" IsHitTestVisible="False" Focusable="False" IsTabStop="False" GroupName="LicensePreviewAccept" Foreground="Black" />
+            <RadioButton Content="I do not accept the agreement" Margin="0,4,0,0" IsHitTestVisible="False" Focusable="False" IsTabStop="False" GroupName="LicensePreviewAccept" Foreground="Black" />
         </StackPanel>
 
         <Border BorderBrush="#FFACA899" BorderThickness="1">

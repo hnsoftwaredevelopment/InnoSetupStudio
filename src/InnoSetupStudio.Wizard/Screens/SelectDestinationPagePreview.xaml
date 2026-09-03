@@ -10,8 +10,11 @@
         <TextBlock DockPanel.Dock="Top" Margin="0,4,0,20" Foreground="Black" TextWrapping="Wrap"
                    Text="{Binding InstallIntroText}" />
 
-        <!-- Decoratieve, uitgeschakelde "Bladeren"-knop: de map wordt hier alleen getoond, niet
-             bewerkt. Bewerken gebeurt in het instellingenpaneel rechts van deze voorvertoning. -->
+        <!-- "Bladeren"-knop: de map wordt hier alleen getoond, niet bewerkt (de knop is met
+             IsHitTestVisible/Focusable niet-interactief gemaakt). Bewerken gebeurt in het
+             instellingenpaneel rechts van deze voorvertoning. IsEnabled volgt AllowUserToChangeDir
+             zodat de voorvertoning laat zien dat Inno Setup deze knop uitschakelt wanneer de
+             gebruiker de installatiemap niet mag wijzigen. -->
         <Grid DockPanel.Dock="Top">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -20,7 +23,8 @@
             <Border Grid.Column="0" BorderBrush="#FFACA899" BorderThickness="1" Background="#FFF0F0F0" Margin="0,0,8,0">
                 <TextBlock Text="{Binding DisplayDirName}" Foreground="Black" Margin="6,4" TextTrimming="CharacterEllipsis" />
             </Border>
-            <Button Grid.Column="1" Content="Browse..." IsEnabled="False" Padding="10,3" />
+            <Button Grid.Column="1" Content="Browse..." IsEnabled="{Binding AllowUserToChangeDir}"
+                    IsHitTestVisible="False" Focusable="False" IsTabStop="False" Padding="10,3" />
         </Grid>
 
         <TextBlock DockPanel.Dock="Bottom" Margin="0,16,0,0" Foreground="#FF666666" FontSize="11"
