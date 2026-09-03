@@ -2,16 +2,23 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:loc="clr-namespace:InnoSetupStudio.App.Localization"
+        xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
         WindowStyle="None" ResizeMode="NoResize" WindowStartupLocation="CenterScreen"
         ShowInTaskbar="False" Topmost="True"
-        Width="420" Height="220"
+        Width="420" Height="220" Icon="/Resources/AppIcon.ico"
         Background="{DynamicResource Brush.Background}">
     <Border BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="12" Margin="1">
-        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-            <TextBlock Text="{loc:Loc AppTitle}" FontSize="24" FontWeight="Bold"
-                       HorizontalAlignment="Center" Foreground="{DynamicResource Brush.TextPrimary}" />
-            <TextBlock x:Name="VersionText" FontSize="13" Margin="0,10,0,0"
-                       HorizontalAlignment="Center" Foreground="{DynamicResource Brush.TextSecondary}" />
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <!-- Het app-icoon is een SVG met gradients en boogsegmenten (zie AppIcon.svg), dus
+                 gerenderd via SharpVectors in plaats van als handgeschreven Geometry zoals de
+                 rechte-lijnen UI-iconen in Icons.xaml. -->
+            <svgc:SvgViewbox Source="/Resources/AppIcon.svg" Width="56" Height="56" Margin="0,0,20,0" />
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="{loc:Loc AppTitle}" FontSize="24" FontWeight="Bold"
+                           Foreground="{DynamicResource Brush.TextPrimary}" />
+                <TextBlock x:Name="VersionText" FontSize="13" Margin="0,10,0,0"
+                           Foreground="{DynamicResource Brush.TextSecondary}" />
+            </StackPanel>
         </StackPanel>
     </Border>
 </Window>
