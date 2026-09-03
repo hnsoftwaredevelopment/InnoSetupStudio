@@ -17,8 +17,23 @@
             </Button>
             <Button Command="{Binding CancelCommand}" ToolTip="{Binding CancelButtonText}">
                 <StackPanel Orientation="Horizontal">
-                    <Path Data="{StaticResource Close}" Fill="{DynamicResource Brush.TextPrimary}"
-                          Stretch="Uniform" Width="14" Height="14" Margin="0,0,8,0" />
+                    <Path Fill="{DynamicResource Brush.TextPrimary}"
+                          Stretch="Uniform" Width="14" Height="14" Margin="0,0,8,0">
+                        <Path.Style>
+                            <Style TargetType="Path">
+                                <Setter Property="Data" Value="{StaticResource Close}" />
+                                <Style.Triggers>
+                                    <!-- Zelfde map-icoon als de Bladeren-knoppen hieronder: bij een
+                                         al bestaand project sluit deze knop alleen het venster
+                                         (het project blijft open), dus een kruis-icoon past dan
+                                         niet meer bij het "Openen"-label. -->
+                                    <DataTrigger Binding="{Binding IsExistingProject}" Value="True">
+                                        <Setter Property="Data" Value="{StaticResource Folder}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Path.Style>
+                    </Path>
                     <TextBlock Text="{Binding CancelButtonText}" />
                 </StackPanel>
             </Button>

@@ -50,10 +50,16 @@ public sealed partial class ProjectSettingsViewModel : ObservableObject
         // "Openen" beschrijft dat beter dan "Annuleren"; bij een nieuw, nog niet opgeslagen
         // project betekent dezelfde knop wel echt het project verwerpen, dus daar blijft
         // "Annuleren" staan.
-        CancelButtonText = string.IsNullOrWhiteSpace(projectFilePath)
-            ? LocalizationManager.Instance["ButtonCancel"]
-            : LocalizationManager.Instance["ButtonOpen"];
+        IsExistingProject = !string.IsNullOrWhiteSpace(projectFilePath);
+        CancelButtonText = IsExistingProject
+            ? LocalizationManager.Instance["ButtonOpen"]
+            : LocalizationManager.Instance["ButtonCancel"];
     }
+
+    /// <summary>True als dit venster is geopend voor een al bestaand (opgeslagen) project, false
+    /// voor een nieuw project. Bepaalt naast <see cref="CancelButtonText"/> ook welk icoon de
+    /// knop toont (map-icoon bij Openen, kruis bij Annuleren).</summary>
+    public bool IsExistingProject { get; }
 
     /// <summary>Wordt gevuld zodra <see cref="SaveCommand"/> succesvol heeft opgeslagen, zodat de
     /// aanroepende code (MainWindow) weet welk projectbestand actief is geworden.</summary>
