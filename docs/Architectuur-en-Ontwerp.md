@@ -219,3 +219,28 @@ deze wijziging vond nog een regressie (de "Openen"-knop zette het project niet m
 bijwerkingsfout van het hernoemen zonder de onderliggende logica aan te passen) en twee kleinere
 punten (Opslaan kon actief blijven staan na het leegmaken van AppName; de invoervelden waren niet
 beschermd tegen een wijziging tijdens de lopende save); alle drie gefixt vóór het mergen naar main.
+
+### 11.5 Herbruikbare dirty-tracking basisklasse (2026-09-03)
+
+De "Openen"/"Annuleren"-aanpassing uit §11.4 gold alleen voor het projectinstellingen-scherm. Op
+verzoek is hetzelfde principe nu ook toegepast op het wizardschermen-scherm, en generiek gemaakt
+voor toekomstige bewerkschermen: de nieuwe abstracte basisklasse `DirtyTrackingViewModel` houdt bij
+of de gebruiker sinds het openen daadwerkelijk iets heeft gewijzigd (`IsDirty`, met een
+`BeginInit`/`EndInit`-guard zodat het vullen van de velden bij het openen zelf niet als wijziging
+telt) en stelt op basis daarvan `CancelButtonText`/`CancelButtonIconKey` beschikbaar: "Sluiten" met
+een nieuw pijltje-icoon (`ArrowLeft` in `Icons.xaml`) zolang er niets te verliezen valt, "Annuleren"
+met het bestaande kruis zodra dat wel zo is. `ProjectSettingsViewModel` en `WizardScreensViewModel`
+erven nu allebei van deze basisklasse. `ProjectSettingsViewModel` overschrijft beide leden om zijn
+eigen, specifiekere gedrag te behouden (het gaat daar niet om de dirty-status maar om of het project
+al bestaat: "Openen" met een map-icoon versus "Annuleren" met een kruis, ongewijzigd sinds §11.4).
+`WizardScreensViewModel` gebruikt het standaardgedrag van de basisklasse: elke rij (`WizardScreenRow`)
+is een los object buiten het source-generated eigenschapssysteem van de ViewModel zelf, dus in
+plaats van de gebruikelijke `On<Property>Changed`-hook abonneert de constructor zich na het opbouwen
+van de rijen op ieders `PropertyChanged` om `MarkDirty()` aan te roepen. Beide vensters
+(`ProjectSettingsWindow.xaml`, `WizardScreensWindow.xaml`) binden de knop naast Opslaan nu via de
+bestaande `IconKeyToGeometryConverter` aan `CancelButtonIconKey`, in plaats van de eerdere
+Style/DataTrigger-opzet in het projectinstellingen-scherm. Bewuste afbakening: het Opslaan-commando
+van het wizardschermen-scherm is niet aan `IsDirty` gekoppeld (dat viel buiten het gevraagde). Build
+en de bestaande testsuite (negen tests) blijven ongewijzigd groen; net als de rest van deze twee
+schermen is dit niet los geautomatiseerd getest, maar wel handmatig geverifieerd door de app te
+starten en te stoppen.

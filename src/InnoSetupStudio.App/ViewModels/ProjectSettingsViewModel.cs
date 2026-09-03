@@ -13,7 +13,7 @@ namespace InnoSetupStudio.App.ViewModels;
 /// bestandslocaties van één <see cref="InstallerProject"/>. Bewaart naar een .issproj-bestand
 /// via <see cref="IInstallerProjectService"/>.
 /// </summary>
-public sealed partial class ProjectSettingsViewModel : ObservableObject
+public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
 {
     private readonly IInstallerProjectService _projectService;
 
@@ -23,19 +23,10 @@ public sealed partial class ProjectSettingsViewModel : ObservableObject
     // gekozen wizardschermen-selectie stilzwijgend terugzetten naar de standaardwaarden.
     private readonly WizardScreenSelection _wizardScreens;
 
-    // Zolang dit venster de velden nog vult vanuit het meegegeven project (in de constructor) mag
-    // dat niet als een wijziging door de gebruiker tellen: anders staat Opslaan meteen aan voor
-    // een net geopend, ongewijzigd project.
-    private readonly bool _isInitializing;
-
-    // True zodra de gebruiker daadwerkelijk iets heeft aangepast sinds het openen van dit venster.
-    // Opslaan is alleen zinvol (en dus alleen enabled) als hier iets te bewaren valt.
-    private bool _isDirty;
-
     public ProjectSettingsViewModel(InstallerProject project, IInstallerProjectService projectService, string? projectFilePath)
     {
         _projectService = projectService;
-        _isInitializing = true;
+        BeginInit();
         _projectFilePath = projectFilePath;
         _wizardScreens = project.WizardScreens;
 
@@ -50,23 +41,30 @@ public sealed partial class ProjectSettingsViewModel : ObservableObject
         CustomImagesPath = project.CustomImagesPath;
         SetupIconFile = project.SetupIconFile;
 
-        _isInitializing = false;
+        EndInit();
 
         // Bij een al bestaand (opgeslagen) project doet Annuleren feitelijk niets anders dan het
         // venster sluiten zonder de instellingen te wijzigen — het project blijft gewoon actief.
         // "Openen" beschrijft dat beter dan "Annuleren"; bij een nieuw, nog niet opgeslagen
         // project betekent dezelfde knop wel echt het project verwerpen, dus daar blijft
-        // "Annuleren" staan.
+        // "Annuleren" staan. In tegenstelling tot de standaard van DirtyTrackingViewModel bepaalt
+        // hier dus niet de dirty-status maar het bestaan van het project wat de knop doet, vandaar
+        // de overrides van CancelButtonText/CancelButtonIconKey hieronder.
         IsExistingProject = !string.IsNullOrWhiteSpace(projectFilePath);
-        CancelButtonText = IsExistingProject
-            ? LocalizationManager.Instance["ButtonOpen"]
-            : LocalizationManager.Instance["ButtonCancel"];
     }
 
     /// <summary>True als dit venster is geopend voor een al bestaand (opgeslagen) project, false
-    /// voor een nieuw project. Bepaalt naast <see cref="CancelButtonText"/> ook welk icoon de
-    /// knop toont (map-icoon bij Openen, kruis bij Annuleren).</summary>
+    /// voor een nieuw project. Bepaalt welk label/icoon de knop naast Opslaan toont (zie
+    /// <see cref="CancelButtonText"/>/<see cref="CancelButtonIconKey"/>).</summary>
     public bool IsExistingProject { get; }
+
+    /// <inheritdoc/>
+    public override string CancelButtonText => IsExistingProject
+        ? LocalizationManager.Instance["ButtonOpen"]
+        : LocalizationManager.Instance["ButtonCancel"];
+
+    /// <inheritdoc/>
+    public override string CancelButtonIconKey => IsExistingProject ? "Folder" : "Close";
 
     /// <summary>Wordt gevuld zodra <see cref="SaveCommand"/> succesvol heeft opgeslagen, zodat de
     /// aanroepende code (MainWindow) weet welk projectbestand actief is geworden.</summary>
@@ -79,11 +77,6 @@ public sealed partial class ProjectSettingsViewModel : ObservableObject
 
     /// <summary>Vuurt wanneer het venster moet sluiten: true bij Opslaan, false bij Annuleren.</summary>
     public event EventHandler<bool>? RequestClose;
-
-    /// <summary>Label voor de knop naast Opslaan: "Openen" bij een al bestaand project (de knop
-    /// sluit dan alleen het venster, het project blijft actief), "Annuleren" bij een nieuw,
-    /// nog niet opgeslagen project (de knop verwerpt het dan echt).</summary>
-    public string CancelButtonText { get; }
 
     [ObservableProperty]
     private string? _projectFilePath;
@@ -164,23 +157,23 @@ public sealed partial class ProjectSettingsViewModel : ObservableObject
     /// tijdens het opslaan.</summary>
     public bool CanEdit => !IsSaving;
 
-    private bool CanSave() => !IsSaving && _isDirty && !string.IsNullOrWhiteSpace(AppName);
+    private bool CanSave() => !IsSaving && IsDirty && !string.IsNullOrWhiteSpace(AppName);
 
-    // Eén gedeelde hook voor alle bewerkbare velden: zet de dirty-vlag zodra de gebruiker
-    // daadwerkelijk iets wijzigt (dus niet tijdens het vullen van de velden in de constructor) en
-    // laat Opslaan meteen herevalueren of het al enabled mag worden.
-    private void MarkDirty()
+    // Eén gedeelde hook voor alle bewerkbare velden: gebruikt via de On<Property>Changed-hooks
+    // hieronder. Overschrijft DirtyTrackingViewModel.MarkDirty om ook SaveCommand te laten
+    // herevalueren of het al enabled mag worden.
+    protected override void MarkDirty()
     {
-        if (_isInitializing)
+        if (IsInitializing)
         {
             return;
         }
 
-        // Altijd herevalueren, ook als _isDirty al true was: CanSave() controleert behalve de
+        // Altijd herevalueren, ook als IsDirty al true was: CanSave() controleert behalve de
         // dirty-vlag ook AppName, dus als de gebruiker AppName leegmaakt nadat een ander veld al
         // dirty maakte, moet Opslaan alsnog uitschakelen. Met een vroege return alleen op basis
-        // van _isDirty zou die herevaluatie gemist worden.
-        _isDirty = true;
+        // van IsDirty zou die herevaluatie gemist worden.
+        base.MarkDirty();
         SaveCommand.NotifyCanExecuteChanged();
     }
 
@@ -260,7 +253,7 @@ public sealed partial class ProjectSettingsViewModel : ObservableObject
         ProjectFilePath = targetPath;
         SavedProjectFilePath = targetPath;
         SavedProject = project;
-        _isDirty = false;
+        IsDirty = false;
         RequestClose?.Invoke(this, true);
     }
 
