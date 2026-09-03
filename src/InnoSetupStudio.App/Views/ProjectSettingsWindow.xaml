@@ -39,7 +39,7 @@
             </Button>
         </StackPanel>
 
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" IsEnabled="{Binding CanEdit}">
             <StackPanel>
                 <TextBlock Text="{loc:Loc SectionGeneral}" FontSize="15" FontWeight="Bold" Margin="0,0,0,12" />
 

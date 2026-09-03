@@ -142,18 +142,37 @@ public sealed partial class ProjectSettingsViewModel : ObservableObject
         }
     }
 
-    private bool CanSave() => _isDirty && !string.IsNullOrWhiteSpace(AppName);
+    // True zolang SaveAsync bezig is. De velden worden hiermee uitgeschakeld (zie CanEdit) zodat
+    // een wijziging tijdens de lopende await niet stilzwijgend verloren gaat: zonder deze guard
+    // zou een edit tijdens het opslaan de dirty-vlag weer op true zetten, waarna SaveAsync die na
+    // een geslaagde save alsnog terug op false zet en de wijziging zo verstopt.
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CancelCommand))]
+    [ObservableProperty]
+    private bool _isSaving;
+
+    partial void OnIsSavingChanged(bool value) => OnPropertyChanged(nameof(CanEdit));
+
+    /// <summary>Bepaalt of de invoervelden en de Openen/Annuleren-knop bewerkbaar zijn: uit
+    /// tijdens het opslaan.</summary>
+    public bool CanEdit => !IsSaving;
+
+    private bool CanSave() => !IsSaving && _isDirty && !string.IsNullOrWhiteSpace(AppName);
 
     // Eén gedeelde hook voor alle bewerkbare velden: zet de dirty-vlag zodra de gebruiker
     // daadwerkelijk iets wijzigt (dus niet tijdens het vullen van de velden in de constructor) en
     // laat Opslaan meteen herevalueren of het al enabled mag worden.
     private void MarkDirty()
     {
-        if (_isInitializing || _isDirty)
+        if (_isInitializing)
         {
             return;
         }
 
+        // Altijd herevalueren, ook als _isDirty al true was: CanSave() controleert behalve de
+        // dirty-vlag ook AppName, dus als de gebruiker AppName leegmaakt nadat een ander veld al
+        // dirty maakte, moet Opslaan alsnog uitschakelen. Met een vroege return alleen op basis
+        // van _isDirty zou die herevaluatie gemist worden.
         _isDirty = true;
         SaveCommand.NotifyCanExecuteChanged();
     }
@@ -210,6 +229,7 @@ public sealed partial class ProjectSettingsViewModel : ObservableObject
             SetupIconFile = SetupIconFile,
         };
 
+        IsSaving = true;
         try
         {
             await _projectService.SaveAsync(targetPath, project);
@@ -220,6 +240,10 @@ public sealed partial class ProjectSettingsViewModel : ObservableObject
             // te verliezen: het venster blijft open zodat de gebruiker het opnieuw kan proberen.
             MessageBox.Show(ex.Message, "Inno Setup Studio", MessageBoxButton.OK, MessageBoxImage.Error);
             return;
+        }
+        finally
+        {
+            IsSaving = false;
         }
 
         // Bij een nieuw project (nog geen ProjectFilePath) onthouden welk bestand net via de
@@ -232,7 +256,9 @@ public sealed partial class ProjectSettingsViewModel : ObservableObject
         RequestClose?.Invoke(this, true);
     }
 
-    [RelayCommand]
+    private bool CanCancel() => !IsSaving;
+
+    [RelayCommand(CanExecute = nameof(CanCancel))]
     private void Cancel() => RequestClose?.Invoke(this, false);
 
     private static string? BrowseForFolder(string currentPath)
