@@ -339,3 +339,63 @@ afweging (project-referentie vanuit de test-assembly naar een WPF-project, mogel
 in de testrunner) die niet in deze CodeRabbit-opruiming hoort. Handmatig geverifieerd: build (0
 warnings, 0 errors), bestaande testsuite (13/13 groen, ongewijzigd) en het opstarten van de app
 zonder crash.
+
+### 11.7 Fase 4: wizardafbeeldingen, WizardImageFile/WizardSmallImageFile (2026-09-03)
+
+Herbert merkte op dat een echte Inno Setup-installer op de Welkomstpagina een afbeelding over de
+volledige hoogte links toont, wat in de eerste versie van `WelcomePagePreview.xaml` bewust was
+weggelaten. Voor dit gat sloten, is uitgezocht wat de twee voorbeeldbestanden in
+`C:\Program Files\Inno Setup 7` (`WizClassicImage.bmp`/`WizClassicImage-IS.bmp` en de kleine
+variant) precies betekenen: niet iets automatisch geselecteerd op DPI, donkere modus of taal (in
+de compiler-broncode van `jrsoftware/issrc` op GitHub zit daar geen logica voor), maar gewoon twee
+kant-en-klare varianten van dezelfde afbeelding op verschillende kleurdiepte (4-bit/16 kleuren
+versus 8-bit/256 kleuren bij exact dezelfde 164×314- en 55×55-pixelafmetingen). Zelfs Inno Setup's
+eigen installer (`setup.iss`) gebruikt geen van beide; de echte ingebouwde standaardafbeelding zit
+als resource in de compiler zelf. Herbert heeft zwart/wit-versies van beide (`-IS`, 256 kleuren op
+zijn keuze) klaargezet in zijn Obsidian-map; deze zijn overgenomen als meegeleverde
+standaardafbeelding.
+
+Nieuwe velden `WizardImageFile`/`WizardSmallImageFile` op `InstallerProject` (Core), zelfde
+leeg-is-nog-niet-aangepast-gedrag als `LicenseFilePath`. De twee standaardafbeeldingen
+(`WizardImage-Default.bmp`/`WizardSmallImage-Default.bmp`) zijn als WPF `Resource` ingebed in
+`InnoSetupStudio.Wizard/Assets`, zodat `InnoSetupStudio.App` (die al naar dat project verwijst
+voor de preview-UserControls) ze via een `pack://application:,,,/...`-URI kan laden zonder dat
+`InnoSetupStudio.Wizard` iets van `InnoSetupStudio.App` hoeft te weten — dezelfde eenrichtings-
+afhankelijkheid die de rest van de schermeditor-architectuur al gebruikt. Nieuwe
+`WizardImageResolver` (App/Services) vertaalt een projectpad (of leeg) naar een bindbare
+`ImageSource`, met dezelfde val-terug-op-de-standaardtekst-aanpak als
+`LicensePageEditorViewModel.LoadLicenseText`: een ontbrekend of onleesbaar bestand crasht de
+schermeditor niet, maar toont de standaardafbeelding.
+
+Omdat beide afbeeldingen projectbrede instellingen zijn (niet gebonden aan één scherm), staan ze
+nu als alleen-lezen `WizardImage`/`WizardSmallImage`-eigenschappen op de basisklasse
+`WizardScreenEditorViewModel` in plaats van op een specifiek scherm: `WizardEditorViewModel`
+bepaalt ze één keer bij het openen van de schermeditor en geeft ze aan elk scherm door, zodat een
+toekomstig scherm dat ze nodig heeft ze automatisch al beschikbaar heeft. `WelcomePagePreview.xaml`
+is herschikt van een gecentreerde `StackPanel` naar een `DockPanel` met de afbeelding links
+(Width="150" bij 290px hoogte, ter benadering van de 164:314-verhouding) en de tekst ernaast.
+`LicensePagePreview.xaml` en `SelectDestinationPagePreview.xaml` kregen een nieuwe kopregel:
+titel/omschrijving links, de kleine afbeelding (55×55) rechtsboven, met een dunne scheidingslijn
+eronder — zo ziet elke niet-Welkomst/Voltooid-pagina er in een echte installer uit.
+
+De twee bestanden zijn bewerkbaar gemaakt in het projectinstellingen-scherm (niet in de
+schermeditor zelf, want het zijn project-brede instellingen zoals `SetupIconFile`, niet
+scherminhoud): `ProjectSettingsViewModel` kreeg `WizardImageFile`/`WizardSmallImageFile` plus
+`BrowseWizardImageCommand`/`BrowseWizardSmallImageCommand`, die net als de licentiepagina
+`IProjectAssetService` gebruiken om een extern gekozen bestand naar de projectmap te kopiëren —
+precies het hergebruik dat bij het bouwen van die service al was voorzien. `SaveAsync` is
+uitgebreid met de twee nieuwe velden (rechtstreeks vanuit de bindbare eigenschappen, niet via het
+bewaar-en-hernemen-patroon van `_wizardScreens`/`_licenseFilePath`, omdat deze velden wél in dit
+venster zelf bewerkt worden). Bij het toevoegen van de twee nieuwe Bladeren-knoppen in
+`ProjectSettingsWindow.xaml` is meteen `AutomationProperties.Name` meegenomen (de CodeRabbit-les
+van de vorige PR), en de bestaande, sinds langer aanwezige Installer-icon-knop in hetzelfde venster
+kreeg die toevoeging als kleine bijvangst ook mee.
+
+Build (0 warnings, 0 errors), bestaande testsuite (13/13 groen, ongewijzigd — geen nieuwe Core-
+functionaliteit met eigen testbehoefte) en het opstarten van de app zonder crash zijn geverifieerd,
+plus een directe controle dat de twee standaardafbeeldingen daadwerkelijk als
+`assets/wizardimage-default.bmp`/`assets/wizardsmallimage-default.bmp` in de gecompileerde
+`InnoSetupStudio.Wizard.dll` terechtkomen (via `ResourceReader` op de manifest-resources), dus
+precies op het pad dat de pack-URI in `WizardImageResolver` verwacht. De daadwerkelijke visuele
+weergave in de schermeditor is, zoals gebruikelijk bij dit soort WPF-schermen in dit project, aan
+Herbert om in de draaiende app te bevestigen.

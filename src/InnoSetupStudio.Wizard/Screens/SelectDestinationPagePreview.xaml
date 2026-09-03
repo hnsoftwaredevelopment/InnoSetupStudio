@@ -6,9 +6,23 @@
              mc:Ignorable="d" d:DesignWidth="455" d:DesignHeight="290">
     <!-- Zelfde vaste wit/zwart-kleurstelling als WelcomePagePreview, zie de toelichting daar. -->
     <DockPanel Background="White" Margin="20,16,20,20">
-        <TextBlock DockPanel.Dock="Top" Text="Select Destination Location" FontWeight="Bold" FontSize="13" Foreground="Black" />
-        <TextBlock DockPanel.Dock="Top" Margin="0,4,0,20" Foreground="Black" TextWrapping="Wrap"
-                   Text="{Binding InstallIntroText}" />
+        <!-- Kop met titel/omschrijving links en Inno Setup's kleine wizardafbeelding (55x55,
+             WizardSmallImageFile) rechtsboven, met een dunne scheidingslijn eronder — zo ziet
+             elke niet-Welkomst/Voltooid-pagina er in een echte Inno Setup-installer uit. -->
+        <Grid DockPanel.Dock="Top" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <TextBlock Text="Select Destination Location" FontWeight="Bold" FontSize="13" Foreground="Black" />
+                <TextBlock Margin="0,4,0,0" Foreground="Black" TextWrapping="Wrap"
+                           Text="{Binding InstallIntroText}" />
+            </StackPanel>
+            <Image Grid.Column="1" Source="{Binding WizardSmallImage}" Stretch="Uniform"
+                   Width="55" Height="55" Margin="12,0,0,0" VerticalAlignment="Top" />
+        </Grid>
+        <Border DockPanel.Dock="Top" Height="1" Background="#FFACA899" Margin="0,0,0,20" />
 
         <!-- "Bladeren"-knop: de map wordt hier alleen getoond, niet bewerkt (de knop is met
              IsHitTestVisible/Focusable niet-interactief gemaakt). Bewerken gebeurt in het

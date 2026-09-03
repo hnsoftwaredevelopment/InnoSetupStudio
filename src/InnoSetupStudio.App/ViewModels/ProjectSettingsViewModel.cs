@@ -16,6 +16,7 @@ namespace InnoSetupStudio.App.ViewModels;
 public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
 {
     private readonly IInstallerProjectService _projectService;
+    private readonly IProjectAssetService _assetService;
 
     // Bewaard vanuit het project waarmee dit venster is geopend, zodat SaveAsync deze waarden kan
     // meenemen in het opgeslagen project: dit scherm toont en wijzigt alleen de algemene
@@ -27,9 +28,10 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
     private readonly string _defaultDirName;
     private readonly bool _allowUserToChangeDir;
 
-    public ProjectSettingsViewModel(InstallerProject project, IInstallerProjectService projectService, string? projectFilePath)
+    public ProjectSettingsViewModel(InstallerProject project, IInstallerProjectService projectService, string? projectFilePath, IProjectAssetService assetService)
     {
         _projectService = projectService;
+        _assetService = assetService;
         BeginInit();
         _projectFilePath = projectFilePath;
         _wizardScreens = project.WizardScreens;
@@ -47,6 +49,8 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
         OutputPath = project.OutputPath;
         CustomImagesPath = project.CustomImagesPath;
         SetupIconFile = project.SetupIconFile;
+        WizardImageFile = project.WizardImageFile;
+        WizardSmallImageFile = project.WizardSmallImageFile;
 
         EndInit();
 
@@ -121,6 +125,12 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
     [ObservableProperty]
     private string _setupIconFile = string.Empty;
 
+    [ObservableProperty]
+    private string _wizardImageFile = string.Empty;
+
+    [ObservableProperty]
+    private string _wizardSmallImageFile = string.Empty;
+
     [RelayCommand]
     private void BrowseSourceFiles() => SourceFilesPath = BrowseForFolder(SourceFilesPath) ?? SourceFilesPath;
 
@@ -147,6 +157,31 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
         {
             SetupIconFile = dialog.FileName;
         }
+    }
+
+    [RelayCommand]
+    private void BrowseWizardImage() => WizardImageFile = BrowseForImage(WizardImageFile);
+
+    [RelayCommand]
+    private void BrowseWizardSmallImage() => WizardSmallImageFile = BrowseForImage(WizardSmallImageFile);
+
+    // Kopieert de gekozen afbeelding net als bij het licentiebestand naar de projectmap zodra die
+    // van elders komt (zie IProjectAssetService), zodat het project verplaatsbaar blijft. Bij een
+    // nog niet opgeslagen project (ProjectFilePath leeg) geeft dit ongewijzigd het gekozen pad
+    // terug.
+    private string BrowseForImage(string currentPath)
+    {
+        var dialog = new OpenFileDialog
+        {
+            Filter = LocalizationManager.Instance["DialogFilterImageFiles"],
+        };
+
+        if (!string.IsNullOrWhiteSpace(currentPath))
+        {
+            dialog.InitialDirectory = Path.GetDirectoryName(currentPath);
+        }
+
+        return dialog.ShowDialog() == true ? _assetService.Import(ProjectFilePath, dialog.FileName) : currentPath;
     }
 
     // True zolang SaveAsync bezig is. De velden worden hiermee uitgeschakeld (zie CanEdit) zodat
@@ -202,6 +237,10 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
 
     partial void OnSetupIconFileChanged(string value) => MarkDirty();
 
+    partial void OnWizardImageFileChanged(string value) => MarkDirty();
+
+    partial void OnWizardSmallImageFileChanged(string value) => MarkDirty();
+
     [RelayCommand(CanExecute = nameof(CanSave))]
     private async Task SaveAsync()
     {
@@ -234,6 +273,8 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
             OutputPath = OutputPath,
             CustomImagesPath = CustomImagesPath,
             SetupIconFile = SetupIconFile,
+            WizardImageFile = WizardImageFile,
+            WizardSmallImageFile = WizardSmallImageFile,
             WizardScreens = _wizardScreens,
             LicenseFilePath = _licenseFilePath,
             DefaultDirName = _defaultDirName,

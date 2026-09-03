@@ -154,7 +154,40 @@
                     <TextBlock x:Name="SetupIconFileLabel" Grid.Column="0" Text="{loc:Loc LabelSetupIconFile}" VerticalAlignment="Center" />
                     <TextBox Grid.Column="1" Text="{Binding SetupIconFile, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0"
                              AutomationProperties.LabeledBy="{Binding ElementName=SetupIconFileLabel}" />
-                    <Button Grid.Column="2" Command="{Binding BrowseIconCommand}" ToolTip="{loc:Loc ButtonBrowse}">
+                    <Button Grid.Column="2" Command="{Binding BrowseIconCommand}" ToolTip="{loc:Loc ButtonBrowse}"
+                            AutomationProperties.Name="{loc:Loc ButtonBrowse}">
+                        <Path Data="{StaticResource Folder}" Fill="{DynamicResource Brush.TextPrimary}"
+                              Stretch="Uniform" Width="16" Height="16" />
+                    </Button>
+                </Grid>
+
+                <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="WizardImageFileLabel" Grid.Column="0" Text="{loc:Loc LabelWizardImageFile}" VerticalAlignment="Center" />
+                    <TextBox Grid.Column="1" Text="{Binding WizardImageFile, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0"
+                             AutomationProperties.LabeledBy="{Binding ElementName=WizardImageFileLabel}" />
+                    <Button Grid.Column="2" Command="{Binding BrowseWizardImageCommand}" ToolTip="{loc:Loc ButtonBrowse}"
+                            AutomationProperties.Name="{loc:Loc ButtonBrowse}">
+                        <Path Data="{StaticResource Folder}" Fill="{DynamicResource Brush.TextPrimary}"
+                              Stretch="Uniform" Width="16" Height="16" />
+                    </Button>
+                </Grid>
+
+                <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="WizardSmallImageFileLabel" Grid.Column="0" Text="{loc:Loc LabelWizardSmallImageFile}" VerticalAlignment="Center" />
+                    <TextBox Grid.Column="1" Text="{Binding WizardSmallImageFile, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0"
+                             AutomationProperties.LabeledBy="{Binding ElementName=WizardSmallImageFileLabel}" />
+                    <Button Grid.Column="2" Command="{Binding BrowseWizardSmallImageCommand}" ToolTip="{loc:Loc ButtonBrowse}"
+                            AutomationProperties.Name="{loc:Loc ButtonBrowse}">
                         <Path Data="{StaticResource Folder}" Fill="{DynamicResource Brush.TextPrimary}"
                               Stretch="Uniform" Width="16" Height="16" />
                     </Button>
