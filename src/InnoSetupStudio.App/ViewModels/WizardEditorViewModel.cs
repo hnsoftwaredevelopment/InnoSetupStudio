@@ -17,7 +17,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
 {
     private readonly List<WizardScreenEditorViewModel> _screens;
 
-    public WizardEditorViewModel(InstallerProject project)
+    public WizardEditorViewModel(InstallerProject project, string? projectFilePath, IProjectAssetService assetService)
     {
         BeginInit();
 
@@ -29,7 +29,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
 
         if (project.WizardScreens.ShowLicensePage)
         {
-            _screens.Add(new LicensePageEditorViewModel(project.LicenseFilePath));
+            _screens.Add(new LicensePageEditorViewModel(project.LicenseFilePath, projectFilePath, assetService));
         }
 
         if (project.WizardScreens.ShowSelectDestinationPage)

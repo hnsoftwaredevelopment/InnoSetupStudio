@@ -13,6 +13,7 @@ namespace InnoSetupStudio.App;
 public partial class MainWindow : Window
 {
     private readonly IInstallerProjectService _projectService = new JsonInstallerProjectService();
+    private readonly IProjectAssetService _assetService = new ProjectAssetService();
 
     private static readonly (string CultureName, string DisplayName)[] Languages =
     [
@@ -148,7 +149,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var viewModel = new WizardEditorViewModel(_activeProject);
+        var viewModel = new WizardEditorViewModel(_activeProject, _activeProjectFilePath, _assetService);
         var window = new WizardEditorWindow(viewModel) { Owner = this };
 
         if (window.ShowDialog() != true)

@@ -290,3 +290,17 @@ rest van de schermeditor is dit niet los geautomatiseerd getest, wel handmatig g
 de app te starten, te bevestigen dat hij reageert, en weer te stoppen — de daadwerkelijke UI-flow
 (schermen aan/uit zetten, bewerken, Opslaan/Sluiten) is aan Herbert om in de draaiende app te
 testen, zoals gebruikelijk bij dit soort WPF-schermen in dit project.
+
+**Later toegevoegd aan dezelfde PR:** Herbert's uiteindelijke doel is dat bewerkbare plekken in de
+voorvertoning zelf zichtbaar worden (een potlood-icoon, rechtermuisknop-menu erop, bijvoorbeeld om
+een achtergrondafbeelding te kiezen). Dat rechtsklik-interactiepatroon zelf komt als aparte feature
+zodra er meer schermen zijn om het op te beproeven, maar één bouwsteen die daar los van staat en nu
+al nuttig is, is meteen meegenomen: `IProjectAssetService`/`ProjectAssetService` (Core, vier nieuwe
+tests) kopieert een door de gebruiker gekozen bestand naar een vaste `Assets`-submap naast het
+projectbestand zodra dat bestand van buiten de projectmap komt, zodat een project zelf verplaatsbaar
+blijft (een verwijzing naar een bestand ergens anders op de oorspronkelijke schijf zou bij het
+verplaatsen van de projectmap stukgaan). Bij een nog niet opgeslagen project, of een bestand dat al
+in de projectmap staat, gebeurt er niets. Deze voorziening is nu gekoppeld aan de bestaande
+Bladeren-knop van de licentiepagina; toekomstige "kies een bestand"-knoppen (zoals een
+achtergrondafbeelding) kunnen dezelfde voorziening hergebruiken in plaats van elk hun eigen
+kopieerlogica te bouwen.

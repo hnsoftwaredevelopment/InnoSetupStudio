@@ -2,6 +2,7 @@ using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using InnoSetupStudio.App.Localization;
+using InnoSetupStudio.Core.Project;
 using Microsoft.Win32;
 
 namespace InnoSetupStudio.App.ViewModels.Screens;
@@ -15,9 +16,14 @@ namespace InnoSetupStudio.App.ViewModels.Screens;
 /// </summary>
 public sealed partial class LicensePageEditorViewModel : WizardScreenEditorViewModel
 {
-    public LicensePageEditorViewModel(string licenseFilePath)
+    private readonly string? _projectFilePath;
+    private readonly IProjectAssetService _assetService;
+
+    public LicensePageEditorViewModel(string licenseFilePath, string? projectFilePath, IProjectAssetService assetService)
         : base("ShowLicensePage", LocalizationManager.Instance["WizardScreenLicense"], "Document")
     {
+        _projectFilePath = projectFilePath;
+        _assetService = assetService;
         _licenseFilePath = licenseFilePath;
         _licenseText = LoadLicenseText(licenseFilePath);
     }
@@ -45,7 +51,11 @@ public sealed partial class LicensePageEditorViewModel : WizardScreenEditorViewM
 
         if (dialog.ShowDialog() == true)
         {
-            LicenseFilePath = dialog.FileName;
+            // Kopieert het gekozen bestand naar de projectmap zodra het van elders komt, zodat
+            // het project zelf verplaatsbaar blijft (zie IProjectAssetService). Bij een nog niet
+            // opgeslagen project (_projectFilePath leeg) geeft dit ongewijzigd het gekozen pad
+            // terug: er is dan nog geen projectmap om naartoe te kopiëren.
+            LicenseFilePath = _assetService.Import(_projectFilePath, dialog.FileName);
         }
     }
 
