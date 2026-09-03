@@ -1,0 +1,22 @@
+<UserControl x:Class="InnoSetupStudio.Wizard.Screens.WelcomePagePreview"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" d:DesignWidth="455" d:DesignHeight="290">
+    <!--
+        Nabootsing van Inno Setup's Welkomstpagina. Bewust met vaste, niet-thema-afhankelijke
+        kleuren (wit/zwart): Inno Setup's eigen wizard-stijl is niet gekoppeld aan het thema van
+        Inno Setup Studio zelf, dus deze voorvertoning moet er ook zo uitzien, ongeacht welk
+        Inno Setup Studio-thema de gebruiker net heeft gekozen. Zie ScreenEditorPreviewDisclaimer
+        in de vertalingen voor de bijbehorende toelichting in het venster zelf.
+    -->
+    <Grid Background="White">
+        <StackPanel Margin="40,32,32,32" VerticalAlignment="Center">
+            <TextBlock Text="{Binding WelcomeTitle}" FontSize="17" FontWeight="Bold"
+                       TextWrapping="Wrap" Foreground="Black" />
+            <TextBlock Text="{Binding WelcomeBody}" Margin="0,18,0,0"
+                       TextWrapping="Wrap" Foreground="Black" LineHeight="20" />
+        </StackPanel>
+    </Grid>
+</UserControl>

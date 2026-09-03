@@ -41,6 +41,27 @@ public sealed class InstallerProject
     /// <summary>Welke standaard wizardschermen deze installer toont (fase 3).</summary>
     public WizardScreenSelection WizardScreens { get; set; } = new();
 
+    /// <summary>
+    /// Pad naar het licentiebestand (.txt of .rtf) dat op de licentiepagina wordt getoond, alleen
+    /// relevant zolang <see cref="WizardScreenSelection.ShowLicensePage"/> aan staat. Leeg totdat
+    /// de gebruiker in de schermeditor (fase 4) een bestand kiest.
+    /// </summary>
+    public string LicenseFilePath { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Vaste installatiemap die op de bestemmingspagina wordt voorgesteld, in Inno Setup's eigen
+    /// constanten-notatie (bijvoorbeeld <c>{autopf}\MijnApp</c>). Leeg betekent: de schermeditor
+    /// en generator vallen terug op <c>{autopf}\AppName</c> op basis van <see cref="AppName"/>.
+    /// </summary>
+    public string DefaultDirName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Mag de gebruiker op de bestemmingspagina een andere map kiezen dan het voorstel, of ligt
+    /// die vast. Komt overeen met Inno Setup's <c>DisableDirPage</c>-richtlijn (omgekeerd: hier
+    /// betekent <see langword="true"/> dat de pagina bewerkbaar is, wat de standaard is).
+    /// </summary>
+    public bool AllowUserToChangeDir { get; set; } = true;
+
     /// <summary>Maakt een nieuw, leeg project met een vers gegenereerd AppId.</summary>
     public static InstallerProject CreateNew() => new()
     {

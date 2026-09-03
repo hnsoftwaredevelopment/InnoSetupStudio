@@ -1,0 +1,34 @@
+<UserControl x:Class="InnoSetupStudio.Wizard.Screens.SelectDestinationPagePreview"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" d:DesignWidth="455" d:DesignHeight="290">
+    <!-- Zelfde vaste wit/zwart-kleurstelling als WelcomePagePreview, zie de toelichting daar. -->
+    <DockPanel Background="White" Margin="20,16,20,20">
+        <TextBlock DockPanel.Dock="Top" Text="Select Destination Location" FontWeight="Bold" FontSize="13" Foreground="Black" />
+        <TextBlock DockPanel.Dock="Top" Margin="0,4,0,20" Foreground="Black" TextWrapping="Wrap"
+                   Text="{Binding InstallIntroText}" />
+
+        <!-- "Bladeren"-knop: de map wordt hier alleen getoond, niet bewerkt (de knop is met
+             IsHitTestVisible/Focusable niet-interactief gemaakt). Bewerken gebeurt in het
+             instellingenpaneel rechts van deze voorvertoning. IsEnabled volgt AllowUserToChangeDir
+             zodat de voorvertoning laat zien dat Inno Setup deze knop uitschakelt wanneer de
+             gebruiker de installatiemap niet mag wijzigen. -->
+        <Grid DockPanel.Dock="Top">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" BorderBrush="#FFACA899" BorderThickness="1" Background="#FFF0F0F0" Margin="0,0,8,0">
+                <TextBlock Text="{Binding DisplayDirName}" Foreground="Black" Margin="6,4" TextTrimming="CharacterEllipsis" />
+            </Border>
+            <Button Grid.Column="1" Content="Browse..." IsEnabled="{Binding AllowUserToChangeDir}"
+                    IsHitTestVisible="False" Focusable="False" IsTabStop="False" Padding="10,3" />
+        </Grid>
+
+        <TextBlock DockPanel.Dock="Bottom" Margin="0,16,0,0" Foreground="#FF666666" FontSize="11"
+                    TextWrapping="Wrap" Visibility="{Binding ChangeDirHintVisibility}"
+                    Text="Setup does not allow the user to change this folder during installation." />
+    </DockPanel>
+</UserControl>

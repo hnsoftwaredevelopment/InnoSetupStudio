@@ -244,3 +244,98 @@ van het wizardschermen-scherm is niet aan `IsDirty` gekoppeld (dat viel buiten h
 en de bestaande testsuite (negen tests) blijven ongewijzigd groen; net als de rest van deze twee
 schermen is dit niet los geautomatiseerd getest, maar wel handmatig geverifieerd door de app te
 starten en te stoppen.
+
+### 11.6 Fase 4: schermeditor, eerste PR (2026-09-03)
+
+Eerste stap van de schermeditor: de inhoud van losse wizardschermen bewerken, in plaats van ze
+zoals in fase 3 alleen aan of uit te zetten. Elf standaardschermen in één keer bouwen werd een te
+grote PR, dus deze PR bevat de herbruikbare basis (linkerlijst, voorvertoning, instellingenpaneel)
+plus drie representatieve schermen om dat patroon te bewijzen: Welkom (geen instellingen, puur
+voorvertoning op basis van naam/versie), Licentieovereenkomst (bestand kiezen, voorvertoning toont
+de inhoud) en Installatiemap kiezen (standaardmap en of de gebruiker die mag wijzigen). De overige
+acht standaardschermen volgen in latere PR's van deze fase; een aangevinkt scherm zonder editor
+verschijnt nog niet in de schermeditor, met een toelichting in het venster als geen van de drie
+al-ondersteunde schermen aan staat.
+
+Nieuw project `InnoSetupStudio.Wizard` (WPF class library, verwijst alleen naar
+`InnoSetupStudio.Core`), zoals bij de kickoff voorgesteld: de voorvertoning-UserControls staan
+hier apart van `InnoSetupStudio.App`, die er zelf naar verwijst. Deze UserControls kennen de
+ViewModel-klassen niet rechtstreeks (dat zou een cirkelverwijzing met App geven); de binding werkt
+via de DataContext die WPF automatisch doorgeeft aan een DataTemplate, dezelfde reden waarom het
+hele project overal `DynamicResource` in plaats van `StaticResource` gebruikt voor thema-brushes.
+Belangrijk ontwerpbesluit: de voorvertoning zelf gebruikt bewust vaste, niet-thema-afhankelijke
+kleuren (wit/zwart, zoals Inno Setup's eigen standaard wizardstijl) in plaats van de brushes van
+het actieve Inno Setup Studio-thema — Inno Setup's installer-UI is zelf niet geskind door het
+thema van de tool waarmee hij gemaakt is, dus de voorvertoning moet dat ook niet doen. Een
+disclaimer-tekst in het venster maakt dat expliciet: dit is een benadering, geen pixel-perfecte
+weergave van de echte installer (zie ook de kickoff-notitie hierover in §1).
+
+`InstallerProject` (Core) kreeg drie nieuwe velden voor deze schermen: `LicenseFilePath`,
+`DefaultDirName` en `AllowUserToChangeDir`. Rond generieke JSON-serialisatie hoefde niets aan te
+passen, die velden serialiseren automatisch mee. `WizardEditorViewModel` (nieuw,
+`DirtyTrackingViewModel`) bouwt de schermenlijst op basis van welke van de drie schermen aan staan
+in `WizardScreenSelection`, met Terug/Volgende-navigatie tussen de voorvertoningen; net als
+`WizardScreensViewModel` in fase 3 staat Opslaan hier niet uit zolang er niets gewijzigd is. Elk
+scherm heeft een eigen editor-ViewModel (`WelcomePageEditorViewModel`,
+`LicensePageEditorViewModel`, `SelectDestinationPageEditorViewModel`, in
+`InnoSetupStudio.App.ViewModels.Screens`) die zowel de voorvertoning (via een keyless, op type
+gebaseerde `DataTemplate`) als het instellingenpaneel rechts (via een expliciete
+`PropertyPanelTemplateSelector`, nodig omdat hetzelfde VM-type daar een andere template heeft dan
+in de voorvertoning) van data voorziet.
+
+Nieuwe knop "Schermen bewerken" in `MainWindow`, naast de bestaande "Wizardschermen"-knop (die
+blijft aan/uit vinken; deze nieuwe knop bewerkt de inhoud), met een nieuw potlood-icoon in
+`Icons.xaml`. Build en de bestaande testsuite (negen tests) blijven ongewijzigd groen; net als de
+rest van de schermeditor is dit niet los geautomatiseerd getest, wel handmatig geverifieerd door
+de app te starten, te bevestigen dat hij reageert, en weer te stoppen — de daadwerkelijke UI-flow
+(schermen aan/uit zetten, bewerken, Opslaan/Sluiten) is aan Herbert om in de draaiende app te
+testen, zoals gebruikelijk bij dit soort WPF-schermen in dit project.
+
+**Later toegevoegd aan dezelfde PR:** Herbert's uiteindelijke doel is dat bewerkbare plekken in de
+voorvertoning zelf zichtbaar worden (een potlood-icoon, rechtermuisknop-menu erop, bijvoorbeeld om
+een achtergrondafbeelding te kiezen). Dat rechtsklik-interactiepatroon zelf komt als aparte feature
+zodra er meer schermen zijn om het op te beproeven, maar één bouwsteen die daar los van staat en nu
+al nuttig is, is meteen meegenomen: `IProjectAssetService`/`ProjectAssetService` (Core, vier nieuwe
+tests) kopieert een door de gebruiker gekozen bestand naar een vaste `Assets`-submap naast het
+projectbestand zodra dat bestand van buiten de projectmap komt, zodat een project zelf verplaatsbaar
+blijft (een verwijzing naar een bestand ergens anders op de oorspronkelijke schijf zou bij het
+verplaatsen van de projectmap stukgaan). Bij een nog niet opgeslagen project, of een bestand dat al
+in de projectmap staat, gebeurt er niets. Deze voorziening is nu gekoppeld aan de bestaande
+Bladeren-knop van de licentiepagina; toekomstige "kies een bestand"-knoppen (zoals een
+achtergrondafbeelding) kunnen dezelfde voorziening hergebruiken in plaats van elk hun eigen
+kopieerlogica te bouwen.
+
+**CodeRabbit-ronde op dezelfde PR:** vijf van de zes opmerkingen zijn tegen de actuele code
+geverifieerd en direct verwerkt: (1) `ProjectSettingsViewModel.SaveAsync` bouwde een nieuw
+`InstallerProject` op zonder `LicenseFilePath`/`DefaultDirName`/`AllowUserToChangeDir` mee te
+nemen (hetzelfde patroon als `_wizardScreens` al oploste voor de wizardschermen-selectie) —
+zonder deze fix zette het simpelweg openen en opslaan van het algemene instellingenscherm de net
+in de schermeditor gekozen licentie/installatiemap-instellingen stilzwijgend terug; opgelost door
+dezelfde bewaar-en-hernemen-aanpak als `_wizardScreens`. (2) `LicensePageEditorViewModel` las
+`LicenseFilePath` rechtstreeks met `File.ReadAllText`, ook wanneer dat pad uit een geladen
+`.issproj`-bestand komt in plaats van de eigen bladerdialoog; een UNC-pad (`\\host\share\...`) in
+een gedeeld projectbestand zou dan zonder gebruikersactie een SMB-verbinding naar die host
+opzetten — geblokkeerd met een kleine `IsUncOrDevicePath`-check vóór elke bestandstoegang. (3) de
+Bladeren-knop in de schermeditor had geen `AutomationProperties.Name` (een `ToolTip` is geen
+vervanging voor wat schermlezers gebruiken). (4) de twee decoratieve keuzerondjes in de
+licentievoorvertoning waren met `IsHitTestVisible="False"` wel muisveilig maar nog met Tab te
+focussen; `Focusable`/`IsTabStop` op `False` toegevoegd. (5) de "Bladeren"-knop in de
+installatiemap-voorvertoning stond vast op `IsEnabled="False"`; deze volgt nu
+`AllowUserToChangeDir` (met `IsHitTestVisible`/`Focusable` op `False` blijft de voorvertoning zelf
+niet-interactief), zodat de voorvertoning laat zien dat Inno Setup deze knop uitschakelt wanneer de
+gebruiker de installatiemap niet mag wijzigen.
+
+Bewust nog niet opgepakt: CodeRabbit's zesde punt dat `ProjectAssetService.Import` een absoluut pad
+teruggeeft, waardoor een `LicenseFilePath`-verwijzing na het verplaatsen van de hele projectmap naar
+een andere locatie op dezelfde schijf niet meer klopt. Projectrelatieve paden oplossen is een
+grotere aanpassing (elke lezer van zo'n pad, inclusief de latere iss-generatie in fase 5, moet dan
+tegen de actuele projectmap resolven) die beter in samenhang met die fase 5 wordt ontworpen dan er
+nu apart doorheen gefietst; dit is een openstaand punt om apart met Herbert te bespreken.
+
+Ook bewust niet toegevoegd: een geautomatiseerde regressietest voor fix (1). De testsuite dekt tot
+nu toe alleen `InnoSetupStudio.Core`; ViewModels in `InnoSetupStudio.App` (zoals
+`ProjectSettingsViewModel`) hebben nog geen enkele testdekking, en dat gat dichten vergt een eigen
+afweging (project-referentie vanuit de test-assembly naar een WPF-project, mogelijk een STA-thread
+in de testrunner) die niet in deze CodeRabbit-opruiming hoort. Handmatig geverifieerd: build (0
+warnings, 0 errors), bestaande testsuite (13/13 groen, ongewijzigd) en het opstarten van de app
+zonder crash.

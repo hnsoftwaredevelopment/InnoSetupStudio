@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\InnoSetupStudio.Core\InnoSetupStudio.Core.csproj" />
+    <ProjectReference Include="..\InnoSetupStudio.Wizard\InnoSetupStudio.Wizard.csproj" />
   </ItemGroup>
 
   <ItemGroup>

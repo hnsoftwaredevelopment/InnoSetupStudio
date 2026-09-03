@@ -165,4 +165,43 @@
   <data name="WizardScreenFinished" xml:space="preserve">
     <value>Setup finished</value>
   </data>
+  <data name="ButtonScreenEditor" xml:space="preserve">
+    <value>Edit screens</value>
+  </data>
+  <data name="ScreenEditorTitle" xml:space="preserve">
+    <value>Screen editor</value>
+  </data>
+  <data name="ScreenEditorPreviewDisclaimer" xml:space="preserve">
+    <value>This is an approximation of how Inno Setup shows this screen, not an exact rendering of the real installer.</value>
+  </data>
+  <data name="LabelLicenseFilePath" xml:space="preserve">
+    <value>License file</value>
+  </data>
+  <data name="LabelDefaultDirName" xml:space="preserve">
+    <value>Default installation folder</value>
+  </data>
+  <data name="LabelDefaultDirNameHint" xml:space="preserve">
+    <value>Empty = {autopf}\&lt;Application name&gt;</value>
+  </data>
+  <data name="LabelAllowUserToChangeDir" xml:space="preserve">
+    <value>User may change the folder</value>
+  </data>
+  <data name="DialogFilterLicenseFiles" xml:space="preserve">
+    <value>License files (*.txt;*.rtf)|*.txt;*.rtf|All files (*.*)|*.*</value>
+  </data>
+  <data name="ScreenEditorWelcomeInfo" xml:space="preserve">
+    <value>This screen has no extra settings. The text is generated automatically from the name and version on the Project settings tab.</value>
+  </data>
+  <data name="ScreenEditorLicenseNoFile" xml:space="preserve">
+    <value>No license file selected yet.</value>
+  </data>
+  <data name="ButtonWizardBack" xml:space="preserve">
+    <value>&lt; Back</value>
+  </data>
+  <data name="ButtonWizardNext" xml:space="preserve">
+    <value>Next &gt;</value>
+  </data>
+  <data name="ScreenEditorNoScreens" xml:space="preserve">
+    <value>None of the screens the screen editor supports yet (Welcome, License agreement, Select destination folder) are enabled. Enable them under Wizard screens to edit them here.</value>
+  </data>
 </root>

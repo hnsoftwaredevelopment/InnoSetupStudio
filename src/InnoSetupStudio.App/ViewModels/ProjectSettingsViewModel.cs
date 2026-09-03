@@ -17,11 +17,15 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
 {
     private readonly IInstallerProjectService _projectService;
 
-    // Bewaard vanuit het project waarmee dit venster is geopend, zodat SaveAsync deze waarde kan
+    // Bewaard vanuit het project waarmee dit venster is geopend, zodat SaveAsync deze waarden kan
     // meenemen in het opgeslagen project: dit scherm toont en wijzigt alleen de algemene
-    // instellingen, dus zonder dit veld zou een simpele naam- of paden-wijziging de elders
-    // gekozen wizardschermen-selectie stilzwijgend terugzetten naar de standaardwaarden.
+    // instellingen, dus zonder deze velden zou een simpele naam- of paden-wijziging de elders (in
+    // de schermeditor) gekozen wizardschermen-selectie, licentiebestand en installatiemap
+    // stilzwijgend terugzetten naar de standaardwaarden.
     private readonly WizardScreenSelection _wizardScreens;
+    private readonly string _licenseFilePath;
+    private readonly string _defaultDirName;
+    private readonly bool _allowUserToChangeDir;
 
     public ProjectSettingsViewModel(InstallerProject project, IInstallerProjectService projectService, string? projectFilePath)
     {
@@ -29,6 +33,9 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
         BeginInit();
         _projectFilePath = projectFilePath;
         _wizardScreens = project.WizardScreens;
+        _licenseFilePath = project.LicenseFilePath;
+        _defaultDirName = project.DefaultDirName;
+        _allowUserToChangeDir = project.AllowUserToChangeDir;
 
         AppId = project.AppId;
         AppName = project.AppName;
@@ -228,6 +235,9 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
             CustomImagesPath = CustomImagesPath,
             SetupIconFile = SetupIconFile,
             WizardScreens = _wizardScreens,
+            LicenseFilePath = _licenseFilePath,
+            DefaultDirName = _defaultDirName,
+            AllowUserToChangeDir = _allowUserToChangeDir,
         };
 
         IsSaving = true;

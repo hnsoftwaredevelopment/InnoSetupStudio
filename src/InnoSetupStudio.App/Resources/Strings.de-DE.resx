@@ -165,4 +165,43 @@
   <data name="WizardScreenFinished" xml:space="preserve">
     <value>Installation abgeschlossen</value>
   </data>
+  <data name="ButtonScreenEditor" xml:space="preserve">
+    <value>Seiten bearbeiten</value>
+  </data>
+  <data name="ScreenEditorTitle" xml:space="preserve">
+    <value>Seiteneditor</value>
+  </data>
+  <data name="ScreenEditorPreviewDisclaimer" xml:space="preserve">
+    <value>Dies ist eine Annäherung daran, wie Inno Setup diese Seite zeigt, keine exakte Darstellung des echten Installationsprogramms.</value>
+  </data>
+  <data name="LabelLicenseFilePath" xml:space="preserve">
+    <value>Lizenzdatei</value>
+  </data>
+  <data name="LabelDefaultDirName" xml:space="preserve">
+    <value>Standard-Installationsordner</value>
+  </data>
+  <data name="LabelDefaultDirNameHint" xml:space="preserve">
+    <value>Leer = {autopf}\&lt;Anwendungsname&gt;</value>
+  </data>
+  <data name="LabelAllowUserToChangeDir" xml:space="preserve">
+    <value>Benutzer darf Ordner ändern</value>
+  </data>
+  <data name="DialogFilterLicenseFiles" xml:space="preserve">
+    <value>Lizenzdateien (*.txt;*.rtf)|*.txt;*.rtf|Alle Dateien (*.*)|*.*</value>
+  </data>
+  <data name="ScreenEditorWelcomeInfo" xml:space="preserve">
+    <value>Diese Seite hat keine zusätzlichen Einstellungen. Der Text wird automatisch aus Name und Version auf der Registerkarte Projekteinstellungen erzeugt.</value>
+  </data>
+  <data name="ScreenEditorLicenseNoFile" xml:space="preserve">
+    <value>Noch keine Lizenzdatei ausgewählt.</value>
+  </data>
+  <data name="ButtonWizardBack" xml:space="preserve">
+    <value>&lt; Zurück</value>
+  </data>
+  <data name="ButtonWizardNext" xml:space="preserve">
+    <value>Weiter &gt;</value>
+  </data>
+  <data name="ScreenEditorNoScreens" xml:space="preserve">
+    <value>Keine der vom Seiteneditor bereits unterstützten Seiten (Willkommen, Lizenzvereinbarung, Zielordner wählen) ist aktiviert. Aktivieren Sie sie unter Assistentenseiten, um sie hier zu bearbeiten.</value>
+  </data>
 </root>

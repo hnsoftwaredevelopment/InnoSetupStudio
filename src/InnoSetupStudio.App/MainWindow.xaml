@@ -58,6 +58,14 @@
                         <TextBlock Text="{loc:Loc ButtonWizardScreens}" />
                     </StackPanel>
                 </Button>
+                <Button x:Name="ScreenEditorButton" Margin="0,0,12,0" IsEnabled="False"
+                        Click="ScreenEditorButton_Click" ToolTip="{loc:Loc ButtonScreenEditor}">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource Edit}" Fill="{DynamicResource Brush.TextPrimary}"
+                              Stretch="Uniform" Width="16" Height="16" Margin="0,0,8,0" />
+                        <TextBlock Text="{loc:Loc ButtonScreenEditor}" />
+                    </StackPanel>
+                </Button>
                 <Button ToolTip="{loc:Loc ButtonBuildInstaller}">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource BuildInstaller}" Fill="{DynamicResource Brush.TextPrimary}"

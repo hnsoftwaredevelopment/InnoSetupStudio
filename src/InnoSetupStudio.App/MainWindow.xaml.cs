@@ -13,6 +13,7 @@ namespace InnoSetupStudio.App;
 public partial class MainWindow : Window
 {
     private readonly IInstallerProjectService _projectService = new JsonInstallerProjectService();
+    private readonly IProjectAssetService _assetService = new ProjectAssetService();
 
     private static readonly (string CultureName, string DisplayName)[] Languages =
     [
@@ -141,6 +142,46 @@ public partial class MainWindow : Window
         }
     }
 
+    private async void ScreenEditorButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_activeProject is null)
+        {
+            return;
+        }
+
+        var viewModel = new WizardEditorViewModel(_activeProject, _activeProjectFilePath, _assetService);
+        var window = new WizardEditorWindow(viewModel) { Owner = this };
+
+        if (window.ShowDialog() != true)
+        {
+            return;
+        }
+
+        viewModel.ApplyTo(_activeProject);
+
+        if (string.IsNullOrWhiteSpace(_activeProjectFilePath))
+        {
+            return;
+        }
+
+        // Zelfde guard als WizardScreensButton hierboven: knop uit tijdens het opslaan, zodat een
+        // tweede klik tijdens de lopende await niet hetzelfde .tmp-tijdelijke bestand als de
+        // eerste gebruikt.
+        ScreenEditorButton.IsEnabled = false;
+        try
+        {
+            await _projectService.SaveAsync(_activeProjectFilePath, _activeProject);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Inno Setup Studio", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            ScreenEditorButton.IsEnabled = true;
+        }
+    }
+
     private async void OpenProjectButton_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new OpenFileDialog
@@ -201,5 +242,6 @@ public partial class MainWindow : Window
         _activeProject = project;
         _activeProjectFilePath = projectFilePath;
         WizardScreensButton.IsEnabled = _activeProject is not null;
+        ScreenEditorButton.IsEnabled = _activeProject is not null;
     }
 }

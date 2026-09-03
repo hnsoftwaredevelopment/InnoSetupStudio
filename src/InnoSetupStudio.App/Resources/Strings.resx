@@ -165,4 +165,43 @@
   <data name="WizardScreenFinished" xml:space="preserve">
     <value>Installatie voltooid</value>
   </data>
+  <data name="ButtonScreenEditor" xml:space="preserve">
+    <value>Schermen bewerken</value>
+  </data>
+  <data name="ScreenEditorTitle" xml:space="preserve">
+    <value>Schermeditor</value>
+  </data>
+  <data name="ScreenEditorPreviewDisclaimer" xml:space="preserve">
+    <value>Dit is een benadering van hoe Inno Setup dit scherm toont, geen exacte weergave van de echte installer.</value>
+  </data>
+  <data name="LabelLicenseFilePath" xml:space="preserve">
+    <value>Licentiebestand</value>
+  </data>
+  <data name="LabelDefaultDirName" xml:space="preserve">
+    <value>Standaard installatiemap</value>
+  </data>
+  <data name="LabelDefaultDirNameHint" xml:space="preserve">
+    <value>Leeg = {autopf}\&lt;Naam applicatie&gt;</value>
+  </data>
+  <data name="LabelAllowUserToChangeDir" xml:space="preserve">
+    <value>Gebruiker mag map wijzigen</value>
+  </data>
+  <data name="DialogFilterLicenseFiles" xml:space="preserve">
+    <value>Licentiebestanden (*.txt;*.rtf)|*.txt;*.rtf|Alle bestanden (*.*)|*.*</value>
+  </data>
+  <data name="ScreenEditorWelcomeInfo" xml:space="preserve">
+    <value>Dit scherm heeft geen extra instellingen. De tekst komt automatisch uit de naam en versie op het tabblad Projectinstellingen.</value>
+  </data>
+  <data name="ScreenEditorLicenseNoFile" xml:space="preserve">
+    <value>Nog geen licentiebestand gekozen.</value>
+  </data>
+  <data name="ButtonWizardBack" xml:space="preserve">
+    <value>&lt; Terug</value>
+  </data>
+  <data name="ButtonWizardNext" xml:space="preserve">
+    <value>Volgende &gt;</value>
+  </data>
+  <data name="ScreenEditorNoScreens" xml:space="preserve">
+    <value>Geen van de schermen die de schermeditor al ondersteunt (Welkom, Licentieovereenkomst, Installatiemap kiezen) staat aan. Zet ze aan bij Wizardschermen om ze hier te kunnen bewerken.</value>
+  </data>
 </root>
