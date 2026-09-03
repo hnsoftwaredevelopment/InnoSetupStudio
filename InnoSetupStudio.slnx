@@ -2,6 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/InnoSetupStudio.App/InnoSetupStudio.App.csproj" />
     <Project Path="src/InnoSetupStudio.Core/InnoSetupStudio.Core.csproj" />
+    <Project Path="src/InnoSetupStudio.Wizard/InnoSetupStudio.Wizard.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/InnoSetupStudio.Tests/InnoSetupStudio.Tests.csproj" />

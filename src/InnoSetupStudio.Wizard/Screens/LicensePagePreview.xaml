@@ -1,0 +1,28 @@
+<UserControl x:Class="InnoSetupStudio.Wizard.Screens.LicensePagePreview"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" d:DesignWidth="455" d:DesignHeight="290">
+    <!-- Zelfde vaste wit/zwart-kleurstelling als WelcomePagePreview, zie de toelichting daar. -->
+    <DockPanel Background="White" Margin="20,16,20,20">
+        <TextBlock DockPanel.Dock="Top" Text="License Agreement" FontWeight="Bold" FontSize="13" Foreground="Black" />
+        <TextBlock DockPanel.Dock="Top" Margin="0,4,0,12" Foreground="Black" TextWrapping="Wrap"
+                   Text="Please read the following License Agreement. You must accept the terms of this agreement before continuing with the installation." />
+
+        <StackPanel DockPanel.Dock="Bottom" Margin="0,10,0,0">
+            <!-- Decoratief: dit zijn Inno Setup's eigen keuzerondjes op de echte licentiepagina,
+                 geen bewerkbare instelling van dit project. De eerste optie staat hier vast op
+                 "aangevinkt" om te laten zien hoe de pagina er dan uitziet. -->
+            <RadioButton Content="I accept the agreement" IsChecked="True" IsHitTestVisible="False" GroupName="LicensePreviewAccept" Foreground="Black" />
+            <RadioButton Content="I do not accept the agreement" Margin="0,4,0,0" IsHitTestVisible="False" GroupName="LicensePreviewAccept" Foreground="Black" />
+        </StackPanel>
+
+        <Border BorderBrush="#FFACA899" BorderThickness="1">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Background="White">
+                <TextBlock Text="{Binding LicenseText}" TextWrapping="Wrap" Margin="6"
+                           FontFamily="Consolas" FontSize="11" Foreground="Black" />
+            </ScrollViewer>
+        </Border>
+    </DockPanel>
+</UserControl>

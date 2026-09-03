@@ -244,3 +244,49 @@ van het wizardschermen-scherm is niet aan `IsDirty` gekoppeld (dat viel buiten h
 en de bestaande testsuite (negen tests) blijven ongewijzigd groen; net als de rest van deze twee
 schermen is dit niet los geautomatiseerd getest, maar wel handmatig geverifieerd door de app te
 starten en te stoppen.
+
+### 11.6 Fase 4: schermeditor, eerste PR (2026-09-03)
+
+Eerste stap van de schermeditor: de inhoud van losse wizardschermen bewerken, in plaats van ze
+zoals in fase 3 alleen aan of uit te zetten. Elf standaardschermen in één keer bouwen werd een te
+grote PR, dus deze PR bevat de herbruikbare basis (linkerlijst, voorvertoning, instellingenpaneel)
+plus drie representatieve schermen om dat patroon te bewijzen: Welkom (geen instellingen, puur
+voorvertoning op basis van naam/versie), Licentieovereenkomst (bestand kiezen, voorvertoning toont
+de inhoud) en Installatiemap kiezen (standaardmap en of de gebruiker die mag wijzigen). De overige
+acht standaardschermen volgen in latere PR's van deze fase; een aangevinkt scherm zonder editor
+verschijnt nog niet in de schermeditor, met een toelichting in het venster als geen van de drie
+al-ondersteunde schermen aan staat.
+
+Nieuw project `InnoSetupStudio.Wizard` (WPF class library, verwijst alleen naar
+`InnoSetupStudio.Core`), zoals bij de kickoff voorgesteld: de voorvertoning-UserControls staan
+hier apart van `InnoSetupStudio.App`, die er zelf naar verwijst. Deze UserControls kennen de
+ViewModel-klassen niet rechtstreeks (dat zou een cirkelverwijzing met App geven); de binding werkt
+via de DataContext die WPF automatisch doorgeeft aan een DataTemplate, dezelfde reden waarom het
+hele project overal `DynamicResource` in plaats van `StaticResource` gebruikt voor thema-brushes.
+Belangrijk ontwerpbesluit: de voorvertoning zelf gebruikt bewust vaste, niet-thema-afhankelijke
+kleuren (wit/zwart, zoals Inno Setup's eigen standaard wizardstijl) in plaats van de brushes van
+het actieve Inno Setup Studio-thema — Inno Setup's installer-UI is zelf niet geskind door het
+thema van de tool waarmee hij gemaakt is, dus de voorvertoning moet dat ook niet doen. Een
+disclaimer-tekst in het venster maakt dat expliciet: dit is een benadering, geen pixel-perfecte
+weergave van de echte installer (zie ook de kickoff-notitie hierover in §1).
+
+`InstallerProject` (Core) kreeg drie nieuwe velden voor deze schermen: `LicenseFilePath`,
+`DefaultDirName` en `AllowUserToChangeDir`. Rond generieke JSON-serialisatie hoefde niets aan te
+passen, die velden serialiseren automatisch mee. `WizardEditorViewModel` (nieuw,
+`DirtyTrackingViewModel`) bouwt de schermenlijst op basis van welke van de drie schermen aan staan
+in `WizardScreenSelection`, met Terug/Volgende-navigatie tussen de voorvertoningen; net als
+`WizardScreensViewModel` in fase 3 staat Opslaan hier niet uit zolang er niets gewijzigd is. Elk
+scherm heeft een eigen editor-ViewModel (`WelcomePageEditorViewModel`,
+`LicensePageEditorViewModel`, `SelectDestinationPageEditorViewModel`, in
+`InnoSetupStudio.App.ViewModels.Screens`) die zowel de voorvertoning (via een keyless, op type
+gebaseerde `DataTemplate`) als het instellingenpaneel rechts (via een expliciete
+`PropertyPanelTemplateSelector`, nodig omdat hetzelfde VM-type daar een andere template heeft dan
+in de voorvertoning) van data voorziet.
+
+Nieuwe knop "Schermen bewerken" in `MainWindow`, naast de bestaande "Wizardschermen"-knop (die
+blijft aan/uit vinken; deze nieuwe knop bewerkt de inhoud), met een nieuw potlood-icoon in
+`Icons.xaml`. Build en de bestaande testsuite (negen tests) blijven ongewijzigd groen; net als de
+rest van de schermeditor is dit niet los geautomatiseerd getest, wel handmatig geverifieerd door
+de app te starten, te bevestigen dat hij reageert, en weer te stoppen — de daadwerkelijke UI-flow
+(schermen aan/uit zetten, bewerken, Opslaan/Sluiten) is aan Herbert om in de draaiende app te
+testen, zoals gebruikelijk bij dit soort WPF-schermen in dit project.
