@@ -123,6 +123,10 @@ public partial class MainWindow : Window
             return;
         }
 
+        // Knop uitschakelen tijdens het opslaan: zonder deze guard kan een tweede klik tijdens de
+        // lopende await hetzelfde .tmp-tijdelijke bestand gebruiken als de eerste, wat tot een
+        // conflict tussen beide schrijfacties kan leiden.
+        WizardScreensButton.IsEnabled = false;
         try
         {
             await _projectService.SaveAsync(_activeProjectFilePath, _activeProject);
@@ -130,6 +134,10 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             MessageBox.Show(ex.Message, "Inno Setup Studio", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            WizardScreensButton.IsEnabled = true;
         }
     }
 

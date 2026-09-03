@@ -17,10 +17,17 @@ public sealed partial class ProjectSettingsViewModel : ObservableObject
 {
     private readonly IInstallerProjectService _projectService;
 
+    // Bewaard vanuit het project waarmee dit venster is geopend, zodat SaveAsync deze waarde kan
+    // meenemen in het opgeslagen project: dit scherm toont en wijzigt alleen de algemene
+    // instellingen, dus zonder dit veld zou een simpele naam- of paden-wijziging de elders
+    // gekozen wizardschermen-selectie stilzwijgend terugzetten naar de standaardwaarden.
+    private readonly WizardScreenSelection _wizardScreens;
+
     public ProjectSettingsViewModel(InstallerProject project, IInstallerProjectService projectService, string? projectFilePath)
     {
         _projectService = projectService;
         _projectFilePath = projectFilePath;
+        _wizardScreens = project.WizardScreens;
 
         AppId = project.AppId;
         AppName = project.AppName;
@@ -145,6 +152,7 @@ public sealed partial class ProjectSettingsViewModel : ObservableObject
             OutputPath = OutputPath,
             CustomImagesPath = CustomImagesPath,
             SetupIconFile = SetupIconFile,
+            WizardScreens = _wizardScreens,
         };
 
         try

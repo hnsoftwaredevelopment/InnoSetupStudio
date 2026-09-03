@@ -27,6 +27,12 @@ public sealed class JsonInstallerProjectService : IInstallerProjectService
 
             var loaded = await JsonSerializer.DeserializeAsync<InstallerProject>(stream)
                 ?? throw new JsonException("Het projectbestand bevat geen geldig project (JSON null).");
+
+            // Een handmatig bewerkt of ouder projectbestand kan expliciet "WizardScreens": null
+            // bevatten. Zonder deze normalisatie geeft dat later een NullReferenceException zodra
+            // de wizardschermen-selectie wordt geopend, in plaats van gewoon de standaardwaarden.
+            loaded.WizardScreens ??= new();
+
             return loaded;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)

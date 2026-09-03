@@ -155,7 +155,7 @@ herkenningsicoon (`Icons.xaml`: `Document`, `Folder`, `List` of `Check`, via
 `IconKeyToGeometryConverter`) en een vertaalde naam. Dit is bewust geen pixel-perfecte
 voorvertoning van elk scherm — dat is de eigen WPF-nabootsing die in fase 4 wordt gebouwd (zie §1
 van de kickoff: Inno Setup heeft geen API om zijn eigen wizardschermen te hergebruiken) — maar een
-klein, herkenbaar thumbnail per scherm. Opslaan schrijft de gekozen `WizardScreenSelection` terug
+klein herkenningsicoon per scherm. Opslaan schrijft de gekozen `WizardScreenSelection` terug
 naar `_activeProject` en bewaart die meteen naar het actieve `.issproj`-bestand.
 
 ## 11. Status

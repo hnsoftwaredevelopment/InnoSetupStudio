@@ -142,6 +142,34 @@ public class InstallerProjectTests
     }
 
     [Fact]
+    public async Task LoadAsyncNormalizesExplicitJsonNullWizardScreensToDefault()
+    {
+        // Een handmatig bewerkt of ouder projectbestand kan expliciet "WizardScreens": null
+        // bevatten. Zonder normalisatie geeft dat een NullReferenceException zodra de
+        // wizardschermen-selectie wordt geopend (bijvoorbeeld WizardScreensViewModel, die
+        // meteen ShowWelcomePage etc. leest); LoadAsync moet dit stilzwijgend herstellen naar
+        // een standaard WizardScreenSelection in plaats van null door te geven.
+        var service = new JsonInstallerProjectService();
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.issproj");
+        await File.WriteAllTextAsync(path, "{\"AppName\":\"Zonder wizardschermen\",\"WizardScreens\":null}");
+
+        try
+        {
+            var loaded = await service.LoadAsync(path);
+
+            Assert.NotNull(loaded.WizardScreens);
+            Assert.True(loaded.WizardScreens.ShowWelcomePage);
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
+
+    [Fact]
     public async Task SaveAsyncRetriesAndSucceedsWhenDestinationBrieflyLocked()
     {
         // Reproduceert het scenario dat Herbert tegenkwam: resaven van een bestaand
