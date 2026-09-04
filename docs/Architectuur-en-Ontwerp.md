@@ -1024,3 +1024,25 @@ lettertypebestand mee te installeren en meteen daarna, tijdens de wizard zelf, t
 de knoppen — de wizard-UI is al getekend voordat een eventuele custom-font-installatie zou
 kunnen draaien. Een lettertype dat niet op de doelmachine staat, valt in de praktijk terug op
 Windows' eigen font-substitutie; dat is een acceptabele beperking, geen bug om op te lossen.
+
+**Twee bugs gemeld door Herbert 2026-09-04, na het uitproberen van de lettertype-keuzelijst.**
+
+1. Een lettertype kiezen in de FontFamily-ComboBox paste de voorvertoning op de knop wél aan, maar
+   de ComboBox zelf toonde de gekozen naam niet in zijn eigen tekstveld. Oorzaak: de app heeft een
+   eigen `ComboBox`-`ControlTemplate` (`Themes/Styles.xaml`) voor de thema-kleuren, en die had geen
+   element met de naam `PART_EditableTextBox` — WPF's `ComboBox` vereist dat exacte template-part
+   om tekst te tonen/bewerken zodra `IsEditable="True"` staat. Zonder dat part verandert de
+   onderliggende `Text`-eigenschap (en dus de gebonden FontFamily) wél degelijk, maar toont de
+   ComboBox nooit wat er feitelijk gekozen is. Opgelost door een `TextBox x:Name="PART_EditableTextBox"`
+   toe te voegen (bewust met een `Binding`+`RelativeSource TemplatedParent`+`Mode=TwoWay` in plaats
+   van een `TemplateBinding`, want die laatste kan geen tekst terugschrijven naar de ComboBox) plus
+   een `IsEditable`-trigger die hem verwisselt met de bestaande alleen-lezen `ContentPresenter`.
+2. De Schermeditor (en twee andere popup-vensters: Wizardschermen kiezen, Projectinstellingen)
+   stonden vast op `ResizeMode="NoResize"`, waardoor sommige van de nieuwe knopvelden (met name de
+   TextColor-rij met de nieuwe "Kies…"-knop erbij) niet meer in de vaste 230px-breedte van het
+   instellingenpaneel pasten. Alle drie nu `ResizeMode="CanResizeWithGrip"` met een `MinWidth`/
+   `MinHeight` op minstens de oorspronkelijke vaste afmeting. Bij de Schermeditor is de rechter
+   Grid-kolom (instellingenpaneel) bovendien van een vaste `230` naar `*` met `MinWidth="260"`
+   gegaan, zodat extra vensterbreedte daar terechtkomt in plaats van bij de linkerlijst of de vaste
+   497px-brede Inno Setup-voorvertoning ernaast; de standaardbreedte van het venster ging van 980
+   naar 1050 zodat het meteen al iets meer ruimte heeft.

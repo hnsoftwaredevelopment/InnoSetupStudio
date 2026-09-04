@@ -4,7 +4,8 @@
         xmlns:loc="clr-namespace:InnoSetupStudio.App.Localization"
         xmlns:converters="clr-namespace:InnoSetupStudio.App.Converters"
         Title="{loc:Loc ProjectSettingsTitle}" Height="660" Width="600" Icon="/Resources/AppIcon.ico"
-        WindowStartupLocation="CenterOwner" ResizeMode="NoResize" ShowInTaskbar="False"
+        MinHeight="500" MinWidth="500"
+        WindowStartupLocation="CenterOwner" ResizeMode="CanResizeWithGrip" ShowInTaskbar="False"
         Background="{DynamicResource Brush.Background}">
     <Window.Resources>
         <converters:IconKeyToGeometryConverter x:Key="IconKeyToGeometryConverter" />

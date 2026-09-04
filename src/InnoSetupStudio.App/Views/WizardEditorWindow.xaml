@@ -6,8 +6,9 @@
         xmlns:vm="clr-namespace:InnoSetupStudio.App.ViewModels.Screens"
         xmlns:services="clr-namespace:InnoSetupStudio.App.Services"
         xmlns:wizard="clr-namespace:InnoSetupStudio.Wizard.Screens;assembly=InnoSetupStudio.Wizard"
-        Title="{loc:Loc ScreenEditorTitle}" Height="600" Width="980"
-        WindowStartupLocation="CenterOwner" ResizeMode="NoResize" ShowInTaskbar="False"
+        Title="{loc:Loc ScreenEditorTitle}" Height="600" Width="1050"
+        MinHeight="500" MinWidth="900"
+        WindowStartupLocation="CenterOwner" ResizeMode="CanResizeWithGrip" ShowInTaskbar="False"
         Background="{DynamicResource Brush.Background}">
     <Window.Resources>
         <converters:IconKeyToGeometryConverter x:Key="IconKeyToGeometryConverter" />
@@ -289,7 +290,12 @@
                 <ColumnDefinition Width="16" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="16" />
-                <ColumnDefinition Width="230" />
+                <!-- Was een vast "230": met de nieuwe lettertype-/kleurenkiezer-rijen erbij
+                     (FontFamily-ComboBox + "Kies…"-knop naast TextColor) past de breedste rij
+                     daar niet meer in 230px. Sterretjesbreedte met een minimum, zodat het venster
+                     nu resizable is (Herberts feedback 2026-09-04) en de extra ruimte bij het
+                     breder maken naar dit paneel gaat, niet naar de vaste voorvertoning ernaast. -->
+                <ColumnDefinition Width="*" MinWidth="260" />
             </Grid.ColumnDefinitions>
 
             <!-- Linkerlijst: het Standaardscherm in zijn eigen rij bovenaan, duidelijk visueel
