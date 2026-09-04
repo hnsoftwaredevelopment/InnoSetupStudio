@@ -1047,3 +1047,15 @@ Windows' eigen font-substitutie; dat is een acceptabele beperking, geen bug om o
    gegaan, zodat extra vensterbreedte daar terechtkomt in plaats van bij de linkerlijst of de vaste
    497px-brede Inno Setup-voorvertoning ernaast; de standaardbreedte van het venster ging van 980
    naar 1050 zodat het meteen al iets meer ruimte heeft.
+
+## 15. Toolbar voor het hoofdscherm met eigen iconen (vastgelegd 2026-09-04, nog niet gepland)
+
+Herbert heeft drie eigen SVG-iconen gemaakt voor "Nieuw project", "Project openen" en "Project
+bijwerken": `project-new.svg`, `project-open.svg` en `project-edit.svg`, in
+`C:\DevOps\hnsoftwaredevelopment\Inno Setup Studio\`. Bedoeld voor een toolbar boven in
+`MainWindow`, ter vervanging van de huidige knoppen met icon en tekst midden op het scherm.
+
+Geen actie nu, alleen vastgelegd zodat het niet kwijtraakt. Bij het bouwen van deze toolbar hoort
+ook gekeken te worden naar `CreateVectorResourceDictionary` (zie de kickoff-werkafspraken, sectie
+over het icon-systeem) als basis om deze SVG's als vector-resource in te laden in plaats van losse
+bestanden.
