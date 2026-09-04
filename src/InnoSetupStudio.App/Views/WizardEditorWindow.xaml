@@ -11,6 +11,8 @@
     <Window.Resources>
         <converters:IconKeyToGeometryConverter x:Key="IconKeyToGeometryConverter" />
         <converters:BooleanToOpacityConverter x:Key="BooleanToOpacityConverter" />
+        <converters:HexColorToBrushConverter x:Key="HexColorToBrushConverter" />
+        <converters:ButtonBackgroundConverter x:Key="ButtonBackgroundConverter" />
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
         <!-- Gedeeld door beide lijsten hieronder (het Standaardscherm bovenaan en de echte
@@ -49,6 +51,31 @@
                     <CheckBox Content="{loc:Loc LabelButtonVisible}" IsChecked="{Binding BackButtonVisible}"
                               IsThreeState="True" />
                 </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                    <TextBlock Text="{loc:Loc LabelButtonTextColor}" Width="96" VerticalAlignment="Center" />
+                    <Border Width="18" Height="18" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,4,0"
+                            Background="{Binding BackButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}" />
+                    <TextBox Width="90" Text="{Binding BackButtonTextColor, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                    <TextBlock Text="{loc:Loc LabelButtonBackgroundColor}" Width="96" VerticalAlignment="Center" />
+                    <Border Width="18" Height="18" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,4,0"
+                            Background="{Binding BackButtonBackgroundColor, Converter={StaticResource HexColorToBrushConverter}}" />
+                    <TextBox Width="90" Text="{Binding BackButtonBackgroundColor, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <Grid Margin="0,4,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="96" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{loc:Loc LabelButtonBitmap}" VerticalAlignment="Center" />
+                    <TextBox Grid.Column="1" Text="{Binding BackButtonBitmapFilePath, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0" />
+                    <Button Grid.Column="2" Command="{Binding BrowseBackButtonBitmapCommand}" ToolTip="{loc:Loc ButtonBrowse}"
+                            AutomationProperties.Name="{loc:Loc ButtonBrowse}">
+                        <Path Data="{StaticResource Folder}" Fill="{DynamicResource Brush.TextPrimary}" Stretch="Uniform" Width="14" Height="14" />
+                    </Button>
+                </Grid>
 
                 <TextBlock x:Name="NextButtonCaptionLabel" Text="{loc:Loc LabelNextButtonSection}" Margin="0,12,0,4" />
                 <TextBox Text="{Binding NextButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"
@@ -59,6 +86,31 @@
                     <CheckBox Content="{loc:Loc LabelButtonVisible}" IsChecked="{Binding NextButtonVisible}"
                               IsThreeState="True" />
                 </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                    <TextBlock Text="{loc:Loc LabelButtonTextColor}" Width="96" VerticalAlignment="Center" />
+                    <Border Width="18" Height="18" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,4,0"
+                            Background="{Binding NextButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}" />
+                    <TextBox Width="90" Text="{Binding NextButtonTextColor, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                    <TextBlock Text="{loc:Loc LabelButtonBackgroundColor}" Width="96" VerticalAlignment="Center" />
+                    <Border Width="18" Height="18" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,4,0"
+                            Background="{Binding NextButtonBackgroundColor, Converter={StaticResource HexColorToBrushConverter}}" />
+                    <TextBox Width="90" Text="{Binding NextButtonBackgroundColor, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <Grid Margin="0,4,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="96" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{loc:Loc LabelButtonBitmap}" VerticalAlignment="Center" />
+                    <TextBox Grid.Column="1" Text="{Binding NextButtonBitmapFilePath, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0" />
+                    <Button Grid.Column="2" Command="{Binding BrowseNextButtonBitmapCommand}" ToolTip="{loc:Loc ButtonBrowse}"
+                            AutomationProperties.Name="{loc:Loc ButtonBrowse}">
+                        <Path Data="{StaticResource Folder}" Fill="{DynamicResource Brush.TextPrimary}" Stretch="Uniform" Width="14" Height="14" />
+                    </Button>
+                </Grid>
 
                 <TextBlock x:Name="CancelButtonCaptionLabel" Text="{loc:Loc LabelCancelButtonSection}" Margin="0,12,0,4" />
                 <TextBox Text="{Binding CancelButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"
@@ -69,10 +121,37 @@
                     <CheckBox Content="{loc:Loc LabelButtonVisible}" IsChecked="{Binding CancelButtonVisible}"
                               IsThreeState="True" />
                 </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                    <TextBlock Text="{loc:Loc LabelButtonTextColor}" Width="96" VerticalAlignment="Center" />
+                    <Border Width="18" Height="18" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,4,0"
+                            Background="{Binding CancelButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}" />
+                    <TextBox Width="90" Text="{Binding CancelButtonTextColor, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                    <TextBlock Text="{loc:Loc LabelButtonBackgroundColor}" Width="96" VerticalAlignment="Center" />
+                    <Border Width="18" Height="18" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,4,0"
+                            Background="{Binding CancelButtonBackgroundColor, Converter={StaticResource HexColorToBrushConverter}}" />
+                    <TextBox Width="90" Text="{Binding CancelButtonBackgroundColor, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <Grid Margin="0,4,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="96" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{loc:Loc LabelButtonBitmap}" VerticalAlignment="Center" />
+                    <TextBox Grid.Column="1" Text="{Binding CancelButtonBitmapFilePath, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0" />
+                    <Button Grid.Column="2" Command="{Binding BrowseCancelButtonBitmapCommand}" ToolTip="{loc:Loc ButtonBrowse}"
+                            AutomationProperties.Name="{loc:Loc ButtonBrowse}">
+                        <Path Data="{StaticResource Folder}" Fill="{DynamicResource Brush.TextPrimary}" Stretch="Uniform" Width="14" Height="14" />
+                    </Button>
+                </Grid>
 
                 <TextBlock Text="{Binding HintButtonCaptionEmptyText}" FontSize="11" TextWrapping="Wrap"
                            Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,8,0,0" />
                 <TextBlock Text="{Binding HintButtonTriStateText}" FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,4,0,0" />
+                <TextBlock Text="{loc:Loc HintButtonColorFormat}" FontSize="11" TextWrapping="Wrap"
                            Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,4,0,0" />
             </StackPanel>
         </DataTemplate>
@@ -237,19 +316,47 @@
                          als echte IsEnabled. -->
                     <Border DockPanel.Dock="Bottom" BorderBrush="#FFACA899" BorderThickness="0,1,0,0" Padding="10">
                         <DockPanel LastChildFill="False">
+                            <!-- Foreground/Background: EffectiveXxxTextColor/-BackgroundColor/-BitmapFilePath
+                                 (backlogitem 3, sectie 14). Leeg/ongeldig geeft UnsetValue terug
+                                 (zie HexColorToBrushConverter/ButtonBackgroundConverter), dus de
+                                 knop valt dan gewoon terug op zijn eigen standaard WPF-uiterlijk. -->
                             <Button DockPanel.Dock="Left" Content="{Binding SelectedScreen.EffectiveCancelButtonCaption}"
                                     IsEnabled="{Binding SelectedScreen.IsCancelButtonEnabled}"
                                     Visibility="{Binding SelectedScreen.IsCancelButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                    Padding="12,4" MinWidth="80" />
+                                    Foreground="{Binding SelectedScreen.EffectiveCancelButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
+                                    Padding="12,4" MinWidth="80">
+                                <Button.Background>
+                                    <MultiBinding Converter="{StaticResource ButtonBackgroundConverter}">
+                                        <Binding Path="SelectedScreen.EffectiveCancelButtonBackgroundColor" />
+                                        <Binding Path="SelectedScreen.EffectiveCancelButtonBitmapFilePath" />
+                                    </MultiBinding>
+                                </Button.Background>
+                            </Button>
                             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                                 <Button Content="{Binding SelectedScreen.EffectiveBackButtonCaption}" Command="{Binding BackCommand}"
                                         Visibility="{Binding SelectedScreen.IsBackButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                         Opacity="{Binding SelectedScreen.IsBackButtonEnabled, Converter={StaticResource BooleanToOpacityConverter}}"
-                                        Padding="12,4" Margin="0,0,8,0" MinWidth="80" />
+                                        Foreground="{Binding SelectedScreen.EffectiveBackButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
+                                        Padding="12,4" Margin="0,0,8,0" MinWidth="80">
+                                    <Button.Background>
+                                        <MultiBinding Converter="{StaticResource ButtonBackgroundConverter}">
+                                            <Binding Path="SelectedScreen.EffectiveBackButtonBackgroundColor" />
+                                            <Binding Path="SelectedScreen.EffectiveBackButtonBitmapFilePath" />
+                                        </MultiBinding>
+                                    </Button.Background>
+                                </Button>
                                 <Button Content="{Binding SelectedScreen.EffectiveNextButtonCaption}" Command="{Binding NextCommand}"
                                         Visibility="{Binding SelectedScreen.IsNextButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                         Opacity="{Binding SelectedScreen.IsNextButtonEnabled, Converter={StaticResource BooleanToOpacityConverter}}"
-                                        Padding="12,4" MinWidth="80" />
+                                        Foreground="{Binding SelectedScreen.EffectiveNextButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
+                                        Padding="12,4" MinWidth="80">
+                                    <Button.Background>
+                                        <MultiBinding Converter="{StaticResource ButtonBackgroundConverter}">
+                                            <Binding Path="SelectedScreen.EffectiveNextButtonBackgroundColor" />
+                                            <Binding Path="SelectedScreen.EffectiveNextButtonBitmapFilePath" />
+                                        </MultiBinding>
+                                    </Button.Background>
+                                </Button>
                             </StackPanel>
                         </DockPanel>
                     </Border>

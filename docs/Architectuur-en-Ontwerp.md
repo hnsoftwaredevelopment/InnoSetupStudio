@@ -941,3 +941,32 @@ instellingenpaneel, geen nieuw datamodel.
 
 Nog geen besluit genomen om hiermee te starten — dit is alleen vastlegging plus een voorstel,
 Herbert bepaalt de daadwerkelijke volgorde.
+
+**Update 2026-09-04: uitvoering gestart.** Herbert koos zijn eigen volgorde: eerst punt 3
+(Bladeren-knop), dan punt 2 (tekstkleur/achtergrondkleur/bitmap) — bewust vóór punt 4
+(meertaligheid), anders dan het voorstel hierboven adviseerde. Reden voor het advies om punt 4
+eerst te doen was Caption die mogelijk per taal gaat verschillen; die zorg geldt niet voor
+tekstkleur/achtergrondkleur/bitmap, dat zijn geen tekstvelden, dus deze twee punten kunnen zonder
+extra rework in willekeurige volgorde.
+
+- Punt 3 (Bladeren-knop op de Bestemmingspagina): PR #13, gemerged. `SelectDestinationPageEditorViewModel.BrowseCommand`
+  met `OpenFolderDialog`, zelfde patroon als de licentiepagina.
+- Punt 2 (tekstkleur/achtergrondkleur/bitmap): in uitvoering op
+  `feature/button-color-bitmap-properties`. Negen nieuwe velden op `WizardScreenButtonSettings`
+  (drie per knop: `TextColor`/`BackgroundColor`/`BitmapFilePath`, alle drie hex-tekst/pad-string
+  met dezelfde leeg-is-onveranderd-conventie als Caption), dezelfde drielaags-resolutie
+  (eigen waarde → Standaardscherm → Inno Setup's eigen gedrag) als de bestaande negen velden.
+  Kleuren zijn hex-tekst (`#RRGGBB`) in plaats van `System.Windows.Media.Color`, zodat
+  `InnoSetupStudio.Core` WPF-vrij blijft. Twee nieuwe converters
+  (`HexColorToBrushConverter`/`ButtonBackgroundConverter`) tonen het resultaat live in de
+  voorvertoning, met UnsetValue (niet Transparent) als terugvalwaarde bij leeg/ongeldig, zodat een
+  niet-ingevulde knop gewoon zijn eigen WPF-standaarduiterlijk houdt. Bitmap gebruikt
+  `IProjectAssetService` (nu ook op de basisklasse `WizardScreenEditorViewModel` in plaats van
+  alleen op de licentiepagina) zodat een gekozen afbeelding, net als het licentiebestand, naar de
+  projectmap gekopieerd wordt.
+- **Belangrijke kanttekening voor de generator (fase 5/6), nog niet gebouwd.** Inno Setup's eigen
+  knopklasse (`TNewButton`) ondersteunt `Font.Color` (tekstkleur) rechtstreeks via Pascal Script.
+  Een achtergrondkleur of eigen bitmap op een standaardknop kent Inno Setup niet — dat vereist een
+  zelf getekende knop (`OnPaint`/`OnDrawItem`-achtige aanpak in Pascal Script), aanzienlijk meer
+  werk dan de tekstvervanging die Caption al nodig had. Dit model legt de gegevens nu al goed vast;
+  de generator zal voor deze twee velden meer moeten doen dan voor Caption/Enabled/Visible.

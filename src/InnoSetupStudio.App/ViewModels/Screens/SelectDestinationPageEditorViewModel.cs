@@ -3,6 +3,7 @@ using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using InnoSetupStudio.App.Localization;
+using InnoSetupStudio.Core.Project;
 using Microsoft.Win32;
 
 namespace InnoSetupStudio.App.ViewModels.Screens;
@@ -15,8 +16,8 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
 {
     private readonly string _appName;
 
-    public SelectDestinationPageEditorViewModel(string appName, string defaultDirName, bool allowUserToChangeDir)
-        : base("ShowSelectDestinationPage", LocalizationManager.Instance["WizardScreenSelectDestination"], "Folder")
+    public SelectDestinationPageEditorViewModel(string appName, string defaultDirName, bool allowUserToChangeDir, IProjectAssetService assetService, string? projectFilePath)
+        : base("ShowSelectDestinationPage", LocalizationManager.Instance["WizardScreenSelectDestination"], "Folder", assetService, projectFilePath)
     {
         _appName = appName;
         _defaultDirName = defaultDirName;

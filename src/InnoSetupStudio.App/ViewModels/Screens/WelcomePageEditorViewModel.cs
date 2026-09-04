@@ -1,4 +1,5 @@
 using InnoSetupStudio.App.Localization;
+using InnoSetupStudio.Core.Project;
 
 namespace InnoSetupStudio.App.ViewModels.Screens;
 
@@ -9,8 +10,8 @@ namespace InnoSetupStudio.App.ViewModels.Screens;
 /// </summary>
 public sealed class WelcomePageEditorViewModel : WizardScreenEditorViewModel
 {
-    public WelcomePageEditorViewModel(string appName, string appVersion)
-        : base("ShowWelcomePage", LocalizationManager.Instance["WizardScreenWelcome"], "Document")
+    public WelcomePageEditorViewModel(string appName, string appVersion, IProjectAssetService assetService, string? projectFilePath)
+        : base("ShowWelcomePage", LocalizationManager.Instance["WizardScreenWelcome"], "Document", assetService, projectFilePath)
     {
         // De voorvertoning benadert Inno Setup's eigen (Engelstalige) standaardtekst voor deze
         // pagina, niet de UI-taal van Inno Setup Studio zelf: zie ScreenEditorPreviewDisclaimer.

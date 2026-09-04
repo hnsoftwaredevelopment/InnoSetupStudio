@@ -34,7 +34,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
         // scherm doorgegeven via de required Defaults-eigenschap, vóórdat die schermen zelf
         // aangemaakt worden. Geen aan/uit-vinkje zoals de echte schermen (WizardScreens uit fase
         // 3) — dit scherm bestaat altijd, ongeacht welke installerschermen aan staan.
-        _defaultScreen = new DefaultScreenEditorViewModel(project.DefaultScreenButtons);
+        _defaultScreen = new DefaultScreenEditorViewModel(project.DefaultScreenButtons, assetService, projectFilePath);
 
         // Bewust GEEN collectie-expressie ([_defaultScreen]) hier: de compiler bakt die voor een
         // IReadOnlyList<T>-doeltype met precies één element in tot een intern eenmalig-element-
@@ -51,7 +51,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
         _screens = [];
         if (project.WizardScreens.ShowWelcomePage)
         {
-            _screens.Add(new WelcomePageEditorViewModel(project.AppName, project.AppVersion)
+            _screens.Add(new WelcomePageEditorViewModel(project.AppName, project.AppVersion, assetService, projectFilePath)
             {
                 WizardImage = wizardImage,
                 WizardSmallImage = wizardSmallImage,
@@ -73,7 +73,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
 
         if (project.WizardScreens.ShowSelectDestinationPage)
         {
-            _screens.Add(new SelectDestinationPageEditorViewModel(project.AppName, project.DefaultDirName, project.AllowUserToChangeDir)
+            _screens.Add(new SelectDestinationPageEditorViewModel(project.AppName, project.DefaultDirName, project.AllowUserToChangeDir, assetService, projectFilePath)
             {
                 WizardImage = wizardImage,
                 WizardSmallImage = wizardSmallImage,

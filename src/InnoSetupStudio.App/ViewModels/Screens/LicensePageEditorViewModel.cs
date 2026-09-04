@@ -16,11 +16,15 @@ namespace InnoSetupStudio.App.ViewModels.Screens;
 /// </summary>
 public sealed partial class LicensePageEditorViewModel : WizardScreenEditorViewModel
 {
+    // _projectFilePath/_assetService staan sinds backlogitem 3 (sectie 14) op de basisklasse
+    // WizardScreenEditorViewModel (die heeft ze nu ook nodig, voor de knopbitmap-Bladerknoppen),
+    // dus hier alleen nog doorgeven aan base(...) in plaats van een eigen kopie bij te houden.
+    // Wél nog apart nodig in Browse() hieronder voor LicenseFilePath, dus behouden als velden.
     private readonly string? _projectFilePath;
     private readonly IProjectAssetService _assetService;
 
     public LicensePageEditorViewModel(string licenseFilePath, string? projectFilePath, IProjectAssetService assetService)
-        : base("ShowLicensePage", LocalizationManager.Instance["WizardScreenLicense"], "Document")
+        : base("ShowLicensePage", LocalizationManager.Instance["WizardScreenLicense"], "Document", assetService, projectFilePath)
     {
         _projectFilePath = projectFilePath;
         _assetService = assetService;

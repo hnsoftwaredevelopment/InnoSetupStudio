@@ -234,6 +234,18 @@
   <data name="LabelButtonVisible" xml:space="preserve">
     <value>Zichtbaar</value>
   </data>
+  <data name="LabelButtonTextColor" xml:space="preserve">
+    <value>Tekstkleur</value>
+  </data>
+  <data name="LabelButtonBackgroundColor" xml:space="preserve">
+    <value>Achtergrondkleur</value>
+  </data>
+  <data name="LabelButtonBitmap" xml:space="preserve">
+    <value>Bitmap</value>
+  </data>
+  <data name="HintButtonColorFormat" xml:space="preserve">
+    <value>Hexadecimale kleurcode, bijvoorbeeld #FFCC00. Leeg = geen wijziging.</value>
+  </data>
   <data name="HintButtonTriState" xml:space="preserve">
     <value>Onbepaald = neemt de waarde van het Standaardscherm over, of anders Inno Setup's eigen standaardgedrag.</value>
   </data>
