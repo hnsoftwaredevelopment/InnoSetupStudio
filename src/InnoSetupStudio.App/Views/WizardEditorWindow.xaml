@@ -124,7 +124,18 @@
         <DataTemplate DataType="{x:Type vm:SelectDestinationPageEditorViewModel}" x:Key="SelectDestinationPropertyPanelTemplate">
             <StackPanel>
                 <TextBlock Text="{loc:Loc LabelDefaultDirName}" Margin="0,0,0,6" />
-                <TextBox Text="{Binding DefaultDirName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,6" />
+                <Grid Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" Text="{Binding DefaultDirName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0" />
+                    <Button Grid.Column="1" Command="{Binding BrowseCommand}" ToolTip="{loc:Loc ButtonBrowse}"
+                            AutomationProperties.Name="{loc:Loc ButtonBrowse}">
+                        <Path Data="{StaticResource Folder}" Fill="{DynamicResource Brush.TextPrimary}"
+                              Stretch="Uniform" Width="16" Height="16" />
+                    </Button>
+                </Grid>
                 <TextBlock Text="{loc:Loc LabelDefaultDirNameHint}" FontSize="11"
                            Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,16" />
                 <CheckBox Content="{loc:Loc LabelAllowUserToChangeDir}" IsChecked="{Binding AllowUserToChangeDir}"

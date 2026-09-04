@@ -1,6 +1,9 @@
+using System.IO;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using InnoSetupStudio.App.Localization;
+using Microsoft.Win32;
 
 namespace InnoSetupStudio.App.ViewModels.Screens;
 
@@ -43,4 +46,23 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
     partial void OnDefaultDirNameChanged(string value) => OnPropertyChanged(nameof(DisplayDirName));
 
     partial void OnAllowUserToChangeDirChanged(bool value) => OnPropertyChanged(nameof(ChangeDirHintVisibility));
+
+    [RelayCommand]
+    private void Browse()
+    {
+        // Zelfde patroon als ProjectSettingsViewModel.BrowseForFolder: DefaultDirName is vaak
+        // geen bestaand pad op deze machine maar een Inno Setup-constante zoals "{autopf}\App"
+        // (zie LabelDefaultDirNameHint), dus InitialDirectory alleen zetten als het veld toevallig
+        // wél een echte, bestaande map bevat. De dialoog opent anders gewoon zonder voorkeurspad.
+        var dialog = new OpenFolderDialog();
+        if (!string.IsNullOrWhiteSpace(DefaultDirName) && Directory.Exists(DefaultDirName))
+        {
+            dialog.InitialDirectory = DefaultDirName;
+        }
+
+        if (dialog.ShowDialog() == true)
+        {
+            DefaultDirName = dialog.FolderName;
+        }
+    }
 }
