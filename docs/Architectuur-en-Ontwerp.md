@@ -883,3 +883,61 @@ zwart/wit-signalering voor afbeeldingen hangt af van die keuze en volgt dus ook 
 elementen toevoegen aan een bestaand scherm (via Pascal Script aangemaakte controls) en hele nieuwe
 pagina's (`TWizardPage`) blijven ver weg, geen actie nu. De inventarisatie van de overige acht
 standaardschermen (§12.5) kan gewoon doorlopen, onafhankelijk van dit alles.
+
+## 14. Backlog na Herberts visuele controle van het Standaardscherm (2026-09-04)
+
+Na het mergen van PR #12 heeft Herbert de schermeditor met het Standaardscherm er echt bekeken en
+vijf punten genoemd. Geen van alle is dringend, hij heeft zelf aangegeven dat ze allemaal later
+kunnen. Vastgelegd hier zodat ze niet kwijtraken, met een voorstel voor volgorde.
+
+**1. Wizard-afbeeldingen (groot/klein) instelbaar maken in het Standaardscherm.** Nu nog in de
+projectinstellingen (`InstallerProject.WizardImageFile`/`WizardSmallImageFile`, PR #9). Dit is
+letterlijk de open vraag uit §12.6 hierboven, nu bevestigd als iets dat Herbert wil.
+
+**2. Ontbrekende knop-eigenschappen.** De drie knoppen (Terug/Volgende/Annuleren) hebben nu alleen
+Caption/Enabled/Visible. Herbert mist tekstkleur, achtergrondkleur en eventueel een bitmap per
+knop. Nieuwe velden op `WizardScreenButtonSettings`, met dezelfde drielaags-resolutie als de
+bestaande drie.
+
+**3. Ontbrekende Bladeren-knop op de Bestemmingspagina.** Anders dan de eerste twee punten: dit is
+geen nieuw element, maar een gat in wat al gebouwd is. De echte Inno Setup-installer heeft op de
+bestemmingspagina een eigen Bladeren-knop waarmee de eindgebruiker een map kan kiezen; die knop
+staat niet in `SelectDestinationPageEditorViewModel` of de voorvertoning. Scherm-specifiek (zoals
+de licentiepagina's eigen tekst), geen onderdeel van het generieke Terug-/Volgende-/
+Annuleren-patroon.
+
+**4. Meertaligheid.** Bij het aanmaken van een project (of in het Standaardscherm) aangeven of de
+installer meertalig is en welke talen. Inno Setup's eigen taalbestanden staan op Herberts machine
+in `C:\Program Files\Inno Setup 7\Languages\`; een kopie staat ook in
+`C:\DevOps\hnsoftwaredevelopment\Inno Setup Studio\Languages\`. Raakt méér dan alleen een nieuw
+projectveld: zodra een project meertalig is, wordt elke tekst (knoppen-Caption incluis) in
+principe een waarde per taal in plaats van één vaste string — dat vraagt om een eigen ontwerp
+voordat het gebouwd wordt, niet iets om terloops mee te nemen.
+
+**5. Knoppen in de voorvertoning tonen in plaats van rechts in het paneel.** In plaats van alle
+knop-eigenschappen los in het instellingenpaneel te zetten (wat met punt 2 erbij al snel te veel
+wordt), de knoppen zelf in de voorvertoning klikbaar maken; een klik opent een popup met alle
+eigenschappen van die knop, met de voorvertoning die direct meeverandert. Een herontwerp van het
+instellingenpaneel, geen nieuw datamodel.
+
+**Voorgestelde volgorde, met reden.**
+
+1. **Punt 3 eerst** — kleinste en laagste risico van de vijf. Volgt exact het patroon dat al drie
+   keer gebouwd is (Caption/Enabled/Visible + voorvertoning), dicht een gat in bestaand werk, geen
+   nieuw ontwerp nodig.
+2. **Punt 4 (talenselectie) vóór punt 2 (kleur/bitmap).** Reden: zodra meertaligheid er is, wordt
+   Caption op de knoppen mogelijk een waarde per taal in plaats van één string. Eerst kleur/bitmap
+   toevoegen aan het huidige (eentalige) model en dáárna meertaligheid bouwen betekent twee keer
+   aan diezelfde velden werken. Dit hoeft niet de volledige vertaal-UX te zijn — alleen "welke
+   talen ondersteunt dit project" (een meerkeuzelijst uit de Languages-map) volstaat om die
+   volgorde-vraag te beantwoorden; hóe teksten per taal worden ingevoerd kan zelf nog later.
+3. **Punt 2 (tekstkleur/achtergrondkleur/bitmap).** Natuurlijke uitbreiding van het bestaande
+   model, nu tegen de uiteindelijke (mogelijk meertalige) vorm van Caption aan gebouwd in plaats
+   van ertegenin.
+4. **Punt 1 (wizard-afbeeldingen naar het Standaardscherm).** Kleine verplaatsing, en profiteert
+   van dezelfde Bladeren-knop-UI die dan al gebouwd is voor de knop-bitmaps uit punt 2.
+5. **Punt 5 (knoppen-in-voorvertoning + popup) als laatste.** Pas zinvol te ontwerpen zodra de
+   volledige set knop-eigenschappen bekend is; anders wordt de popup twee keer gebouwd.
+
+Nog geen besluit genomen om hiermee te starten — dit is alleen vastlegging plus een voorstel,
+Herbert bepaalt de daadwerkelijke volgorde.
