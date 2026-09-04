@@ -952,8 +952,9 @@ extra rework in willekeurige volgorde.
 - Punt 3 (Bladeren-knop op de Bestemmingspagina): PR #13, gemerged. `SelectDestinationPageEditorViewModel.BrowseCommand`
   met `OpenFolderDialog`, zelfde patroon als de licentiepagina.
 - Punt 2 (tekstkleur/lettertype), zoals uiteindelijk gescoped — zie de scope-wijziging hieronder:
-  op `feature/button-color-bitmap-properties`. Zes nieuwe velden op `WizardScreenButtonSettings`
-  (per knop: `TextColor`, `FontFamily`, `FontSize`, `FontBold`), dezelfde drielaags-resolutie
+  op `feature/button-color-bitmap-properties`. Twaalf nieuwe velden op `WizardScreenButtonSettings`
+  (vier per knop, voor drie knoppen: `TextColor`, `FontFamily`, `FontSize`, `FontBold`), dezelfde
+  drielaags-resolutie
   (eigen waarde → Standaardscherm → Inno Setup's eigen gedrag) als de bestaande negen velden.
   `TextColor` is hex-tekst (`#RRGGBB`) in plaats van `System.Windows.Media.Color`, zodat
   `InnoSetupStudio.Core` WPF-vrij blijft. Vier converters (`HexColorToBrushConverter`,

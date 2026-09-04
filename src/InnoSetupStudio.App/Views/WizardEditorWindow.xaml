@@ -56,21 +56,25 @@
                               IsThreeState="True" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock Text="{loc:Loc LabelButtonTextColor}" Width="96" VerticalAlignment="Center" />
+                    <TextBlock x:Name="BackButtonTextColorLabel" Text="{loc:Loc LabelButtonTextColor}" Width="96" VerticalAlignment="Center" />
                     <Border Width="18" Height="18" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,4,0"
                             Background="{Binding BackButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}" />
-                    <TextBox Width="90" Text="{Binding BackButtonTextColor, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0" />
-                    <Button Content="{loc:Loc ButtonPickColor}" Command="{Binding PickBackButtonTextColorCommand}" />
+                    <TextBox Width="90" Text="{Binding BackButtonTextColor, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"
+                             AutomationProperties.LabeledBy="{Binding ElementName=BackButtonTextColorLabel}" />
+                    <Button Content="{loc:Loc ButtonPickColor}" Command="{Binding PickBackButtonTextColorCommand}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=BackButtonTextColorLabel}" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock Text="{loc:Loc LabelButtonFontFamily}" Width="96" VerticalAlignment="Center" />
+                    <TextBlock x:Name="BackButtonFontFamilyLabel" Text="{loc:Loc LabelButtonFontFamily}" Width="96" VerticalAlignment="Center" />
                     <ComboBox Width="150" IsEditable="True" IsTextSearchEnabled="True"
                               ItemsSource="{x:Static services:SystemFontCatalog.FontFamilyNames}"
-                              Text="{Binding BackButtonFontFamily, UpdateSourceTrigger=PropertyChanged}" />
+                              Text="{Binding BackButtonFontFamily, UpdateSourceTrigger=PropertyChanged}"
+                              AutomationProperties.LabeledBy="{Binding ElementName=BackButtonFontFamilyLabel}" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock Text="{loc:Loc LabelButtonFontSize}" Width="96" VerticalAlignment="Center" />
-                    <TextBox Width="50" Text="{Binding BackButtonFontSize, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,16,0" />
+                    <TextBlock x:Name="BackButtonFontSizeLabel" Text="{loc:Loc LabelButtonFontSize}" Width="96" VerticalAlignment="Center" />
+                    <TextBox Width="50" Text="{Binding BackButtonFontSize, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,16,0"
+                             AutomationProperties.LabeledBy="{Binding ElementName=BackButtonFontSizeLabel}" />
                     <CheckBox Content="{loc:Loc LabelButtonFontBold}" IsChecked="{Binding BackButtonFontBold}" IsThreeState="True" />
                 </StackPanel>
 
@@ -84,21 +88,25 @@
                               IsThreeState="True" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock Text="{loc:Loc LabelButtonTextColor}" Width="96" VerticalAlignment="Center" />
+                    <TextBlock x:Name="NextButtonTextColorLabel" Text="{loc:Loc LabelButtonTextColor}" Width="96" VerticalAlignment="Center" />
                     <Border Width="18" Height="18" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,4,0"
                             Background="{Binding NextButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}" />
-                    <TextBox Width="90" Text="{Binding NextButtonTextColor, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0" />
-                    <Button Content="{loc:Loc ButtonPickColor}" Command="{Binding PickNextButtonTextColorCommand}" />
+                    <TextBox Width="90" Text="{Binding NextButtonTextColor, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"
+                             AutomationProperties.LabeledBy="{Binding ElementName=NextButtonTextColorLabel}" />
+                    <Button Content="{loc:Loc ButtonPickColor}" Command="{Binding PickNextButtonTextColorCommand}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=NextButtonTextColorLabel}" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock Text="{loc:Loc LabelButtonFontFamily}" Width="96" VerticalAlignment="Center" />
+                    <TextBlock x:Name="NextButtonFontFamilyLabel" Text="{loc:Loc LabelButtonFontFamily}" Width="96" VerticalAlignment="Center" />
                     <ComboBox Width="150" IsEditable="True" IsTextSearchEnabled="True"
                               ItemsSource="{x:Static services:SystemFontCatalog.FontFamilyNames}"
-                              Text="{Binding NextButtonFontFamily, UpdateSourceTrigger=PropertyChanged}" />
+                              Text="{Binding NextButtonFontFamily, UpdateSourceTrigger=PropertyChanged}"
+                              AutomationProperties.LabeledBy="{Binding ElementName=NextButtonFontFamilyLabel}" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock Text="{loc:Loc LabelButtonFontSize}" Width="96" VerticalAlignment="Center" />
-                    <TextBox Width="50" Text="{Binding NextButtonFontSize, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,16,0" />
+                    <TextBlock x:Name="NextButtonFontSizeLabel" Text="{loc:Loc LabelButtonFontSize}" Width="96" VerticalAlignment="Center" />
+                    <TextBox Width="50" Text="{Binding NextButtonFontSize, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,16,0"
+                             AutomationProperties.LabeledBy="{Binding ElementName=NextButtonFontSizeLabel}" />
                     <CheckBox Content="{loc:Loc LabelButtonFontBold}" IsChecked="{Binding NextButtonFontBold}" IsThreeState="True" />
                 </StackPanel>
 
@@ -112,21 +120,25 @@
                               IsThreeState="True" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock Text="{loc:Loc LabelButtonTextColor}" Width="96" VerticalAlignment="Center" />
+                    <TextBlock x:Name="CancelButtonTextColorLabel" Text="{loc:Loc LabelButtonTextColor}" Width="96" VerticalAlignment="Center" />
                     <Border Width="18" Height="18" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,4,0"
                             Background="{Binding CancelButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}" />
-                    <TextBox Width="90" Text="{Binding CancelButtonTextColor, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0" />
-                    <Button Content="{loc:Loc ButtonPickColor}" Command="{Binding PickCancelButtonTextColorCommand}" />
+                    <TextBox Width="90" Text="{Binding CancelButtonTextColor, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"
+                             AutomationProperties.LabeledBy="{Binding ElementName=CancelButtonTextColorLabel}" />
+                    <Button Content="{loc:Loc ButtonPickColor}" Command="{Binding PickCancelButtonTextColorCommand}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=CancelButtonTextColorLabel}" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock Text="{loc:Loc LabelButtonFontFamily}" Width="96" VerticalAlignment="Center" />
+                    <TextBlock x:Name="CancelButtonFontFamilyLabel" Text="{loc:Loc LabelButtonFontFamily}" Width="96" VerticalAlignment="Center" />
                     <ComboBox Width="150" IsEditable="True" IsTextSearchEnabled="True"
                               ItemsSource="{x:Static services:SystemFontCatalog.FontFamilyNames}"
-                              Text="{Binding CancelButtonFontFamily, UpdateSourceTrigger=PropertyChanged}" />
+                              Text="{Binding CancelButtonFontFamily, UpdateSourceTrigger=PropertyChanged}"
+                              AutomationProperties.LabeledBy="{Binding ElementName=CancelButtonFontFamilyLabel}" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock Text="{loc:Loc LabelButtonFontSize}" Width="96" VerticalAlignment="Center" />
-                    <TextBox Width="50" Text="{Binding CancelButtonFontSize, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,16,0" />
+                    <TextBlock x:Name="CancelButtonFontSizeLabel" Text="{loc:Loc LabelButtonFontSize}" Width="96" VerticalAlignment="Center" />
+                    <TextBox Width="50" Text="{Binding CancelButtonFontSize, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,16,0"
+                             AutomationProperties.LabeledBy="{Binding ElementName=CancelButtonFontSizeLabel}" />
                     <CheckBox Content="{loc:Loc LabelButtonFontBold}" IsChecked="{Binding CancelButtonFontBold}" IsThreeState="True" />
                 </StackPanel>
 
@@ -216,21 +228,25 @@
                               IsThreeState="True" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock Text="{loc:Loc LabelButtonTextColor}" Width="96" VerticalAlignment="Center" />
+                    <TextBlock x:Name="BrowseButtonTextColorLabel" Text="{loc:Loc LabelButtonTextColor}" Width="96" VerticalAlignment="Center" />
                     <Border Width="18" Height="18" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,4,0"
                             Background="{Binding BrowseButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}" />
-                    <TextBox Width="90" Text="{Binding BrowseButtonTextColor, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0" />
-                    <Button Content="{loc:Loc ButtonPickColor}" Command="{Binding PickBrowseButtonTextColorCommand}" />
+                    <TextBox Width="90" Text="{Binding BrowseButtonTextColor, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"
+                             AutomationProperties.LabeledBy="{Binding ElementName=BrowseButtonTextColorLabel}" />
+                    <Button Content="{loc:Loc ButtonPickColor}" Command="{Binding PickBrowseButtonTextColorCommand}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=BrowseButtonTextColorLabel}" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock Text="{loc:Loc LabelButtonFontFamily}" Width="96" VerticalAlignment="Center" />
+                    <TextBlock x:Name="BrowseButtonFontFamilyLabel" Text="{loc:Loc LabelButtonFontFamily}" Width="96" VerticalAlignment="Center" />
                     <ComboBox Width="150" IsEditable="True" IsTextSearchEnabled="True"
                               ItemsSource="{x:Static services:SystemFontCatalog.FontFamilyNames}"
-                              Text="{Binding BrowseButtonFontFamily, UpdateSourceTrigger=PropertyChanged}" />
+                              Text="{Binding BrowseButtonFontFamily, UpdateSourceTrigger=PropertyChanged}"
+                              AutomationProperties.LabeledBy="{Binding ElementName=BrowseButtonFontFamilyLabel}" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock Text="{loc:Loc LabelButtonFontSize}" Width="96" VerticalAlignment="Center" />
-                    <TextBox Width="50" Text="{Binding BrowseButtonFontSize, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,16,0" />
+                    <TextBlock x:Name="BrowseButtonFontSizeLabel" Text="{loc:Loc LabelButtonFontSize}" Width="96" VerticalAlignment="Center" />
+                    <TextBox Width="50" Text="{Binding BrowseButtonFontSize, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,16,0"
+                             AutomationProperties.LabeledBy="{Binding ElementName=BrowseButtonFontSizeLabel}" />
                     <CheckBox Content="{loc:Loc LabelButtonFontBold}" IsChecked="{Binding BrowseButtonFontBold}" IsThreeState="True" />
                 </StackPanel>
                 <TextBlock Text="{loc:Loc HintButtonColorFormat}" FontSize="11" TextWrapping="Wrap"
