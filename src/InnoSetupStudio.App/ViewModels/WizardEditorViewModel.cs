@@ -35,7 +35,18 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
         // aangemaakt worden. Geen aan/uit-vinkje zoals de echte schermen (WizardScreens uit fase
         // 3) — dit scherm bestaat altijd, ongeacht welke installerschermen aan staan.
         _defaultScreen = new DefaultScreenEditorViewModel(project.DefaultScreenButtons);
-        DefaultScreenRow = [_defaultScreen];
+
+        // Bewust GEEN collectie-expressie ([_defaultScreen]) hier: de compiler bakt die voor een
+        // IReadOnlyList<T>-doeltype met precies één element in tot een intern eenmalig-element-
+        // type (<>z__ReadOnlySingleElementList<T>) waarvan de expliciete IList.Contains(object)
+        // ongeconditioneerd naar T cast in plaats van eerst een is-check te doen. WPF's Selector
+        // (de linkerlijst-ListBox hieronder in WizardEditorWindow.xaml) roept die Contains aan
+        // zodra de twee ListBoxen hun gedeelde SelectedScreen coeren — zodra dat een
+        // WizardScreenEditorViewModel is (elk echt scherm, niet het Standaardscherm zelf), gooide
+        // dat een InvalidCastException naar DefaultScreenEditorViewModel. Een gewone List<T> heeft
+        // wél een veilige IList.Contains (eerst is-check, dan pas casten), dus dat gebruiken we
+        // hier in plaats van de kortere collectie-expressie-syntax.
+        DefaultScreenRow = new List<DefaultScreenEditorViewModel> { _defaultScreen };
 
         _screens = [];
         if (project.WizardScreens.ShowWelcomePage)

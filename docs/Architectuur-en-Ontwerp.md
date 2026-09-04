@@ -588,7 +588,40 @@ null-normalisatie-tests uitgebreid met `DefaultScreenButtons` in plaats van nieu
 het opstarten van de app zonder crash zijn gecontroleerd. De schermeditor zelf (linkerlijst met de
 nieuwe rij, omschakelen tussen voorvertoning en toelichting, tweelaags-resolutie in de
 voorvertoning) is nog niet interactief doorgeklikt in deze sessie, zelfde beperking als bij eerdere
-PR's in deze fase — dat is Herberts eigen visuele controle.
+PR's in deze fase — dat is Herberts eigen visuele controle. Die controle ving meteen een echte
+regressie op, zie hieronder.
+
+**Bugfix: InvalidCastException bij het openen van de schermeditor (2026-09-04, zelfde dag).** Bij
+het eerste handmatige doorklikken (bestaand project → Schermen bewerken) crashte de schermeditor
+direct met `Unable to cast object of type 'WelcomePageEditorViewModel' to type
+'DefaultScreenEditorViewModel'`. De volledige stacktrace (verkregen door `App.xaml.cs`'s
+`OnDispatcherUnhandledException` uit te breiden met een `crash-log.txt` naast de .exe — voorheen
+toonde de MessageBox alleen `e.Exception.Message`, zonder stacktrace, wat root-causen tot dan toe
+onmogelijk maakte) wees de oorzaak aan:
+
+```
+at <>z__ReadOnlySingleElementList`1.System.Collections.IList.Contains(Object value)
+at System.Windows.Controls.Primitives.Selector.CoerceSelectedItem(...)
+```
+
+`WizardEditorViewModel` vulde `DefaultScreenRow` met de collectie-expressie `[_defaultScreen]`.
+Omdat de eigenschap van het type `IReadOnlyList<T>` is en de expressie precies één element bevat,
+bakt de C#-compiler dit in tot een intern eenmalig-element-type
+(`<>z__ReadOnlySingleElementList<T>`). De expliciete `IList.Contains(object)`-implementatie van
+dát type cast het argument ongeconditioneerd naar `T` in plaats van eerst te controleren of het
+argument wel van dat type is. `WizardEditorWindow.xaml` bindt twee `ListBox`en (het Standaardscherm
+in zijn eigen rij, de echte schermen eronder) two-way aan dezelfde `SelectedScreen`-eigenschap
+(§11.9 hierboven) — zodra WPF's `Selector` die gedeelde waarde coert, roept het voor de
+Standaardscherm-`ListBox` `Contains(SelectedScreen)` aan op `DefaultScreenRow` om te bepalen of de
+huidige selectie daar wel in zit. Zodra `SelectedScreen` een echt scherm is (bijvoorbeeld het
+Welkomstscherm, standaard al geselecteerd bij het openen) crasht die aanroep, in plaats van gewoon
+"nee" terug te geven.
+
+**Fix.** `DefaultScreenRow = new List<DefaultScreenEditorViewModel> { _defaultScreen };` in plaats
+van de collectie-expressie. Een gewone `List<T>` heeft wél een veilige `IList.Contains`
+(`IsCompatibleObject`-controle vóór het casten), dus dat gebruiken we hier bewust in plaats van de
+kortere `[...]`-syntax. Build en testsuite (14/14) blijven groen na de fix; Herbert heeft de
+schermeditor daarna zelf opnieuw doorlopen en bevestigd dat de crash weg is.
 
 ## 12. Configureerbaarheidscatalogus per wizardscherm (2026-09-04)
 

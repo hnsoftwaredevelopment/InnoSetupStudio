@@ -77,6 +77,19 @@ public partial class App : Application
     private static void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
         e.Handled = true;
+        try
+        {
+            // Tot nu toe zag de gebruiker (en wijzelf bij een bugreport) alleen e.Exception.Message
+            // in de MessageBox hieronder — zonder stacktrace of inner exceptions was root-causen
+            // van een onverwachte fout achteraf vrijwel onmogelijk. Dit bestand staat naast de
+            // .exe, dus het pad blijft geldig ongeacht waar de app geïnstalleerd/uitgepakt is.
+            var logPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "crash-log.txt");
+            System.IO.File.WriteAllText(logPath, $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}{Environment.NewLine}{e.Exception}");
+        }
+        catch
+        {
+            // Diagnostisch vangnet zelf mag nooit een nieuwe onverwerkte fout opleveren.
+        }
         MessageBox.Show(
             e.Exception.Message,
             LocalizationManager.Instance["AppTitle"],
