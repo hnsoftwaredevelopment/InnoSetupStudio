@@ -213,4 +213,31 @@
   <data name="ScreenEditorNoScreens" xml:space="preserve">
     <value>None of the screens the screen editor supports yet (Welcome, License agreement, Select destination folder) are enabled. Enable them under Wizard screens to edit them here.</value>
   </data>
+  <data name="ButtonWizardCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="SectionWizardButtons" xml:space="preserve">
+    <value>Buttons</value>
+  </data>
+  <data name="LabelBackButtonSection" xml:space="preserve">
+    <value>Back button</value>
+  </data>
+  <data name="LabelNextButtonSection" xml:space="preserve">
+    <value>Next button</value>
+  </data>
+  <data name="LabelCancelButtonSection" xml:space="preserve">
+    <value>Cancel button</value>
+  </data>
+  <data name="LabelButtonEnabled" xml:space="preserve">
+    <value>Enabled</value>
+  </data>
+  <data name="LabelButtonVisible" xml:space="preserve">
+    <value>Visible</value>
+  </data>
+  <data name="HintButtonTriState" xml:space="preserve">
+    <value>Indeterminate = Inno Setup's own default behavior for this screen.</value>
+  </data>
+  <data name="HintButtonCaptionEmpty" xml:space="preserve">
+    <value>Empty = Inno Setup's own text for this screen.</value>
+  </data>
 </root>

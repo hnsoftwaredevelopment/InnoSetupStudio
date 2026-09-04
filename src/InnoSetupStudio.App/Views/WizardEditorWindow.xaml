@@ -10,7 +10,53 @@
         Background="{DynamicResource Brush.Background}">
     <Window.Resources>
         <converters:IconKeyToGeometryConverter x:Key="IconKeyToGeometryConverter" />
+        <converters:BooleanToOpacityConverter x:Key="BooleanToOpacityConverter" />
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
+        <!-- Gedeeld door alle drie de instellingenpanelen hieronder (Welkom/Licentie/Bestemming):
+             Terug-/Volgende-/Annuleren-knop per scherm aanpasbaar maken. Staat op de basisklasse
+             WizardScreenEditorViewModel, dus deze template werkt voor elk schermtype zonder een
+             eigen kopie per scherm. -->
+        <DataTemplate x:Key="ButtonSettingsSectionTemplate">
+            <StackPanel Margin="0,20,0,0">
+                <TextBlock Text="{loc:Loc SectionWizardButtons}" FontWeight="Bold" Margin="0,0,0,8" />
+
+                <TextBlock x:Name="BackButtonCaptionLabel" Text="{loc:Loc LabelBackButtonSection}" Margin="0,0,0,4" />
+                <TextBox Text="{Binding BackButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"
+                         AutomationProperties.LabeledBy="{Binding ElementName=BackButtonCaptionLabel}" />
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                    <CheckBox Content="{loc:Loc LabelButtonEnabled}" IsChecked="{Binding BackButtonEnabled}"
+                              IsThreeState="True" Margin="0,0,16,0" />
+                    <CheckBox Content="{loc:Loc LabelButtonVisible}" IsChecked="{Binding BackButtonVisible}"
+                              IsThreeState="True" />
+                </StackPanel>
+
+                <TextBlock x:Name="NextButtonCaptionLabel" Text="{loc:Loc LabelNextButtonSection}" Margin="0,12,0,4" />
+                <TextBox Text="{Binding NextButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"
+                         AutomationProperties.LabeledBy="{Binding ElementName=NextButtonCaptionLabel}" />
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                    <CheckBox Content="{loc:Loc LabelButtonEnabled}" IsChecked="{Binding NextButtonEnabled}"
+                              IsThreeState="True" Margin="0,0,16,0" />
+                    <CheckBox Content="{loc:Loc LabelButtonVisible}" IsChecked="{Binding NextButtonVisible}"
+                              IsThreeState="True" />
+                </StackPanel>
+
+                <TextBlock x:Name="CancelButtonCaptionLabel" Text="{loc:Loc LabelCancelButtonSection}" Margin="0,12,0,4" />
+                <TextBox Text="{Binding CancelButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"
+                         AutomationProperties.LabeledBy="{Binding ElementName=CancelButtonCaptionLabel}" />
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                    <CheckBox Content="{loc:Loc LabelButtonEnabled}" IsChecked="{Binding CancelButtonEnabled}"
+                              IsThreeState="True" Margin="0,0,16,0" />
+                    <CheckBox Content="{loc:Loc LabelButtonVisible}" IsChecked="{Binding CancelButtonVisible}"
+                              IsThreeState="True" />
+                </StackPanel>
+
+                <TextBlock Text="{loc:Loc HintButtonCaptionEmpty}" FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,8,0,0" />
+                <TextBlock Text="{loc:Loc HintButtonTriState}" FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,4,0,0" />
+            </StackPanel>
+        </DataTemplate>
 
         <!-- Voorvertoning (midden): per schermtype de bijbehorende UserControl uit
              InnoSetupStudio.Wizard. Die controls kennen deze ViewModel-klassen niet (Wizard
@@ -32,8 +78,11 @@
              tegenstelling tot de voorvertoning hierboven, die bewust Inno Setup's eigen vaste
              wit/zwart-kleuren gebruikt in plaats van het thema van de studio. -->
         <DataTemplate DataType="{x:Type vm:WelcomePageEditorViewModel}" x:Key="PropertyPanelTemplate">
-            <TextBlock Text="{loc:Loc ScreenEditorWelcomeInfo}" TextWrapping="Wrap"
-                       Foreground="{DynamicResource Brush.TextSecondary}" />
+            <StackPanel>
+                <TextBlock Text="{loc:Loc ScreenEditorWelcomeInfo}" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Brush.TextSecondary}" />
+                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" />
+            </StackPanel>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:LicensePageEditorViewModel}" x:Key="LicensePropertyPanelTemplate">
             <StackPanel>
@@ -50,6 +99,7 @@
                               Stretch="Uniform" Width="16" Height="16" />
                     </Button>
                 </Grid>
+                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" />
             </StackPanel>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:SelectDestinationPageEditorViewModel}" x:Key="SelectDestinationPropertyPanelTemplate">
@@ -60,6 +110,7 @@
                            Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,16" />
                 <CheckBox Content="{loc:Loc LabelAllowUserToChangeDir}" IsChecked="{Binding AllowUserToChangeDir}"
                           Foreground="{DynamicResource Brush.TextPrimary}" />
+                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" />
             </StackPanel>
         </DataTemplate>
     </Window.Resources>
@@ -125,19 +176,39 @@
 
             <!-- Voorvertoning: een nabootsing van Inno Setup's eigen wizardvenster, met vaste
                  afmetingen en vaste (niet-thema-afhankelijke) kleuren, los van het scherm-VM-type
-                 boven in Window.Resources. Terug/Volgende navigeert door Screens; een echte
-                 Annuleren-knop staat hier bewust niet bij, om verwarring met de Opslaan/Sluiten-
-                 knoppen van dit venster zelf te voorkomen. -->
+                 boven in Window.Resources. Terug/Volgende navigeert door Screens. De Annuleren-knop
+                 hieronder heeft, anders dan de Opslaan/Sluiten-knoppen van dit venster zelf, geen
+                 eigen functie (geen Command) — die staat er puur om de eigen Caption/Enabled/
+                 Visible-instellingen van het geselecteerde scherm te kunnen voorvertonen, zie
+                 ButtonSettingsSectionTemplate hierboven. -->
             <Border Grid.Column="2" Width="497" Height="400" BorderBrush="#FF888888" BorderThickness="1"
                     Background="#FFF0F0F0">
                 <DockPanel>
+                    <!-- Nabootsing van Inno Setup's eigen knoppenbalk: Annuleren links, Terug/Volgende
+                         rechts. Terug/Volgende blijven de echte navigatie van de schermeditor (zie
+                         WizardEditorViewModel.Back/Next) en tonen daarom hun eventuele uitgeschakeld-
+                         zijn alleen als gedimd uiterlijk (Opacity), niet als echte IsEnabled — anders
+                         zou navigeren door de schermeditor zelf stuklopen op een scherm waar de
+                         gebruiker Volgende voor de installer heeft uitgeschakeld. Annuleren heeft in
+                         de schermeditor geen eigen functie, dus die knop gebruikt de eigenschap wél
+                         als echte IsEnabled. -->
                     <Border DockPanel.Dock="Bottom" BorderBrush="#FFACA899" BorderThickness="0,1,0,0" Padding="10">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Content="{loc:Loc ButtonWizardBack}" Command="{Binding BackCommand}"
-                                    Padding="12,4" Margin="0,0,8,0" MinWidth="80" />
-                            <Button Content="{loc:Loc ButtonWizardNext}" Command="{Binding NextCommand}"
+                        <DockPanel LastChildFill="False">
+                            <Button DockPanel.Dock="Left" Content="{Binding SelectedScreen.EffectiveCancelButtonCaption}"
+                                    IsEnabled="{Binding SelectedScreen.IsCancelButtonEnabled}"
+                                    Visibility="{Binding SelectedScreen.IsCancelButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                     Padding="12,4" MinWidth="80" />
-                        </StackPanel>
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                <Button Content="{Binding SelectedScreen.EffectiveBackButtonCaption}" Command="{Binding BackCommand}"
+                                        Visibility="{Binding SelectedScreen.IsBackButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                        Opacity="{Binding SelectedScreen.IsBackButtonEnabled, Converter={StaticResource BooleanToOpacityConverter}}"
+                                        Padding="12,4" Margin="0,0,8,0" MinWidth="80" />
+                                <Button Content="{Binding SelectedScreen.EffectiveNextButtonCaption}" Command="{Binding NextCommand}"
+                                        Visibility="{Binding SelectedScreen.IsNextButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                        Opacity="{Binding SelectedScreen.IsNextButtonEnabled, Converter={StaticResource BooleanToOpacityConverter}}"
+                                        Padding="12,4" MinWidth="80" />
+                            </StackPanel>
+                        </DockPanel>
                     </Border>
                     <ContentControl Content="{Binding SelectedScreen}" />
                 </DockPanel>

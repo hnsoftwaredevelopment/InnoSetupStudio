@@ -213,4 +213,31 @@
   <data name="ScreenEditorNoScreens" xml:space="preserve">
     <value>Geen van de schermen die de schermeditor al ondersteunt (Welkom, Licentieovereenkomst, Installatiemap kiezen) staat aan. Zet ze aan bij Wizardschermen om ze hier te kunnen bewerken.</value>
   </data>
+  <data name="ButtonWizardCancel" xml:space="preserve">
+    <value>Annuleren</value>
+  </data>
+  <data name="SectionWizardButtons" xml:space="preserve">
+    <value>Knoppen</value>
+  </data>
+  <data name="LabelBackButtonSection" xml:space="preserve">
+    <value>Terug-knop</value>
+  </data>
+  <data name="LabelNextButtonSection" xml:space="preserve">
+    <value>Volgende-knop</value>
+  </data>
+  <data name="LabelCancelButtonSection" xml:space="preserve">
+    <value>Annuleren-knop</value>
+  </data>
+  <data name="LabelButtonEnabled" xml:space="preserve">
+    <value>Ingeschakeld</value>
+  </data>
+  <data name="LabelButtonVisible" xml:space="preserve">
+    <value>Zichtbaar</value>
+  </data>
+  <data name="HintButtonTriState" xml:space="preserve">
+    <value>Onbepaald = Inno Setup's eigen standaardgedrag voor dit scherm.</value>
+  </data>
+  <data name="HintButtonCaptionEmpty" xml:space="preserve">
+    <value>Leeg = Inno Setup's eigen tekst voor dit scherm.</value>
+  </data>
 </root>

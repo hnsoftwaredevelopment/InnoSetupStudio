@@ -440,3 +440,320 @@ architectuurvraag, niet drie losse.
 
 Build (0 warnings, 0 errors), bestaande testsuite (13/13 groen) en het opstarten van de app zonder
 crash zijn opnieuw geverifieerd na deze wijzigingen.
+
+### 11.8 Fase 4: Terug-/Volgende-/Annuleren-knop per scherm aanpasbaar (2026-09-04)
+
+Vervolg op §11.7: Herbert wil dat elk aanpasbaar element van een wizardscherm in Inno Setup Studio
+bewerkbaar wordt, ongeacht of Inno Setup dat zelf via een [Setup]-richtlijn (property) of via
+Pascal Scripting aanstuurt. De Terug-/Volgende-/Annuleren-knop is het eerste element van de tweede
+soort: `WizardForm.BackButton`/`NextButton`/`CancelButton` zijn `TNewButton`-objecten die alleen
+via Pascal Script (meestal in een `CurPageChanged`-event) te benaderen zijn, zie het onderzoek
+hierover in §11.6.
+
+**Belangrijke constatering vooraf:** fase 5 (.iss-generatie) en fase 6 (Pascal Script-editor)
+bestaan nog helemaal niet — er is nog geen enkele plek in de code die een `.iss`-bestand of
+Pascal Script genereert, ook niet voor de al bestaande velden zoals `WizardImageFile` (dat wél een
+gewone [Setup]-richtlijn is). Deze PR bouwt daarom, net als alle voorgaande fase 4-PR's, alleen het
+datamodel en de schermeditor-UI; de daadwerkelijke omzetting naar een `CurPageChanged`-procedure in
+het gegenereerde `.iss`-bestand is werk voor fase 5/6, niet voor nu.
+
+**Datamodel:** nieuwe `WizardScreenButtonSettings` (Core) met negen velden: per knop (Back/Next/
+Cancel) een `Caption` (string, leeg = Inno Setup's eigen standaardtekst voor die knop op dat
+scherm), `Enabled` en `Visible` (beide `bool?`, null = Inno Setup's eigen standaardgedrag blijft
+intact, bijvoorbeeld dat Terug op het eerste scherm vanzelf uitstaat). `InstallerProject` krijgt
+drie van dit type — `WelcomeScreenButtons`, `LicenseScreenButtons`,
+`SelectDestinationScreenButtons` — één per scherm dat al een editor heeft, zelfde opzet als
+`WizardScreenSelection`'s elf losse Show*Page-velden: geen dictionary/enum-key, gewoon een
+benoemde eigenschap per scherm. De overige acht standaardschermen krijgen zo'n eigenschap zodra hun
+editor gebouwd wordt.
+
+**ViewModel-laag:** `WizardScreenEditorViewModel` (basisklasse) werd `abstract partial class` en
+kreeg de negen velden als gewone (niet required init) `[ObservableProperty]`'s — anders dan
+`WizardImage`/`WizardSmallImage`, want dit zijn per-scherm gegevens, geen projectbrede waarde die
+overal hetzelfde is. Een nieuwe `required WizardScreenButtonSettings ButtonSettings`-init-
+eigenschap (schrijfalleen, geen backing field) zet die negen velden in één keer, zodat
+`WizardEditorViewModel` ze net als `WizardImage`/`WizardSmallImage` via object-initializer-syntax
+kan meegeven (`new XPageEditorViewModel(...) { WizardImage = ..., ButtonSettings = ... }`) in
+plaats van negen losse constructorparameters. `EffectiveBackButtonCaption`/`EffectiveNextButton
+Caption`/`EffectiveCancelButtonCaption` lossen de leeg-is-standaardtekst-regel op (virtuele
+`DefaultBackButtonCaption` e.d., overschrijfbaar door een toekomstig scherm zoals Klaar-om-te-
+installeren waar Inno Setup zelf al "Install" in plaats van "Next" toont); `IsBackButtonVisible`/
+`IsBackButtonEnabled` e.d. lossen de null-is-standaardgedrag-regel op. `ReadButtonSettings()` is de
+tegenhanger die de negen velden terugleest voor `WizardEditorViewModel.ApplyTo`.
+
+**Voorvertoning:** de knoppenbalk onderaan de schermeditor-preview toonde tot nu toe alleen een
+vaste Terug/Volgende (de eigen navigatie van de schermeditor, niet gekoppeld aan scherminhoud). Nu
+tonen Terug/Volgende de `Effective*Caption` van het geselecteerde scherm, en is er een Annuleren-
+knop bij gekomen (links, net als in de echte installer) die alleen bestaat om `Effective
+CancelButtonCaption`/`IsCancelButtonEnabled`/`IsCancelButtonVisible` te kunnen voorvertonen — hij
+heeft geen Command, dus geen eigen functie in de schermeditor. Bewuste asymmetrie tussen de drie
+knoppen op het punt Enabled: Terug/Volgende zijn ook de echte navigatie van de schermeditor zelf
+(`WizardEditorViewModel.Back/Next`), dus hun `IsEnabled` blijft altijd gestuurd door
+`CanGoBack`/`CanGoNext` (anders zou "Volgende uitschakelen op dit scherm" ook navigeren door de
+schermeditor blokkeren); hun eventuele uitgeschakeld-staan voor de installer wordt in plaats
+daarvan alleen als gedimd uiterlijk getoond (nieuwe `BooleanToOpacityConverter`, 0.4 bij expliciet
+`false`). Annuleren heeft geen navigatiefunctie, dus die knop gebruikt `IsCancelButtonEnabled`
+gewoon als echte `IsEnabled`. Zichtbaarheid (`Visibility`) is voor alle drie knoppen wél echt: de
+linkerlijst met schermen blijft altijd een alternatieve manier om te navigeren, dus een verborgen
+Terug/Volgende in de preview kan de schermeditor niet vastlopen.
+
+Het instellingenpaneel kreeg een gedeelde `ButtonSettingsSectionTemplate` (drie subsecties Terug/
+Volgende/Annuleren, elk een Caption-veld plus twee driewaardige (IsThreeState) CheckBoxen voor
+Enabled/Visible — onbepaald = Inno Setup's eigen gedrag, aan/uit = expliciete override), gebruikt
+door alle drie de bestaande schermtemplates via `ContentControl ContentTemplate="{StaticResource
+...}"`, in plaats van de negen velden drie keer uit te schrijven. Werkt voor elk schermtype zonder
+aanpassing, want de negen velden staan op de basisklasse.
+
+Negen nieuwe vertaalsleutels (NL/EN/DE): `ButtonWizardCancel` (Annuleren-knop's standaardtekst,
+zelfde patroon als de bestaande `ButtonWizardBack`/`ButtonWizardNext`), `SectionWizardButtons` en
+drie `Label*ButtonSection`-koppen, `LabelButtonEnabled`/`LabelButtonVisible`, en twee hints
+(`HintButtonTriState`, `HintButtonCaptionEmpty`) die het leeg/onbepaald-is-standaardgedrag uitleggen
+— zelfde soort hint als `LabelDefaultDirNameHint` uit fase 4's eerste PR.
+
+Build (0 warnings, 0 errors), bestaande testsuite (13/13 groen, uitgebreid met round-trip-assertions
+voor de negen nieuwe velden) en het opstarten van de app zonder crash zijn geverifieerd. De
+schermeditor zelf (knoppenbalk-preview, instellingenpaneel) is nog niet interactief doorgeklikt in
+deze sessie — geen schermafbeelding-tooling beschikbaar voor een Windows-desktopapp — dus dat is nog
+Herberts eigen visuele controle, zoals bij eerdere PR's in deze fase.
+
+CodeRabbit's review op PR #10 leverde drie bevindingen op, alle drie verwerkt: (1) de drie
+Caption-TextBoxen in het gedeelde knoppenpaneel misten een toegankelijke naam voor
+schermlezers — opgelost met hetzelfde `AutomationProperties.LabeledBy`-patroon dat
+`ProjectSettingsWindow.xaml` al gebruikt (een `x:Name` op het bijbehorende `TextBlock`-label,
+waarnaar de TextBox verwijst); (2) een handmatig bewerkt of ouder projectbestand met expliciete
+JSON-null voor `WelcomeScreenButtons`/`LicenseScreenButtons`/`SelectDestinationScreenButtons` gaf
+een NullReferenceException zodra de schermeditor werd geopend — opgelost door dezelfde
+`??= new()`-normalisatie toe te passen die `WizardScreens` al had, met een nieuwe regressietest;
+(3) de round-trip-test dekte alleen ingevulde waarden voor `WelcomeScreenButtons`, niet voor
+`LicenseScreenButtons`/`SelectDestinationScreenButtons` — als nitpick optioneel, maar meegenomen
+omdat het weinig moeite kostte en de dekking van alle negen velden per scherm compleet maakt.
+Testsuite na deze wijzigingen: 14/14 groen.
+
+## 12. Configureerbaarheidscatalogus per wizardscherm (2026-09-04)
+
+Herbert wil dat elk aanpasbaar element van elk wizardscherm uiteindelijk bewerkbaar wordt in Inno
+Setup Studio, en vroeg om dat eerst per scherm te inventariseren voordat we verder bouwen — welke
+elementen zijn generiek (gelden voor de hele wizard) versus scherm-specifiek, en welk mechanisme
+(property, vertaalbare tekst, of Pascal Script) zet elk element om. Dit is bewust alleen onderzoek
+en vastlegging, geen implementatie: net als §11.8 al vaststelde, bestaat de generator (fase 5) nog
+niet, dus er is nog niets om deze elementen ook daadwerkelijk naartoe te vertalen.
+
+Bronnen (Inno Setup 7 is nieuw genoeg dat trainingskennis onbetrouwbaar is; alles hieronder is
+geverifieerd tegen de daadwerkelijke `jrsoftware/issrc`-broncode, niet uit het geheugen): de
+Pascal Script-klassedefinities in `ISHelp/isxclasses.pas` (dit is letterlijk het bestand waaruit
+Inno Setup's eigen "Support Functions"-documentatie wordt gegenereerd), de complete
+[Setup]-richtlijnenlijst in `Projects/Src/Shared.SetupSectionDirectives.pas`, en de standaard
+Engelse teksten in `Files/Default.isl`.
+
+### 12.1 Drie mechanismen, los van welk scherm
+
+1. **[Setup]-richtlijnen (properties).** Eén waarde in het .iss-bestand, door de generator simpel
+   als sleutel-waarde-regel weg te schrijven — zoals `WizardImageFile` nu al werkt.
+2. **[Messages]/[CustomMessages] (vertaalbare tekst).** Anders dan een richtlijn: dit zijn
+   strings met plaatshouders (`[name]`, `[name/ver]`, automatisch vervangen door Inno Setup zelf)
+   die per taal kunnen verschillen, in een apart sectie-blok. Belangrijke constatering hierbij:
+   onze huidige Welkomstpagina-voorvertoning (`WelcomePageEditorViewModel`) bootst deze teksten na
+   met hardcoded Engelse strings in C#, maar in een echte installer zijn dit zelf ook aanpasbare
+   velden (`WelcomeLabel1`/`WelcomeLabel2`) — geen vaste tekst. Iets om rekening mee te houden
+   zodra dit scherm een echte editor krijgt.
+3. **Pascal Script.** `WizardForm.<Control>.<Eigenschap>`, alleen te zetten via code in een
+   `[Code]`-blok, meestal in `CurPageChanged` (per-scherm gedrag) of `InitializeWizard` (eenmalig).
+   Zelfde categorie als de Terug-/Volgende-/Annuleren-knop uit PR #10.
+
+### 12.2 Generiek: geldt voor de hele wizard, niet één scherm
+
+Alle onderstaande zijn [Setup]-richtlijnen, bevestigd in `Shared.SetupSectionDirectives.pas`. Een
+flink deel is nieuw in Inno Setup 7 (dark-mode-varianten, opacity, achtergrondafbeelding) en dus
+niet uit oudere documentatie of trainingskennis te halen:
+
+- `WizardStyle`, `WizardStyleFile` (+ `WizardStyleFileDynamicDark`) — algehele visuele stijl.
+- `WizardResizable`, `WizardSizePercent` — venstergedrag/-grootte.
+- `WizardImageFile` (+ `WizardImageFileDynamicDark`), `WizardImageStretch`,
+  `WizardImageBackColor` (+ `DynamicDark`), `WizardImageOpacity`, `WizardImageAlphaFormat`,
+  `WizardKeepAspectRatio` — de grote afbeelding, uitgebreider dan wat PR #9 gebruikt.
+- `WizardSmallImageFile` (+ `WizardSmallImageFileDynamicDark`), `WizardSmallImageBackColor`
+  (+ `DynamicDark`) — de kleine afbeelding.
+- `WizardBackColor` (+ `DynamicDark`), `WizardBackImageFile` (+ `DynamicDark`),
+  `WizardBackImageOpacity` — achtergrondkleur/-afbeelding van de hele wizard, los van
+  `WizardImageFile`.
+
+**Aandachtspunt:** `WizardImageFile`/`WizardSmallImageFile` uit PR #9 hebben geen
+`DynamicDark`-tegenhanger geïmplementeerd — Inno Setup 7 ondersteunt dus een apart donker-thema-
+beeld dat we nu niet vastleggen. Mogelijke aanvulling zodra fase 5 dit gaat genereren.
+
+De Terug-/Volgende-/Annuleren-knop (PR #10) is generiek qua mechanisme (drie vaste
+WizardForm-knoppen) maar scherm-specifiek qua waarde (elke pagina kan een eigen caption tonen) —
+precies het onderscheid dat Herbert voorstelt, en het patroon waar §12.4 op voortbouwt.
+
+### 12.3 Scherm-specifiek: het Welkomstscherm als uitgewerkt voorbeeld
+
+- **Property/tekst:** `WelcomeLabel1`/`WelcomeLabel2` in `[Messages]`/`[CustomMessages]`
+  (§12.1-mechanisme 2), met de placeholders `[name]` en `[name/ver]`.
+- **Pascal Script — labels:** `WizardForm.WelcomeLabel1`/`WelcomeLabel2` zijn `TNewStaticText`:
+  `Caption`, `Color`, `Font` (naam/grootte/stijl/kleur), `Alignment`, `WordWrap`, `Visible`,
+  `Left`/`Top`/`Width`/`Height` zijn allemaal schrijfbaar.
+- **Pascal Script — afbeelding:** `WizardForm.WizardBitmapImage` (`TBitmapImage`, gedeeld met de
+  Voltooid-pagina): `Bitmap`/`PngImage` (dus per code-moment te wisselen, ook al is het
+  [Setup]-veld projectbreed), `BackColor`, `Stretch`, `Center`, `ReplaceColor`.
+- **Achtergrondkleur van dit ene scherm:** `WizardForm.WelcomePage` is zelf een
+  `TNewNotebookPage` met een eigen `Color`-eigenschap — dus ja, een andere achtergrondkleur voor
+  alleen de Welkomstpagina kan, los van de generieke `WizardBackColor` uit §12.2.
+- **Extra elementen toevoegen:** ja, in principe. Pascal Script kan een nieuwe
+  `TNewStaticText`/`TNewEdit`/`TBitmapImage`/`TNewCheckBox` (etc.) aanmaken en op
+  `WizardForm.WelcomePage.Surface` parenten — bijvoorbeeld een extra tekstblok. Een kant-en-klare
+  datumveld-/kalendercontrol bestaat niet in Inno Setup's Pascal Script-klassen
+  (`ISHelp/isxclasses.pas` heeft geen `TDateTimePicker` of vergelijkbaar); dat zou zelf met een
+  `TNewEdit` plus validatie gebouwd moeten worden, niet met een ingebouwde control.
+- **Een heel nieuw scherm (in plaats van een element op een bestaand scherm):** apart mechanisme,
+  de `TWizardPage`/`CreateCustomPage`-familie — groter dan "een element toevoegen aan een
+  bestaand scherm", een eigen toekomstige stap, niet iets om nu al in deze catalogus in detail uit
+  te werken.
+
+### 12.4 Voorstel: cascaderend standaardgedrag
+
+Herberts idee, uitgewerkt tot een concreet ontwerp: in plaats van "leeg/onbepaald = Inno Setup's
+eigen standaard" (het huidige gedrag sinds PR #10), wordt de regel "leeg/onbepaald = de
+dichtstbijzijnde eerdere scherm in Inno Setup's eigen volgorde dat wél een expliciete waarde heeft,
+en anders pas Inno Setup's eigen standaard". Geen kopieeractie nodig — er wordt niets naar latere
+schermen weggeschreven, alleen de *resolutie* (de bestaande `Effective*`-eigenschappen uit PR #10)
+zoekt straks terug door de schermenlijst. Voordelen: een scherm dat afwijkt breekt de keten alleen
+vanaf dat punt ("wie wil afwijken kan dat"), en er is geen aparte boekhouding nodig voor
+"expliciet ingesteld" versus "overgenomen" — dat volgt vanzelf uit of het veld op dat scherm zelf
+leeg is. Van toepassing op scherm-specifieke instellingen (knoppen, tekst, kleur van één scherm);
+niet op de generieke §12.2-instellingen, die zijn toch al projectbreed en hebben dus geen "vorige
+scherm"-keten nodig.
+
+Nog niet gebouwd — dit is een ontwerprichting, geen implementatie. Zodra we de knoppen-resolutie
+(of een volgend scherm-specifiek element) uitbreiden, is dit de aanpak.
+
+**Bijgewerkt in §12.6:** de terugzoekende keten hierboven (kijk naar het vorige scherm, dat naar
+zijn vorige scherm, enzovoort) is vervangen door een eenvoudiger tweelaags model met een apart
+Standaardscherm. §12.4 blijft staan als vastlegging van hoe het gesprek is verlopen; §12.6 is de
+huidige aanpak.
+
+### 12.5 Vervolg
+
+Voor de overige acht standaardschermen (elf in totaal uit §11.6, min de drie die al een editor
+hebben: Welkomst-, licentie- en bestemmingsscherm) volgt dezelfde inventarisatie (§12.1-mechanisme
+× generiek/scherm-specifiek) zodra hun editor aan de beurt is in fase 4 — zelfde
+scope-afbakening-per-PR-aanpak als tot nu toe, nu alleen vooraf uitgezocht in plaats van tijdens
+het bouwen.
+
+### 12.6 Standaardscherm: één centrale plek voor cascaderende standaardwaarden (2026-09-04, vervolg)
+
+Herberts vervolgvoorstel op §12.4: in plaats van dat de eerste scherm-aanpassing die de gebruiker
+toevallig doet impliciet als standaard voor latere schermen gaat gelden, komt er een apart
+"Standaardscherm" naast de echte installerschermen (vóór het Welkomstscherm), waar de gebruiker
+achtergrondkleur, tekstkleur, lettertype en standaardwaarden voor de knoppen in één keer vastlegt.
+Elk volgend scherm neemt dat over, tenzij de gebruiker op dat ene scherm zelf iets anders instelt.
+
+**Beoordeling.** Dit is een verbetering ten opzichte van het §12.4-voorstel, niet alleen een andere
+invulling ervan. Het §12.4-idee (impliciet vanaf het eerste scherm dat je aanpast) heeft een
+verrassingsrisico: een gebruiker die scherm 2 aanpast, verwacht niet per se dat scherm 5 daardoor
+ook meeverandert — dat voelt als een neveneffect. Een apart, herkenbaar Standaardscherm maakt de
+bedoeling expliciet: de gebruiker begrijpt "dit scherm bepaalt de rest, tenzij ik afwijk", in plaats
+van dat gedrag impliciet af te leiden uit wélk scherm toevallig het eerst bewerkt is. Vergelijkbaar
+met een masterpagina in Word of een basisstijl in CSS — een bekend patroon.
+
+**Herziene resolutie (vervangt de terugzoekende keten uit §12.4).** Twee lagen in plaats van een
+keten door alle voorgaande schermen: (1) de expliciete waarde op het scherm zelf, indien ingevuld;
+(2) anders de waarde van het Standaardscherm; (3) anders pas Inno Setup's eigen ingebouwde
+standaard (zoals nu, "Next >"). Simpeler te begrijpen en te implementeren dan terugzoeken door de
+schermenlijst, en zonder het verrassingsrisico hierboven: het aanpassen van scherm 3 raakt nooit
+scherm 5, alleen het aanpassen van het Standaardscherm zelf doet dat.
+
+**Waar dit wel en niet op van toepassing is.** Alleen op de Pascal-Script-mechanisme-elementen uit
+§12.1, punt 3 (knoppen, teksteigenschappen van labels, per-scherm achtergrondkleur) — dat zijn de
+elementen die Inno Setup zelf al toestaat per pagina te laten verschillen. Niet op de platte
+[Setup]-richtlijnen uit §12.2 (`WizardImageFile`, `WizardBackColor`, `WizardStyle` en dergelijke):
+die zijn in Inno Setup zelf altijd projectbreed, ongeacht wat wij bouwen, dus daar is geen
+per-scherm-afwijking mogelijk om te faciliteren. Dat blijft gewoon bij de bestaande
+projectinstellingen horen.
+
+**Twee openstaande UI-vragen, nog niet te beslissen, wel te noteren:**
+
+- Hoe laat de UI zien of een veld de standaardwaarde erft of hier expliciet is overschreven?
+  Voorstel: het veld toont altijd de opgeloste (geërfde) waarde, met een klein "terug naar
+  standaard"-icoon dat verschijnt zodra de gebruiker op dat scherm zelf iets wijzigt. Voor tekst
+  werkt "leeg = erft de standaard" al (bestaand patroon sinds PR #10); voor kleuren en lettertypen
+  bestaat er geen "leeg", dus die hebben een expliciete null/geen-eigen-waarde-status nodig, zelfde
+  aanpak als `Enabled`/`Visible` (`bool?`) bij de knoppen.
+- Wat toont de voorvertoning van het Standaardscherm zelf? Het stelt geen bestaand installerscherm
+  voor, dus geen 1-op-1 Inno Setup-nabootsing zoals de andere schermen. Kan een generieke
+  mockup-pagina worden die de gekozen kleuren/lettertype toont, of voorlopig alleen een
+  toelichtende tekst zonder voorvertoning — beide werkbaar, latere keuze.
+
+**Positionering in de schermenlijst.** Niet als "scherm nul" tussen de echte installerschermen,
+want dat wekt de indruk dat de eindgebruiker dit ook als scherm te zien krijgt, wat niet zo is. Wel
+duidelijk visueel gescheiden (bijvoorbeeld een eigen rij boven een scheidingslijn, ander icoon),
+zodat helder blijft dat dit meta-instellingen zijn en geen scherm dat ooit getoond wordt.
+
+**Reactie op het datumveld-punt uit het vorige gesprek:** Herbert benadrukt terecht dat wij geen
+nieuwe UI-elementen moeten verzinnen die Inno Setup zelf niet biedt — bestaat het niet als
+kant-en-klare Pascal Script-control, dan bouwen wij het ook niet. Dat is al hoe §12.3 het
+datumveld-voorbeeld behandelde (geen `TDateTimePicker` in `ISHelp/isxclasses.pas`, dus geen
+ondersteuning) en blijft het uitgangspunt voor elk toekomstig "kan de gebruiker element X
+toevoegen"-vraag: eerst verifiëren dat Inno Setup het als control aanbiedt, pas dan vastleggen dat
+we het kunnen ondersteunen.
+
+Nog niet gebouwd — vastgelegd ter voorbereiding op de keuze voor de eerstvolgende stap.
+
+### 12.7 Visuele taal en interactie: standaard versus aangepast (2026-09-04, vervolg)
+
+Antwoord op de eerste van de twee openstaande UI-vragen uit §12.6 (zwart/wit versus kleur, en het
+contextmenu dat daarbij hoort). De tweede vraag — wat de voorvertoning van het Standaardscherm zelf
+toont — blijft open zoals in §12.6 vastgelegd; dat is nog geen ontwerpbeslissing, alleen twee
+werkbare richtingen.
+
+**Zwart/wit versus kleur.** Herberts voorstel: het meegeleverde standaardbeeld (de zwart/wit
+conversie die hij al bij PR #9 koos) blijft het visuele signaal voor "dit is de out-of-the-box
+standaard"; zodra de gebruiker zelf iets instelt, wordt dat in volledige kleur getoond. Een eigen
+`WizardSmallImageFile` verschijnt dus meteen in kleur. Dit werkt letterlijk voor afbeeldingen, en
+sluit direct aan bij een keuze die al in het project zit. Voor tekst- en kleurvelden bestaat geen
+letterlijke zwart/wit-versie; daar vertaalt hetzelfde onderliggende principe (gedempt voor
+standaard, nadrukkelijk voor aangepast) naar een per-elementtype passende uitwerking, bijvoorbeeld
+een gedempte tekstkleur voor een geërfde knopcaption tegenover de volle themakleur voor een
+expliciete. De voorvertoning zelf blijft altijd de daadwerkelijk opgeloste waarde tonen (nooit een
+kleur die de gebruiker wél gekozen heeft kunstmatig grijs maken) — alleen de visuele nadruk
+verschilt tussen geërfd en expliciet.
+
+**Contextmenu in plaats van een reset-icoontje.** Rechtermuisklik op een element geeft een menu dat
+per elementtype verschilt, bijvoorbeeld Bewerken/Terug naar standaard voor een afbeelding of
+tekstveld, Aan/Uit/Verbergen voor een schakelbaar element. Vervangt het "terug naar
+standaard"-icoontje uit §12.6: consistenter (één interactiepatroon voor alle elementen) en
+flexibeler (elk elementtype vult het menu met wat daar relevant is).
+
+**Positionering van het Standaardscherm.** Bevestigd: duidelijk visueel gescheiden van de echte
+installerschermen (§12.6), niet als scherm nul ertussenin.
+
+**Nieuw punt: platte richtlijnen mogelijk ook via het Standaardscherm.** Herbert opent de vraag of
+de platte [Setup]-richtlijnen (§12.2, nu bewerkbaar in de projectinstellingen) misschien ook via
+het Standaardscherm ingesteld zouden moeten worden, met de onderliggende schermen die de opgeloste
+waarde dan alleen tonen, niet meer bewerkbaar. Dat zou `WizardImageFile`/`WizardSmallImageFile` uit
+de projectinstellingen naar het Standaardscherm verplaatsen. Nog geen besluit — zie §13 voor de
+afweging of dit nu of later aan de orde komt.
+
+## 13. Bouwvolgorde: wat nu, wat later (2026-09-04)
+
+Herbert heeft gevraagd om, nu §12 goed is vastgelegd, als development-specialist te bepalen wat
+handig is om nu al op te zetten en wat beter kan wachten.
+
+**Nu.** Eerst PR #10 en #11 afronden (CodeRabbit-feedback verwerken, Herberts visuele controle,
+mergen) — geen van beide is nog gemerged. Daarna het Standaardscherm en de tweelaags-resolutie uit
+§12.6 bouwen, maar bewust beperkt tot wat er al is: de knoppen (`WizardScreenButtonSettings`).
+Reden: dat is het enige element waar al een datamodel en een schermeditor voor bestaat, dus het is
+de kleinste manier om het hele nieuwe patroon (Standaardscherm als apart, visueel gescheiden
+scherm; tweelaags-resolutie; zwart/wit-of-kleur-signalering; contextmenu) in de praktijk te
+beproeven vóór we het uitbreiden naar elementen die nog niet bestaan.
+
+**Later.** Achtergrond-/tekstkleur en lettertype zijn nieuwe elementen zonder enig bestaand
+datamodel (geen `WizardScreenColorSettings` of vergelijkbaar) — dat is een eigen, volwaardige PR
+(inclusief hoe een "geen eigen kleur"-status eruitziet, zie §12.6), niet iets om erbij te nemen
+zolang het Standaardscherm-patroon zelf nog niet beproefd is. Het verplaatsen van
+`WizardImageFile`/`WizardSmallImageFile` van de projectinstellingen naar het Standaardscherm raakt
+al werkende, geteste functionaliteit uit PR #9; dat verdient een eigen afweging zodra we zien hoe
+het Standaardscherm in de praktijk aanvoelt, niet een meegenomen wijziging in dezelfde PR. De
+zwart/wit-signalering voor afbeeldingen hangt af van die keuze en volgt dus ook later. Nieuwe
+elementen toevoegen aan een bestaand scherm (via Pascal Script aangemaakte controls) en hele nieuwe
+pagina's (`TWizardPage`) blijven ver weg, geen actie nu. De inventarisatie van de overige tien
+standaardschermen (§12.5) kan gewoon doorlopen, onafhankelijk van dit alles.
