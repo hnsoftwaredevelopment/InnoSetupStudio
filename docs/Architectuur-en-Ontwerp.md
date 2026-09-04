@@ -613,8 +613,72 @@ scherm"-keten nodig.
 Nog niet gebouwd — dit is een ontwerprichting, geen implementatie. Zodra we de knoppen-resolutie
 (of een volgend scherm-specifiek element) uitbreiden, is dit de aanpak.
 
+**Bijgewerkt in §12.6:** de terugzoekende keten hierboven (kijk naar het vorige scherm, dat naar
+zijn vorige scherm, enzovoort) is vervangen door een eenvoudiger tweelaags model met een apart
+Standaardscherm. §12.4 blijft staan als vastlegging van hoe het gesprek is verlopen; §12.6 is de
+huidige aanpak.
+
 ### 12.5 Vervolg
 
 Voor de overige tien standaardschermen volgt dezelfde inventarisatie (§12.1-mechanisme × generiek/
 scherm-specifiek) zodra hun editor aan de beurt is in fase 4 — zelfde scope-afbakening-per-PR-
 aanpak als tot nu toe, nu alleen vooraf uitgezocht in plaats van tijdens het bouwen.
+
+### 12.6 Standaardscherm: één centrale plek voor cascaderende standaardwaarden (2026-09-04, vervolg)
+
+Herberts vervolgvoorstel op §12.4: in plaats van dat de eerste scherm-aanpassing die de gebruiker
+toevallig doet impliciet als standaard voor latere schermen gaat gelden, komt er een apart
+"Standaardscherm" naast de echte installerschermen (vóór het Welkomstscherm), waar de gebruiker
+achtergrondkleur, tekstkleur, lettertype en standaardwaarden voor de knoppen in één keer vastlegt.
+Elk volgend scherm neemt dat over, tenzij de gebruiker op dat ene scherm zelf iets anders instelt.
+
+**Beoordeling.** Dit is een verbetering ten opzichte van het §12.4-voorstel, niet alleen een andere
+invulling ervan. Het §12.4-idee (impliciet vanaf het eerste scherm dat je aanpast) heeft een
+verrassingsrisico: een gebruiker die scherm 2 aanpast, verwacht niet per se dat scherm 5 daardoor
+ook meeverandert — dat voelt als een neveneffect. Een apart, herkenbaar Standaardscherm maakt de
+bedoeling expliciet: de gebruiker begrijpt "dit scherm bepaalt de rest, tenzij ik afwijk", in plaats
+van dat gedrag impliciet af te leiden uit wélk scherm toevallig het eerst bewerkt is. Vergelijkbaar
+met een masterpagina in Word of een basisstijl in CSS — een bekend patroon.
+
+**Herziene resolutie (vervangt de terugzoekende keten uit §12.4).** Twee lagen in plaats van een
+keten door alle voorgaande schermen: (1) de expliciete waarde op het scherm zelf, indien ingevuld;
+(2) anders de waarde van het Standaardscherm; (3) anders pas Inno Setup's eigen ingebouwde
+standaard (zoals nu, "Next >"). Simpeler te begrijpen en te implementeren dan terugzoeken door de
+schermenlijst, en zonder het verrassingsrisico hierboven: het aanpassen van scherm 3 raakt nooit
+scherm 5, alleen het aanpassen van het Standaardscherm zelf doet dat.
+
+**Waar dit wel en niet op van toepassing is.** Alleen op de Pascal-Script-mechanisme-elementen uit
+§12.1, punt 3 (knoppen, teksteigenschappen van labels, per-scherm achtergrondkleur) — dat zijn de
+elementen die Inno Setup zelf al toestaat per pagina te laten verschillen. Niet op de platte
+[Setup]-richtlijnen uit §12.2 (`WizardImageFile`, `WizardBackColor`, `WizardStyle` en dergelijke):
+die zijn in Inno Setup zelf altijd projectbreed, ongeacht wat wij bouwen, dus daar is geen
+per-scherm-afwijking mogelijk om te faciliteren. Dat blijft gewoon bij de bestaande
+projectinstellingen horen.
+
+**Twee openstaande UI-vragen, nog niet te beslissen, wel te noteren:**
+
+- Hoe laat de UI zien of een veld de standaardwaarde erft of hier expliciet is overschreven?
+  Voorstel: het veld toont altijd de opgeloste (geërfde) waarde, met een klein "terug naar
+  standaard"-icoon dat verschijnt zodra de gebruiker op dat scherm zelf iets wijzigt. Voor tekst
+  werkt "leeg = erft de standaard" al (bestaand patroon sinds PR #10); voor kleuren en lettertypen
+  bestaat er geen "leeg", dus die hebben een expliciete null/geen-eigen-waarde-status nodig, zelfde
+  aanpak als `Enabled`/`Visible` (`bool?`) bij de knoppen.
+- Wat toont de voorvertoning van het Standaardscherm zelf? Het stelt geen bestaand installerscherm
+  voor, dus geen 1-op-1 Inno Setup-nabootsing zoals de andere schermen. Kan een generieke
+  mockup-pagina worden die de gekozen kleuren/lettertype toont, of voorlopig alleen een
+  toelichtende tekst zonder voorvertoning — beide werkbaar, latere keuze.
+
+**Positionering in de schermenlijst.** Niet als "scherm nul" tussen de echte installerschermen,
+want dat wekt de indruk dat de eindgebruiker dit ook als scherm te zien krijgt, wat niet zo is. Wel
+duidelijk visueel gescheiden (bijvoorbeeld een eigen rij boven een scheidingslijn, ander icoon),
+zodat helder blijft dat dit meta-instellingen zijn en geen scherm dat ooit getoond wordt.
+
+**Reactie op het datumveld-punt uit het vorige gesprek:** Herbert benadrukt terecht dat wij geen
+nieuwe UI-elementen moeten verzinnen die Inno Setup zelf niet biedt — bestaat het niet als
+kant-en-klare Pascal Script-control, dan bouwen wij het ook niet. Dat is al hoe §12.3 het
+datumveld-voorbeeld behandelde (geen `TDateTimePicker` in `ISHelp/isxclasses.pas`, dus geen
+ondersteuning) en blijft het uitgangspunt voor elk toekomstig "kan de gebruiker element X
+toevoegen"-vraag: eerst verifiëren dat Inno Setup het als control aanbiedt, pas dan vastleggen dat
+we het kunnen ondersteunen.
+
+Nog niet gebouwd — vastgelegd ter voorbereiding op de keuze voor de eerstvolgende stap.
