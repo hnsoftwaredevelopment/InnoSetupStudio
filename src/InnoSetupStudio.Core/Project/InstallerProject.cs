@@ -63,6 +63,13 @@ public sealed class InstallerProject
     public bool AllowUserToChangeDir { get; set; } = true;
 
     /// <summary>
+    /// Aanpassingen van de schermspecifieke "Bladeren"-knop op de bestemmingspagina (Inno Setup's
+    /// WizardForm.DirBrowseButton). Zie <see cref="BrowseButtonSettings"/> voor waarom dit een
+    /// apart model is, los van <see cref="SelectDestinationScreenButtons"/>.
+    /// </summary>
+    public BrowseButtonSettings SelectDestinationBrowseButton { get; set; } = new();
+
+    /// <summary>
     /// Pad naar de afbeelding die over de volledige hoogte links op de Welkomst- en
     /// Voltooid-pagina's staat, Inno Setup's <c>WizardImageFile</c>-richtlijn. Leeg betekent: nog
     /// niet aangepast door de gebruiker. De schermeditor toont in dat geval een meegeleverde

@@ -157,6 +157,24 @@
                                           ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
                                           Margin="{TemplateBinding Padding}"
                                           VerticalAlignment="Center" HorizontalAlignment="Left" />
+                        <!-- Alleen zichtbaar/gebruikt wanneer IsEditable="True" (zie de trigger
+                             hieronder): WPF's ComboBox verwacht in dat geval een template-part met
+                             precies deze naam ("PART_EditableTextBox") om tekstinvoer/-selectie
+                             te tonen. Zonder dit part werkt intikken/kiezen intern nog wel (de
+                             onderliggende Text-eigenschap verandert echt, zie bijvoorbeeld
+                             WizardScreenEditorViewModel's FontFamily-velden), maar toont de
+                             ComboBox zelf nooit de gekozen tekst — precies het gedrag dat Herbert
+                             meldde (2026-09-04). Een expliciete Binding met TemplatedParent in
+                             plaats van TemplateBinding: TemplateBinding kan hier geen tekst
+                             terugschrijven naar de ComboBox, TwoWay wél. -->
+                        <TextBox x:Name="PART_EditableTextBox"
+                                 Style="{x:Null}"
+                                 Background="Transparent" BorderThickness="0"
+                                 Foreground="{TemplateBinding Foreground}"
+                                 Text="{Binding Path=Text, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="10,8,26,8"
+                                 VerticalAlignment="Center" HorizontalAlignment="Stretch"
+                                 Visibility="Collapsed" />
                         <Path HorizontalAlignment="Right" Margin="0,0,10,0" VerticalAlignment="Center"
                               Data="M0,0 L6,6 L12,0" Stroke="{DynamicResource Brush.TextSecondary}"
                               StrokeThickness="1.5" IsHitTestVisible="False" />
@@ -174,6 +192,16 @@
                             </Border>
                         </Popup>
                     </Grid>
+                    <ControlTemplate.Triggers>
+                        <!-- Wisselt tussen de twee elementen hierboven: ContentSite (alleen-lezen
+                             weergave van de geselecteerde/geen-selectie-content) voor een gewone
+                             ComboBox, PART_EditableTextBox voor een IsEditable="True" ComboBox
+                             zoals de lettertype-keuzelijsten in WizardEditorWindow. -->
+                        <Trigger Property="IsEditable" Value="True">
+                            <Setter TargetName="ContentSite" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

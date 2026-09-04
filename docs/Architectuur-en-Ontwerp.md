@@ -941,3 +941,109 @@ instellingenpaneel, geen nieuw datamodel.
 
 Nog geen besluit genomen om hiermee te starten — dit is alleen vastlegging plus een voorstel,
 Herbert bepaalt de daadwerkelijke volgorde.
+
+**Update 2026-09-04: uitvoering gestart.** Herbert koos zijn eigen volgorde: eerst punt 3
+(Bladeren-knop), dan punt 2 (tekstkleur/achtergrondkleur/bitmap) — bewust vóór punt 4
+(meertaligheid), anders dan het voorstel hierboven adviseerde. Reden voor het advies om punt 4
+eerst te doen was Caption die mogelijk per taal gaat verschillen; die zorg geldt niet voor
+tekstkleur/achtergrondkleur/bitmap, dat zijn geen tekstvelden, dus deze twee punten kunnen zonder
+extra rework in willekeurige volgorde.
+
+- Punt 3 (Bladeren-knop op de Bestemmingspagina): PR #13, gemerged. `SelectDestinationPageEditorViewModel.BrowseCommand`
+  met `OpenFolderDialog`, zelfde patroon als de licentiepagina.
+- Punt 2 (tekstkleur/lettertype), zoals uiteindelijk gescoped — zie de scope-wijziging hieronder:
+  op `feature/button-color-bitmap-properties`. Twaalf nieuwe velden op `WizardScreenButtonSettings`
+  (vier per knop, voor drie knoppen: `TextColor`, `FontFamily`, `FontSize`, `FontBold`), dezelfde
+  drielaags-resolutie
+  (eigen waarde → Standaardscherm → Inno Setup's eigen gedrag) als de bestaande negen velden.
+  `TextColor` is hex-tekst (`#RRGGBB`) in plaats van `System.Windows.Media.Color`, zodat
+  `InnoSetupStudio.Core` WPF-vrij blijft. Vier converters (`HexColorToBrushConverter`,
+  `FontFamilyOrUnsetConverter`, `FontSizeOrUnsetConverter`, `NullableBoolToFontWeightConverter`)
+  tonen het resultaat live in de voorvertoning, met UnsetValue (niet Transparent/een vaste
+  standaardwaarde) als terugvalwaarde bij leeg/ongeldig/null, zodat een niet-ingevulde knop gewoon
+  zijn eigen WPF-standaarduiterlijk houdt.
+
+**Scope-wijziging 2026-09-04, na review door Herbert van bovenstaande kanttekening.** Herbert
+besloot achtergrondkleur en bitmap op de knop volledig te schrappen (niet alleen uit te stellen):
+de extra generatorwerk (zelf getekende knop) staat niet in verhouding tot hoe vaak dit gebruikt
+zou worden, met name de bitmap. Tegelijk wees hij op een ontbrekend veld: lettertype
+(Font.Name/Size/Style), wél gewone `TFont`-eigenschappen die op een standaard `TNewButton` direct
+werken, dus zonder de extra generatorwerk van achtergrondkleur/bitmap. Verder gaf hij aan dat de
+Bestemmingspagina zijn eigen, schermspecifieke "Bladeren"-knop (Inno Setup's
+`WizardForm.DirBrowseButton`) mist in de eigenschappenlijst — expliciet losstaand van het
+Standaardscherm-model, want die knop komt maar op één scherm voor. Alle drie in dezelfde PR #14
+meegenomen in plaats van als apart vervolg:
+
+- `BackgroundColor`/`BitmapFilePath` (en de bijbehorende `ButtonBackgroundConverter`,
+  knopbitmap-Bladerknoppen en `IProjectAssetService`-plumbing op de basisklasse) volledig
+  verwijderd uit `WizardScreenButtonSettings`, `WizardScreenEditorViewModel`,
+  `DefaultScreenEditorViewModel` en de schermeditor-XAML.
+- `FontFamily` (string)/`FontSize` (int?)/`FontBold` (bool?) toegevoegd aan
+  `WizardScreenButtonSettings` en `DefaultScreenEditorViewModel`, met dezelfde drielaags-Effective*-
+  resolutie als de overige knopvelden op `WizardScreenEditorViewModel` (`FontFamily` via
+  `ResolveCaption`, `FontSize`/`FontBold` via eenvoudige `??`-val omdat er geen "Inno-ingebouwde"
+  derde laag bestaat voor deze twee).
+- Nieuw model `BrowseButtonSettings` (Enabled/Visible/TextColor/FontFamily/FontSize/FontBold, geen
+  Caption) voor de Bestemmingspagina's eigen Bladeren-knop, met een eigen property
+  `InstallerProject.SelectDestinationBrowseButton` — bewust géén drielaags-resolutie via het
+  Standaardscherm, deze knop komt maar op één scherm voor.
+
+**Kanttekening voor de generator (fase 5/6), nog niet gebouwd.** Inno Setup's eigen knopklasse
+(`TNewButton`) ondersteunt `Font.Color`/`Font.Name`/`Font.Size`/`Font.Style` rechtstreeks via
+Pascal Script — de generator zet deze velden voor Caption/Enabled/Visible/TextColor/Font* op
+dezelfde manier om als de bestaande Caption-velden, geen extra werk nodig. Achtergrondkleur en
+bitmap zijn dus ook geen openstaand punt meer voor de generator: die zijn uit het model geschrapt,
+niet alleen uitgesteld.
+
+**UX-feedback 2026-09-04, na het bekijken van het resultaat.** Herbert: het aparte
+eigenschappenpaneel per knop is de moeite waard (houdt het scherm later rustiger), maar vrije
+tekstinvoer voor TextColor/FontFamily is foutgevoelig — je moet toevallig weten dat je
+"#08BDA1" nodig hebt, en een lettertypenaam intikken kan altijd een typefout zijn. Twee
+toevoegingen, nog in dezelfde PR #14:
+
+- Lettertype-keuzelijst: `SystemFontCatalog` (nieuwe klasse, `InnoSetupStudio.App.Services`) geeft
+  `Fonts.SystemFontFamilies` van deze machine terug; de FontFamily-velden zijn nu een bewerkbare
+  ComboBox in plaats van een vrije TextBox, met de systeemlettertypen als suggestielijst in plaats
+  van verplichte keuze (bewerkbaar gelaten omdat de lettertypen op de doelmachine tijdens
+  installatie sowieso kunnen afwijken van deze ontwikkelmachine — zie ook de vraag hieronder over
+  lettertypebestanden).
+- Kleurenkiezer: een "Kies…"-knop naast elk TextColor-veld (Back/Next/Cancel-knoppen en de
+  Bladeren-knop) opent `System.Windows.Forms.ColorDialog` — WPF heeft zelf geen ingebouwde
+  kleurenkiezer. Vereist `<UseWindowsForms>true</UseWindowsForms>` in
+  `InnoSetupStudio.App.csproj`, wat op zijn beurt de impliciete globale usings voor
+  `System.Windows.Forms`/`System.Drawing` moest laten vervallen (`<Using Remove="..." />`): beide
+  botsen anders met de gelijknamige WPF-typen (`Application`, `Color`, `ColorConverter`,
+  `FontFamily`) die de rest van de app al gebruikt.
+
+**Vraag van Herbert, beantwoord: moet een gekozen lettertype naar de projectmap gekopieerd worden
+(zoals License/eerder ook Bitmap via IProjectAssetService)?** Nee — FontFamily is, anders dan
+LicenseFilePath, geen bestandspad maar een naamverwijzing naar een lettertype dat op de
+doelmachine zelf al geïnstalleerd moet zijn (Pascal Script's `Font.Name` verwijst simpelweg naar
+een systeemlettertype, net zoals "Segoe UI" nu al gebruikt wordt zonder dat dat lettertype ooit
+in het installerproject terechtkomt). Inno Setup heeft geen ingebouwd mechanisme om een eigen
+lettertypebestand mee te installeren en meteen daarna, tijdens de wizard zelf, te gebruiken voor
+de knoppen — de wizard-UI is al getekend voordat een eventuele custom-font-installatie zou
+kunnen draaien. Een lettertype dat niet op de doelmachine staat, valt in de praktijk terug op
+Windows' eigen font-substitutie; dat is een acceptabele beperking, geen bug om op te lossen.
+
+**Twee bugs gemeld door Herbert 2026-09-04, na het uitproberen van de lettertype-keuzelijst.**
+
+1. Een lettertype kiezen in de FontFamily-ComboBox paste de voorvertoning op de knop wél aan, maar
+   de ComboBox zelf toonde de gekozen naam niet in zijn eigen tekstveld. Oorzaak: de app heeft een
+   eigen `ComboBox`-`ControlTemplate` (`Themes/Styles.xaml`) voor de thema-kleuren, en die had geen
+   element met de naam `PART_EditableTextBox` — WPF's `ComboBox` vereist dat exacte template-part
+   om tekst te tonen/bewerken zodra `IsEditable="True"` staat. Zonder dat part verandert de
+   onderliggende `Text`-eigenschap (en dus de gebonden FontFamily) wél degelijk, maar toont de
+   ComboBox nooit wat er feitelijk gekozen is. Opgelost door een `TextBox x:Name="PART_EditableTextBox"`
+   toe te voegen (bewust met een `Binding`+`RelativeSource TemplatedParent`+`Mode=TwoWay` in plaats
+   van een `TemplateBinding`, want die laatste kan geen tekst terugschrijven naar de ComboBox) plus
+   een `IsEditable`-trigger die hem verwisselt met de bestaande alleen-lezen `ContentPresenter`.
+2. De Schermeditor (en twee andere popup-vensters: Wizardschermen kiezen, Projectinstellingen)
+   stonden vast op `ResizeMode="NoResize"`, waardoor sommige van de nieuwe knopvelden (met name de
+   TextColor-rij met de nieuwe "Kies…"-knop erbij) niet meer in de vaste 230px-breedte van het
+   instellingenpaneel pasten. Alle drie nu `ResizeMode="CanResizeWithGrip"` met een `MinWidth`/
+   `MinHeight` op minstens de oorspronkelijke vaste afmeting. Bij de Schermeditor is de rechter
+   Grid-kolom (instellingenpaneel) bovendien van een vaste `230` naar `*` met `MinWidth="260"`
+   gegaan, zodat extra vensterbreedte daar terechtkomt in plaats van bij de linkerlijst of de vaste
+   497px-brede Inno Setup-voorvertoning ernaast; de standaardbreedte van het venster ging van 980
+   naar 1050 zodat het meteen al iets meer ruimte heeft.

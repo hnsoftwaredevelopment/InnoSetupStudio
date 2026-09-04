@@ -73,7 +73,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
 
         if (project.WizardScreens.ShowSelectDestinationPage)
         {
-            _screens.Add(new SelectDestinationPageEditorViewModel(project.AppName, project.DefaultDirName, project.AllowUserToChangeDir)
+            _screens.Add(new SelectDestinationPageEditorViewModel(project.AppName, project.DefaultDirName, project.AllowUserToChangeDir, project.SelectDestinationBrowseButton)
             {
                 WizardImage = wizardImage,
                 WizardSmallImage = wizardSmallImage,
@@ -194,6 +194,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
                     project.DefaultDirName = destination.DefaultDirName;
                     project.AllowUserToChangeDir = destination.AllowUserToChangeDir;
                     project.SelectDestinationScreenButtons = destination.ReadButtonSettings();
+                    project.SelectDestinationBrowseButton = destination.ReadBrowseButtonSettings();
                     break;
             }
         }

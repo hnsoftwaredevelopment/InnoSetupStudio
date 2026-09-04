@@ -234,6 +234,27 @@
   <data name="LabelButtonVisible" xml:space="preserve">
     <value>Visible</value>
   </data>
+  <data name="LabelButtonTextColor" xml:space="preserve">
+    <value>Text color</value>
+  </data>
+  <data name="LabelButtonFontFamily" xml:space="preserve">
+    <value>Font</value>
+  </data>
+  <data name="LabelButtonFontSize" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="LabelButtonFontBold" xml:space="preserve">
+    <value>Bold</value>
+  </data>
+  <data name="ButtonPickColor" xml:space="preserve">
+    <value>Pick…</value>
+  </data>
+  <data name="SectionBrowseButton" xml:space="preserve">
+    <value>Browse button</value>
+  </data>
+  <data name="HintButtonColorFormat" xml:space="preserve">
+    <value>Hexadecimal color code, for example #FFCC00. Empty = no change.</value>
+  </data>
   <data name="HintButtonTriState" xml:space="preserve">
     <value>Indeterminate = inherits the Default screen's value, or otherwise Inno Setup's own default behavior.</value>
   </data>

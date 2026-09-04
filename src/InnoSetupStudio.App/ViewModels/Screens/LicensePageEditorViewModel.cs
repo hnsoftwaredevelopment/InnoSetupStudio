@@ -16,6 +16,10 @@ namespace InnoSetupStudio.App.ViewModels.Screens;
 /// </summary>
 public sealed partial class LicensePageEditorViewModel : WizardScreenEditorViewModel
 {
+    // Eigen kopie van projectFilePath/assetService, alleen voor Browse() hieronder (LicenseFilePath
+    // gaat, anders dan een knopbitmap, via IProjectAssetService naar de projectmap). De basisklasse
+    // WizardScreenEditorViewModel kent deze twee niet (meer): die had ze alleen nodig voor de
+    // inmiddels geschrapte knopbitmap-Bladerknoppen (zie WizardScreenButtonSettings).
     private readonly string? _projectFilePath;
     private readonly IProjectAssetService _assetService;
 
