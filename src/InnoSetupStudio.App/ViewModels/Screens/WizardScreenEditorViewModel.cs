@@ -1,10 +1,7 @@
-using System.IO;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using InnoSetupStudio.App.Localization;
 using InnoSetupStudio.Core.Project;
-using Microsoft.Win32;
 
 namespace InnoSetupStudio.App.ViewModels.Screens;
 
@@ -20,22 +17,11 @@ namespace InnoSetupStudio.App.ViewModels.Screens;
 /// </summary>
 public abstract partial class WizardScreenEditorViewModel : ObservableObject
 {
-    private readonly IProjectAssetService _assetService;
-    private readonly string? _projectFilePath;
-
-    // assetService/projectFilePath staan hier op de basisklasse (in plaats van alleen op
-    // LicensePageEditorViewModel, die ze al voor LicenseFilePath gebruikte) omdat de drie
-    // Browse*ButtonBitmap-commando's hieronder gelden voor elk schermtype: elk scherm heeft zijn
-    // eigen Terug-/Volgende-/Annuleren-knop, dus ook elk schermtype kan daar een bitmap voor
-    // kiezen. LicensePageEditorViewModel geeft voortaan dezelfde twee waarden door aan base(...)
-    // in plaats van ze zelf nog eens op te slaan.
-    protected WizardScreenEditorViewModel(string id, string title, string iconKey, IProjectAssetService assetService, string? projectFilePath)
+    protected WizardScreenEditorViewModel(string id, string title, string iconKey)
     {
         Id = id;
         Title = title;
         IconKey = iconKey;
-        _assetService = assetService;
-        _projectFilePath = projectFilePath;
     }
 
     /// <summary>Komt overeen met de bijbehorende Show*Page-eigenschap in WizardScreenSelection.</summary>
@@ -74,10 +60,10 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
     public required ImageSource WizardSmallImage { get; init; }
 
     /// <summary>
-    /// Schrijfalleen init-eigenschap zodat WizardEditorViewModel de negen knopvelden hieronder in
+    /// Schrijfalleen init-eigenschap zodat WizardEditorViewModel de knopvelden hieronder in
     /// één keer kan meegeven via dezelfde object-initializer-syntax als WizardImage/
     /// WizardSmallImage (<c>new XPageEditorViewModel(...) { ButtonSettings = ... }</c>), in plaats
-    /// van negen losse constructorparameters. <see langword="required"/> zodat een nieuw
+    /// van losse constructorparameters per veld. <see langword="required"/> zodat een nieuw
     /// schermtype dit nooit per ongeluk leeg laat staan.
     /// </summary>
     public required WizardScreenButtonSettings ButtonSettings
@@ -88,20 +74,23 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
             BackButtonEnabled = value.BackButtonEnabled;
             BackButtonVisible = value.BackButtonVisible;
             BackButtonTextColor = value.BackButtonTextColor;
-            BackButtonBackgroundColor = value.BackButtonBackgroundColor;
-            BackButtonBitmapFilePath = value.BackButtonBitmapFilePath;
+            BackButtonFontFamily = value.BackButtonFontFamily;
+            BackButtonFontSize = value.BackButtonFontSize;
+            BackButtonFontBold = value.BackButtonFontBold;
             NextButtonCaption = value.NextButtonCaption;
             NextButtonEnabled = value.NextButtonEnabled;
             NextButtonVisible = value.NextButtonVisible;
             NextButtonTextColor = value.NextButtonTextColor;
-            NextButtonBackgroundColor = value.NextButtonBackgroundColor;
-            NextButtonBitmapFilePath = value.NextButtonBitmapFilePath;
+            NextButtonFontFamily = value.NextButtonFontFamily;
+            NextButtonFontSize = value.NextButtonFontSize;
+            NextButtonFontBold = value.NextButtonFontBold;
             CancelButtonCaption = value.CancelButtonCaption;
             CancelButtonEnabled = value.CancelButtonEnabled;
             CancelButtonVisible = value.CancelButtonVisible;
             CancelButtonTextColor = value.CancelButtonTextColor;
-            CancelButtonBackgroundColor = value.CancelButtonBackgroundColor;
-            CancelButtonBitmapFilePath = value.CancelButtonBitmapFilePath;
+            CancelButtonFontFamily = value.CancelButtonFontFamily;
+            CancelButtonFontSize = value.CancelButtonFontSize;
+            CancelButtonFontBold = value.CancelButtonFontBold;
         }
     }
 
@@ -114,7 +103,7 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
     /// dit wél een custom init-accessor: WizardEditorViewModel maakt één DefaultScreenEditorViewModel
     /// voor de hele sessie en geeft dezelfde (levende) instantie aan elk scherm door, dus een
     /// wijziging op het Standaardscherm moet híer meteen de afgeleide Effective*/Is*-waarden
-    /// bijwerken — vandaar het abonneren op PropertyChanged in plaats van alleen de negen velden
+    /// bijwerken — vandaar het abonneren op PropertyChanged in plaats van alleen de velden
     /// eenmalig te kopiëren (zoals ButtonSettings hierboven wél doet, want dat IS een kopie van
     /// het scherm-eigen, niet-cascaderende deel).
     /// </summary>
@@ -142,15 +131,18 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
         OnPropertyChanged(nameof(EffectiveBackButtonTextColor));
         OnPropertyChanged(nameof(EffectiveNextButtonTextColor));
         OnPropertyChanged(nameof(EffectiveCancelButtonTextColor));
-        OnPropertyChanged(nameof(EffectiveBackButtonBackgroundColor));
-        OnPropertyChanged(nameof(EffectiveNextButtonBackgroundColor));
-        OnPropertyChanged(nameof(EffectiveCancelButtonBackgroundColor));
-        OnPropertyChanged(nameof(EffectiveBackButtonBitmapFilePath));
-        OnPropertyChanged(nameof(EffectiveNextButtonBitmapFilePath));
-        OnPropertyChanged(nameof(EffectiveCancelButtonBitmapFilePath));
+        OnPropertyChanged(nameof(EffectiveBackButtonFontFamily));
+        OnPropertyChanged(nameof(EffectiveNextButtonFontFamily));
+        OnPropertyChanged(nameof(EffectiveCancelButtonFontFamily));
+        OnPropertyChanged(nameof(EffectiveBackButtonFontSize));
+        OnPropertyChanged(nameof(EffectiveNextButtonFontSize));
+        OnPropertyChanged(nameof(EffectiveCancelButtonFontSize));
+        OnPropertyChanged(nameof(EffectiveBackButtonFontBold));
+        OnPropertyChanged(nameof(EffectiveNextButtonFontBold));
+        OnPropertyChanged(nameof(EffectiveCancelButtonFontBold));
     }
 
-    // De negen velden hieronder staan, anders dan WizardImage/WizardSmallImage, wél op de
+    // De velden hieronder staan, anders dan WizardImage/WizardSmallImage, wél op de
     // basisklasse als gewone (niet required init) [ObservableProperty]'s: dit zijn per-scherm
     // gegevens (elk scherm heeft zijn eigen WizardScreenButtonSettings, zie
     // WizardEditorViewModel), niet één projectbrede waarde die overal hetzelfde is. Lege
@@ -185,36 +177,45 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
     [ObservableProperty]
     private bool? _cancelButtonVisible;
 
-    // Kleuren/bitmap (backlogitem 3, sectie 14): zelfde leeg-is-nog-niet-aangepast-conventie als
-    // Caption hierboven, geen apart tri-state type nodig. Zie WizardScreenButtonSettings voor
-    // waarom dit hex-tekst is in plaats van System.Windows.Media.Color.
+    // Tekstkleur en lettertype (backlogitem 3, sectie 14 — herzien op 2026-09-04: achtergrondkleur
+    // en bitmap zijn bewust geschrapt, zie WizardScreenButtonSettings). Zelfde leeg-is-nog-niet-
+    // aangepast-conventie als Caption hierboven.
 
     [ObservableProperty]
     private string _backButtonTextColor = string.Empty;
 
     [ObservableProperty]
-    private string _backButtonBackgroundColor = string.Empty;
+    private string _backButtonFontFamily = string.Empty;
 
     [ObservableProperty]
-    private string _backButtonBitmapFilePath = string.Empty;
+    private int? _backButtonFontSize;
+
+    [ObservableProperty]
+    private bool? _backButtonFontBold;
 
     [ObservableProperty]
     private string _nextButtonTextColor = string.Empty;
 
     [ObservableProperty]
-    private string _nextButtonBackgroundColor = string.Empty;
+    private string _nextButtonFontFamily = string.Empty;
 
     [ObservableProperty]
-    private string _nextButtonBitmapFilePath = string.Empty;
+    private int? _nextButtonFontSize;
+
+    [ObservableProperty]
+    private bool? _nextButtonFontBold;
 
     [ObservableProperty]
     private string _cancelButtonTextColor = string.Empty;
 
     [ObservableProperty]
-    private string _cancelButtonBackgroundColor = string.Empty;
+    private string _cancelButtonFontFamily = string.Empty;
 
     [ObservableProperty]
-    private string _cancelButtonBitmapFilePath = string.Empty;
+    private int? _cancelButtonFontSize;
+
+    [ObservableProperty]
+    private bool? _cancelButtonFontBold;
 
     /// <summary>Inno Setup's eigen standaardtekst voor de Terug-knop op dit scherm, gebruikt zolang
     /// <see cref="BackButtonCaption"/> leeg is. De schermeditor toont hier de studio's eigen
@@ -250,9 +251,12 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
         : !string.IsNullOrWhiteSpace(fromDefaults) ? fromDefaults
         : builtIn;
 
-    // Zelfde drielaags-resolutie als EffectiveXxxCaption hierboven, en dezelfde ResolveCaption-
-    // helper: "builtIn" is hier altijd een lege string (geen kleur/bitmap instellen = Inno Setup's
-    // eigen knopuiterlijk), er is geen studio-eigen vertaalde tekst zoals bij Caption.
+    // Zelfde drielaags-resolutie als EffectiveXxxCaption hierboven voor TextColor/FontFamily
+    // (ResolveCaption hergebruikt, "builtIn" is hier altijd een lege string: geen tekstkleur/geen
+    // lettertype instellen = Inno Setup's eigen knopuiterlijk). FontSize/FontBold zijn geen tekst,
+    // dus die gebruiken gewone null-coalescing zonder ResolveCaption; er is geen derde laag omdat
+    // Inno Setup's eigen standaard lettergrootte/vetgedrukt-status niet als waarde te bepalen valt
+    // — null hier betekent gewoon "geen van beide lagen heeft iets ingesteld".
 
     /// <summary>Wat de voorvertoning daadwerkelijk als tekstkleur op de Terug-knop toont, leeg =
     /// geen override (Inno Setup's eigen kleur blijft gelden).</summary>
@@ -264,23 +268,32 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
     /// <summary>Zie <see cref="EffectiveBackButtonTextColor"/>, maar dan voor de Annuleren-knop.</summary>
     public string EffectiveCancelButtonTextColor => ResolveCaption(CancelButtonTextColor, Defaults.CancelButtonTextColor, string.Empty);
 
-    /// <summary>Zie <see cref="EffectiveBackButtonTextColor"/>, maar dan voor de achtergrondkleur.</summary>
-    public string EffectiveBackButtonBackgroundColor => ResolveCaption(BackButtonBackgroundColor, Defaults.BackButtonBackgroundColor, string.Empty);
+    /// <summary>Zie <see cref="EffectiveBackButtonTextColor"/>, maar dan voor het lettertype.</summary>
+    public string EffectiveBackButtonFontFamily => ResolveCaption(BackButtonFontFamily, Defaults.BackButtonFontFamily, string.Empty);
 
-    /// <summary>Zie <see cref="EffectiveBackButtonBackgroundColor"/>, maar dan voor de Volgende-knop.</summary>
-    public string EffectiveNextButtonBackgroundColor => ResolveCaption(NextButtonBackgroundColor, Defaults.NextButtonBackgroundColor, string.Empty);
+    /// <summary>Zie <see cref="EffectiveBackButtonFontFamily"/>, maar dan voor de Volgende-knop.</summary>
+    public string EffectiveNextButtonFontFamily => ResolveCaption(NextButtonFontFamily, Defaults.NextButtonFontFamily, string.Empty);
 
-    /// <summary>Zie <see cref="EffectiveBackButtonBackgroundColor"/>, maar dan voor de Annuleren-knop.</summary>
-    public string EffectiveCancelButtonBackgroundColor => ResolveCaption(CancelButtonBackgroundColor, Defaults.CancelButtonBackgroundColor, string.Empty);
+    /// <summary>Zie <see cref="EffectiveBackButtonFontFamily"/>, maar dan voor de Annuleren-knop.</summary>
+    public string EffectiveCancelButtonFontFamily => ResolveCaption(CancelButtonFontFamily, Defaults.CancelButtonFontFamily, string.Empty);
 
-    /// <summary>Zie <see cref="EffectiveBackButtonTextColor"/>, maar dan voor de knopbitmap.</summary>
-    public string EffectiveBackButtonBitmapFilePath => ResolveCaption(BackButtonBitmapFilePath, Defaults.BackButtonBitmapFilePath, string.Empty);
+    /// <summary>Zie <see cref="EffectiveBackButtonTextColor"/>, maar dan voor de lettergrootte.</summary>
+    public int? EffectiveBackButtonFontSize => BackButtonFontSize ?? Defaults.BackButtonFontSize;
 
-    /// <summary>Zie <see cref="EffectiveBackButtonBitmapFilePath"/>, maar dan voor de Volgende-knop.</summary>
-    public string EffectiveNextButtonBitmapFilePath => ResolveCaption(NextButtonBitmapFilePath, Defaults.NextButtonBitmapFilePath, string.Empty);
+    /// <summary>Zie <see cref="EffectiveBackButtonFontSize"/>, maar dan voor de Volgende-knop.</summary>
+    public int? EffectiveNextButtonFontSize => NextButtonFontSize ?? Defaults.NextButtonFontSize;
 
-    /// <summary>Zie <see cref="EffectiveBackButtonBitmapFilePath"/>, maar dan voor de Annuleren-knop.</summary>
-    public string EffectiveCancelButtonBitmapFilePath => ResolveCaption(CancelButtonBitmapFilePath, Defaults.CancelButtonBitmapFilePath, string.Empty);
+    /// <summary>Zie <see cref="EffectiveBackButtonFontSize"/>, maar dan voor de Annuleren-knop.</summary>
+    public int? EffectiveCancelButtonFontSize => CancelButtonFontSize ?? Defaults.CancelButtonFontSize;
+
+    /// <summary>Zie <see cref="EffectiveBackButtonTextColor"/>, maar dan voor vetgedrukt.</summary>
+    public bool? EffectiveBackButtonFontBold => BackButtonFontBold ?? Defaults.BackButtonFontBold;
+
+    /// <summary>Zie <see cref="EffectiveBackButtonFontBold"/>, maar dan voor de Volgende-knop.</summary>
+    public bool? EffectiveNextButtonFontBold => NextButtonFontBold ?? Defaults.NextButtonFontBold;
+
+    /// <summary>Zie <see cref="EffectiveBackButtonFontBold"/>, maar dan voor de Annuleren-knop.</summary>
+    public bool? EffectiveCancelButtonFontBold => CancelButtonFontBold ?? Defaults.CancelButtonFontBold;
 
     /// <summary>True tenzij dit scherm, of anders het Standaardscherm, expliciet op onzichtbaar
     /// gezet is.</summary>
@@ -330,49 +343,26 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
 
     partial void OnCancelButtonTextColorChanged(string value) => OnPropertyChanged(nameof(EffectiveCancelButtonTextColor));
 
-    partial void OnBackButtonBackgroundColorChanged(string value) => OnPropertyChanged(nameof(EffectiveBackButtonBackgroundColor));
+    partial void OnBackButtonFontFamilyChanged(string value) => OnPropertyChanged(nameof(EffectiveBackButtonFontFamily));
 
-    partial void OnNextButtonBackgroundColorChanged(string value) => OnPropertyChanged(nameof(EffectiveNextButtonBackgroundColor));
+    partial void OnNextButtonFontFamilyChanged(string value) => OnPropertyChanged(nameof(EffectiveNextButtonFontFamily));
 
-    partial void OnCancelButtonBackgroundColorChanged(string value) => OnPropertyChanged(nameof(EffectiveCancelButtonBackgroundColor));
+    partial void OnCancelButtonFontFamilyChanged(string value) => OnPropertyChanged(nameof(EffectiveCancelButtonFontFamily));
 
-    partial void OnBackButtonBitmapFilePathChanged(string value) => OnPropertyChanged(nameof(EffectiveBackButtonBitmapFilePath));
+    partial void OnBackButtonFontSizeChanged(int? value) => OnPropertyChanged(nameof(EffectiveBackButtonFontSize));
 
-    partial void OnNextButtonBitmapFilePathChanged(string value) => OnPropertyChanged(nameof(EffectiveNextButtonBitmapFilePath));
+    partial void OnNextButtonFontSizeChanged(int? value) => OnPropertyChanged(nameof(EffectiveNextButtonFontSize));
 
-    partial void OnCancelButtonBitmapFilePathChanged(string value) => OnPropertyChanged(nameof(EffectiveCancelButtonBitmapFilePath));
+    partial void OnCancelButtonFontSizeChanged(int? value) => OnPropertyChanged(nameof(EffectiveCancelButtonFontSize));
 
-    // Bladerknoppen voor de drie knopbitmaps: zelfde patroon als LicensePageEditorViewModel.Browse
-    // (OpenFileDialog + IProjectAssetService.Import zodat het project verplaatsbaar blijft), maar
-    // hier één helpermethode voor alle drie in plaats van drie bijna-identieke commando's, want
-    // die verschillen alleen in welk veld ze lezen/schrijven.
+    partial void OnBackButtonFontBoldChanged(bool? value) => OnPropertyChanged(nameof(EffectiveBackButtonFontBold));
 
-    [RelayCommand]
-    private void BrowseBackButtonBitmap() => BackButtonBitmapFilePath = BrowseForBitmap(BackButtonBitmapFilePath);
+    partial void OnNextButtonFontBoldChanged(bool? value) => OnPropertyChanged(nameof(EffectiveNextButtonFontBold));
 
-    [RelayCommand]
-    private void BrowseNextButtonBitmap() => NextButtonBitmapFilePath = BrowseForBitmap(NextButtonBitmapFilePath);
+    partial void OnCancelButtonFontBoldChanged(bool? value) => OnPropertyChanged(nameof(EffectiveCancelButtonFontBold));
 
-    [RelayCommand]
-    private void BrowseCancelButtonBitmap() => CancelButtonBitmapFilePath = BrowseForBitmap(CancelButtonBitmapFilePath);
-
-    private string BrowseForBitmap(string currentPath)
-    {
-        var dialog = new OpenFileDialog
-        {
-            Filter = LocalizationManager.Instance["DialogFilterImageFiles"],
-        };
-
-        if (!string.IsNullOrWhiteSpace(currentPath))
-        {
-            dialog.InitialDirectory = Path.GetDirectoryName(currentPath);
-        }
-
-        return dialog.ShowDialog() == true ? _assetService.Import(_projectFilePath, dialog.FileName) : currentPath;
-    }
-
-    /// <summary>Tegenhanger van de <see cref="ButtonSettings"/>-init-eigenschap: leest de negen
-    /// velden terug in een nieuwe <see cref="WizardScreenButtonSettings"/>, gebruikt door
+    /// <summary>Tegenhanger van de <see cref="ButtonSettings"/>-init-eigenschap: leest de velden
+    /// terug in een nieuwe <see cref="WizardScreenButtonSettings"/>, gebruikt door
     /// WizardEditorViewModel.ApplyTo.</summary>
     public WizardScreenButtonSettings ReadButtonSettings() => new()
     {
@@ -380,19 +370,22 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
         BackButtonEnabled = BackButtonEnabled,
         BackButtonVisible = BackButtonVisible,
         BackButtonTextColor = BackButtonTextColor,
-        BackButtonBackgroundColor = BackButtonBackgroundColor,
-        BackButtonBitmapFilePath = BackButtonBitmapFilePath,
+        BackButtonFontFamily = BackButtonFontFamily,
+        BackButtonFontSize = BackButtonFontSize,
+        BackButtonFontBold = BackButtonFontBold,
         NextButtonCaption = NextButtonCaption,
         NextButtonEnabled = NextButtonEnabled,
         NextButtonVisible = NextButtonVisible,
         NextButtonTextColor = NextButtonTextColor,
-        NextButtonBackgroundColor = NextButtonBackgroundColor,
-        NextButtonBitmapFilePath = NextButtonBitmapFilePath,
+        NextButtonFontFamily = NextButtonFontFamily,
+        NextButtonFontSize = NextButtonFontSize,
+        NextButtonFontBold = NextButtonFontBold,
         CancelButtonCaption = CancelButtonCaption,
         CancelButtonEnabled = CancelButtonEnabled,
         CancelButtonVisible = CancelButtonVisible,
         CancelButtonTextColor = CancelButtonTextColor,
-        CancelButtonBackgroundColor = CancelButtonBackgroundColor,
-        CancelButtonBitmapFilePath = CancelButtonBitmapFilePath,
+        CancelButtonFontFamily = CancelButtonFontFamily,
+        CancelButtonFontSize = CancelButtonFontSize,
+        CancelButtonFontBold = CancelButtonFontBold,
     };
 }

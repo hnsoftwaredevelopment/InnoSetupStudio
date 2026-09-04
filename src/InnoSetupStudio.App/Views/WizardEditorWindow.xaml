@@ -12,7 +12,9 @@
         <converters:IconKeyToGeometryConverter x:Key="IconKeyToGeometryConverter" />
         <converters:BooleanToOpacityConverter x:Key="BooleanToOpacityConverter" />
         <converters:HexColorToBrushConverter x:Key="HexColorToBrushConverter" />
-        <converters:ButtonBackgroundConverter x:Key="ButtonBackgroundConverter" />
+        <converters:FontFamilyOrUnsetConverter x:Key="FontFamilyOrUnsetConverter" />
+        <converters:FontSizeOrUnsetConverter x:Key="FontSizeOrUnsetConverter" />
+        <converters:NullableBoolToFontWeightConverter x:Key="NullableBoolToFontWeightConverter" />
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
         <!-- Gedeeld door beide lijsten hieronder (het Standaardscherm bovenaan en de echte
@@ -58,24 +60,14 @@
                     <TextBox Width="90" Text="{Binding BackButtonTextColor, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock Text="{loc:Loc LabelButtonBackgroundColor}" Width="96" VerticalAlignment="Center" />
-                    <Border Width="18" Height="18" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,4,0"
-                            Background="{Binding BackButtonBackgroundColor, Converter={StaticResource HexColorToBrushConverter}}" />
-                    <TextBox Width="90" Text="{Binding BackButtonBackgroundColor, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="{loc:Loc LabelButtonFontFamily}" Width="96" VerticalAlignment="Center" />
+                    <TextBox Width="120" Text="{Binding BackButtonFontFamily, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
-                <Grid Margin="0,4,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="96" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="{loc:Loc LabelButtonBitmap}" VerticalAlignment="Center" />
-                    <TextBox Grid.Column="1" Text="{Binding BackButtonBitmapFilePath, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0" />
-                    <Button Grid.Column="2" Command="{Binding BrowseBackButtonBitmapCommand}" ToolTip="{loc:Loc ButtonBrowse}"
-                            AutomationProperties.Name="{loc:Loc ButtonBrowse}">
-                        <Path Data="{StaticResource Folder}" Fill="{DynamicResource Brush.TextPrimary}" Stretch="Uniform" Width="14" Height="14" />
-                    </Button>
-                </Grid>
+                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                    <TextBlock Text="{loc:Loc LabelButtonFontSize}" Width="96" VerticalAlignment="Center" />
+                    <TextBox Width="50" Text="{Binding BackButtonFontSize, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,16,0" />
+                    <CheckBox Content="{loc:Loc LabelButtonFontBold}" IsChecked="{Binding BackButtonFontBold}" IsThreeState="True" />
+                </StackPanel>
 
                 <TextBlock x:Name="NextButtonCaptionLabel" Text="{loc:Loc LabelNextButtonSection}" Margin="0,12,0,4" />
                 <TextBox Text="{Binding NextButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"
@@ -93,24 +85,14 @@
                     <TextBox Width="90" Text="{Binding NextButtonTextColor, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock Text="{loc:Loc LabelButtonBackgroundColor}" Width="96" VerticalAlignment="Center" />
-                    <Border Width="18" Height="18" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,4,0"
-                            Background="{Binding NextButtonBackgroundColor, Converter={StaticResource HexColorToBrushConverter}}" />
-                    <TextBox Width="90" Text="{Binding NextButtonBackgroundColor, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="{loc:Loc LabelButtonFontFamily}" Width="96" VerticalAlignment="Center" />
+                    <TextBox Width="120" Text="{Binding NextButtonFontFamily, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
-                <Grid Margin="0,4,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="96" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="{loc:Loc LabelButtonBitmap}" VerticalAlignment="Center" />
-                    <TextBox Grid.Column="1" Text="{Binding NextButtonBitmapFilePath, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0" />
-                    <Button Grid.Column="2" Command="{Binding BrowseNextButtonBitmapCommand}" ToolTip="{loc:Loc ButtonBrowse}"
-                            AutomationProperties.Name="{loc:Loc ButtonBrowse}">
-                        <Path Data="{StaticResource Folder}" Fill="{DynamicResource Brush.TextPrimary}" Stretch="Uniform" Width="14" Height="14" />
-                    </Button>
-                </Grid>
+                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                    <TextBlock Text="{loc:Loc LabelButtonFontSize}" Width="96" VerticalAlignment="Center" />
+                    <TextBox Width="50" Text="{Binding NextButtonFontSize, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,16,0" />
+                    <CheckBox Content="{loc:Loc LabelButtonFontBold}" IsChecked="{Binding NextButtonFontBold}" IsThreeState="True" />
+                </StackPanel>
 
                 <TextBlock x:Name="CancelButtonCaptionLabel" Text="{loc:Loc LabelCancelButtonSection}" Margin="0,12,0,4" />
                 <TextBox Text="{Binding CancelButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"
@@ -128,24 +110,14 @@
                     <TextBox Width="90" Text="{Binding CancelButtonTextColor, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock Text="{loc:Loc LabelButtonBackgroundColor}" Width="96" VerticalAlignment="Center" />
-                    <Border Width="18" Height="18" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,4,0"
-                            Background="{Binding CancelButtonBackgroundColor, Converter={StaticResource HexColorToBrushConverter}}" />
-                    <TextBox Width="90" Text="{Binding CancelButtonBackgroundColor, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="{loc:Loc LabelButtonFontFamily}" Width="96" VerticalAlignment="Center" />
+                    <TextBox Width="120" Text="{Binding CancelButtonFontFamily, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
-                <Grid Margin="0,4,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="96" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="{loc:Loc LabelButtonBitmap}" VerticalAlignment="Center" />
-                    <TextBox Grid.Column="1" Text="{Binding CancelButtonBitmapFilePath, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0" />
-                    <Button Grid.Column="2" Command="{Binding BrowseCancelButtonBitmapCommand}" ToolTip="{loc:Loc ButtonBrowse}"
-                            AutomationProperties.Name="{loc:Loc ButtonBrowse}">
-                        <Path Data="{StaticResource Folder}" Fill="{DynamicResource Brush.TextPrimary}" Stretch="Uniform" Width="14" Height="14" />
-                    </Button>
-                </Grid>
+                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                    <TextBlock Text="{loc:Loc LabelButtonFontSize}" Width="96" VerticalAlignment="Center" />
+                    <TextBox Width="50" Text="{Binding CancelButtonFontSize, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,16,0" />
+                    <CheckBox Content="{loc:Loc LabelButtonFontBold}" IsChecked="{Binding CancelButtonFontBold}" IsThreeState="True" />
+                </StackPanel>
 
                 <TextBlock Text="{Binding HintButtonCaptionEmptyText}" FontSize="11" TextWrapping="Wrap"
                            Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,8,0,0" />
@@ -220,6 +192,35 @@
                 <CheckBox Content="{loc:Loc LabelAllowUserToChangeDir}" IsChecked="{Binding AllowUserToChangeDir}"
                           Foreground="{DynamicResource Brush.TextPrimary}" />
                 <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" />
+
+                <!-- Schermspecifieke "Bladeren"-knop (Inno Setup's WizardForm.DirBrowseButton,
+                     zie BrowseButtonSettings): bewust een eigen sectie, los van
+                     ButtonSettingsSectionTemplate hierboven (Terug/Volgende/Annuleren) — deze knop
+                     komt maar op dit scherm voor en heeft geen Caption. -->
+                <TextBlock Text="{loc:Loc SectionBrowseButton}" FontWeight="Bold" Margin="0,20,0,8" />
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                    <CheckBox Content="{loc:Loc LabelButtonEnabled}" IsChecked="{Binding BrowseButtonEnabled}"
+                              IsThreeState="True" Margin="0,0,16,0" />
+                    <CheckBox Content="{loc:Loc LabelButtonVisible}" IsChecked="{Binding BrowseButtonVisible}"
+                              IsThreeState="True" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                    <TextBlock Text="{loc:Loc LabelButtonTextColor}" Width="96" VerticalAlignment="Center" />
+                    <Border Width="18" Height="18" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,4,0"
+                            Background="{Binding BrowseButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}" />
+                    <TextBox Width="90" Text="{Binding BrowseButtonTextColor, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                    <TextBlock Text="{loc:Loc LabelButtonFontFamily}" Width="96" VerticalAlignment="Center" />
+                    <TextBox Width="120" Text="{Binding BrowseButtonFontFamily, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                    <TextBlock Text="{loc:Loc LabelButtonFontSize}" Width="96" VerticalAlignment="Center" />
+                    <TextBox Width="50" Text="{Binding BrowseButtonFontSize, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,16,0" />
+                    <CheckBox Content="{loc:Loc LabelButtonFontBold}" IsChecked="{Binding BrowseButtonFontBold}" IsThreeState="True" />
+                </StackPanel>
+                <TextBlock Text="{loc:Loc HintButtonColorFormat}" FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,4,0,0" />
             </StackPanel>
         </DataTemplate>
 
@@ -316,47 +317,40 @@
                          als echte IsEnabled. -->
                     <Border DockPanel.Dock="Bottom" BorderBrush="#FFACA899" BorderThickness="0,1,0,0" Padding="10">
                         <DockPanel LastChildFill="False">
-                            <!-- Foreground/Background: EffectiveXxxTextColor/-BackgroundColor/-BitmapFilePath
-                                 (backlogitem 3, sectie 14). Leeg/ongeldig geeft UnsetValue terug
-                                 (zie HexColorToBrushConverter/ButtonBackgroundConverter), dus de
-                                 knop valt dan gewoon terug op zijn eigen standaard WPF-uiterlijk. -->
+                            <!-- Foreground/FontFamily/FontSize/FontWeight: EffectiveXxxTextColor/
+                                 -FontFamily/-FontSize/-FontBold (backlogitem 3, sectie 14). Leeg/
+                                 null geeft UnsetValue terug (zie HexColorToBrushConverter/
+                                 FontFamilyOrUnsetConverter/FontSizeOrUnsetConverter/
+                                 NullableBoolToFontWeightConverter), dus de knop valt dan gewoon
+                                 terug op zijn eigen standaard WPF-uiterlijk. Geen Background-
+                                 binding meer: TNewButton is een door Windows getekende
+                                 standaardknop, een achtergrondkleur/bitmap is bewust geschrapt
+                                 (zie WizardScreenButtonSettings). -->
                             <Button DockPanel.Dock="Left" Content="{Binding SelectedScreen.EffectiveCancelButtonCaption}"
                                     IsEnabled="{Binding SelectedScreen.IsCancelButtonEnabled}"
                                     Visibility="{Binding SelectedScreen.IsCancelButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                     Foreground="{Binding SelectedScreen.EffectiveCancelButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
-                                    Padding="12,4" MinWidth="80">
-                                <Button.Background>
-                                    <MultiBinding Converter="{StaticResource ButtonBackgroundConverter}">
-                                        <Binding Path="SelectedScreen.EffectiveCancelButtonBackgroundColor" />
-                                        <Binding Path="SelectedScreen.EffectiveCancelButtonBitmapFilePath" />
-                                    </MultiBinding>
-                                </Button.Background>
-                            </Button>
+                                    FontFamily="{Binding SelectedScreen.EffectiveCancelButtonFontFamily, Converter={StaticResource FontFamilyOrUnsetConverter}}"
+                                    FontSize="{Binding SelectedScreen.EffectiveCancelButtonFontSize, Converter={StaticResource FontSizeOrUnsetConverter}}"
+                                    FontWeight="{Binding SelectedScreen.EffectiveCancelButtonFontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"
+                                    Padding="12,4" MinWidth="80" />
                             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                                 <Button Content="{Binding SelectedScreen.EffectiveBackButtonCaption}" Command="{Binding BackCommand}"
                                         Visibility="{Binding SelectedScreen.IsBackButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                         Opacity="{Binding SelectedScreen.IsBackButtonEnabled, Converter={StaticResource BooleanToOpacityConverter}}"
                                         Foreground="{Binding SelectedScreen.EffectiveBackButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
-                                        Padding="12,4" Margin="0,0,8,0" MinWidth="80">
-                                    <Button.Background>
-                                        <MultiBinding Converter="{StaticResource ButtonBackgroundConverter}">
-                                            <Binding Path="SelectedScreen.EffectiveBackButtonBackgroundColor" />
-                                            <Binding Path="SelectedScreen.EffectiveBackButtonBitmapFilePath" />
-                                        </MultiBinding>
-                                    </Button.Background>
-                                </Button>
+                                        FontFamily="{Binding SelectedScreen.EffectiveBackButtonFontFamily, Converter={StaticResource FontFamilyOrUnsetConverter}}"
+                                        FontSize="{Binding SelectedScreen.EffectiveBackButtonFontSize, Converter={StaticResource FontSizeOrUnsetConverter}}"
+                                        FontWeight="{Binding SelectedScreen.EffectiveBackButtonFontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"
+                                        Padding="12,4" Margin="0,0,8,0" MinWidth="80" />
                                 <Button Content="{Binding SelectedScreen.EffectiveNextButtonCaption}" Command="{Binding NextCommand}"
                                         Visibility="{Binding SelectedScreen.IsNextButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                         Opacity="{Binding SelectedScreen.IsNextButtonEnabled, Converter={StaticResource BooleanToOpacityConverter}}"
                                         Foreground="{Binding SelectedScreen.EffectiveNextButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
-                                        Padding="12,4" MinWidth="80">
-                                    <Button.Background>
-                                        <MultiBinding Converter="{StaticResource ButtonBackgroundConverter}">
-                                            <Binding Path="SelectedScreen.EffectiveNextButtonBackgroundColor" />
-                                            <Binding Path="SelectedScreen.EffectiveNextButtonBitmapFilePath" />
-                                        </MultiBinding>
-                                    </Button.Background>
-                                </Button>
+                                        FontFamily="{Binding SelectedScreen.EffectiveNextButtonFontFamily, Converter={StaticResource FontFamilyOrUnsetConverter}}"
+                                        FontSize="{Binding SelectedScreen.EffectiveNextButtonFontSize, Converter={StaticResource FontSizeOrUnsetConverter}}"
+                                        FontWeight="{Binding SelectedScreen.EffectiveNextButtonFontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"
+                                        Padding="12,4" MinWidth="80" />
                             </StackPanel>
                         </DockPanel>
                     </Border>

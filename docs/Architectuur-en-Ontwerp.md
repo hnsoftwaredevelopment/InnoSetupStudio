@@ -951,22 +951,45 @@ extra rework in willekeurige volgorde.
 
 - Punt 3 (Bladeren-knop op de Bestemmingspagina): PR #13, gemerged. `SelectDestinationPageEditorViewModel.BrowseCommand`
   met `OpenFolderDialog`, zelfde patroon als de licentiepagina.
-- Punt 2 (tekstkleur/achtergrondkleur/bitmap): in uitvoering op
-  `feature/button-color-bitmap-properties`. Negen nieuwe velden op `WizardScreenButtonSettings`
-  (drie per knop: `TextColor`/`BackgroundColor`/`BitmapFilePath`, alle drie hex-tekst/pad-string
-  met dezelfde leeg-is-onveranderd-conventie als Caption), dezelfde drielaags-resolutie
+- Punt 2 (tekstkleur/lettertype), zoals uiteindelijk gescoped — zie de scope-wijziging hieronder:
+  op `feature/button-color-bitmap-properties`. Zes nieuwe velden op `WizardScreenButtonSettings`
+  (per knop: `TextColor`, `FontFamily`, `FontSize`, `FontBold`), dezelfde drielaags-resolutie
   (eigen waarde → Standaardscherm → Inno Setup's eigen gedrag) als de bestaande negen velden.
-  Kleuren zijn hex-tekst (`#RRGGBB`) in plaats van `System.Windows.Media.Color`, zodat
-  `InnoSetupStudio.Core` WPF-vrij blijft. Twee nieuwe converters
-  (`HexColorToBrushConverter`/`ButtonBackgroundConverter`) tonen het resultaat live in de
-  voorvertoning, met UnsetValue (niet Transparent) als terugvalwaarde bij leeg/ongeldig, zodat een
-  niet-ingevulde knop gewoon zijn eigen WPF-standaarduiterlijk houdt. Bitmap gebruikt
-  `IProjectAssetService` (nu ook op de basisklasse `WizardScreenEditorViewModel` in plaats van
-  alleen op de licentiepagina) zodat een gekozen afbeelding, net als het licentiebestand, naar de
-  projectmap gekopieerd wordt.
-- **Belangrijke kanttekening voor de generator (fase 5/6), nog niet gebouwd.** Inno Setup's eigen
-  knopklasse (`TNewButton`) ondersteunt `Font.Color` (tekstkleur) rechtstreeks via Pascal Script.
-  Een achtergrondkleur of eigen bitmap op een standaardknop kent Inno Setup niet — dat vereist een
-  zelf getekende knop (`OnPaint`/`OnDrawItem`-achtige aanpak in Pascal Script), aanzienlijk meer
-  werk dan de tekstvervanging die Caption al nodig had. Dit model legt de gegevens nu al goed vast;
-  de generator zal voor deze twee velden meer moeten doen dan voor Caption/Enabled/Visible.
+  `TextColor` is hex-tekst (`#RRGGBB`) in plaats van `System.Windows.Media.Color`, zodat
+  `InnoSetupStudio.Core` WPF-vrij blijft. Vier converters (`HexColorToBrushConverter`,
+  `FontFamilyOrUnsetConverter`, `FontSizeOrUnsetConverter`, `NullableBoolToFontWeightConverter`)
+  tonen het resultaat live in de voorvertoning, met UnsetValue (niet Transparent/een vaste
+  standaardwaarde) als terugvalwaarde bij leeg/ongeldig/null, zodat een niet-ingevulde knop gewoon
+  zijn eigen WPF-standaarduiterlijk houdt.
+
+**Scope-wijziging 2026-09-04, na review door Herbert van bovenstaande kanttekening.** Herbert
+besloot achtergrondkleur en bitmap op de knop volledig te schrappen (niet alleen uit te stellen):
+de extra generatorwerk (zelf getekende knop) staat niet in verhouding tot hoe vaak dit gebruikt
+zou worden, met name de bitmap. Tegelijk wees hij op een ontbrekend veld: lettertype
+(Font.Name/Size/Style), wél gewone `TFont`-eigenschappen die op een standaard `TNewButton` direct
+werken, dus zonder de extra generatorwerk van achtergrondkleur/bitmap. Verder gaf hij aan dat de
+Bestemmingspagina zijn eigen, schermspecifieke "Bladeren"-knop (Inno Setup's
+`WizardForm.DirBrowseButton`) mist in de eigenschappenlijst — expliciet losstaand van het
+Standaardscherm-model, want die knop komt maar op één scherm voor. Alle drie in dezelfde PR #14
+meegenomen in plaats van als apart vervolg:
+
+- `BackgroundColor`/`BitmapFilePath` (en de bijbehorende `ButtonBackgroundConverter`,
+  knopbitmap-Bladerknoppen en `IProjectAssetService`-plumbing op de basisklasse) volledig
+  verwijderd uit `WizardScreenButtonSettings`, `WizardScreenEditorViewModel`,
+  `DefaultScreenEditorViewModel` en de schermeditor-XAML.
+- `FontFamily` (string)/`FontSize` (int?)/`FontBold` (bool?) toegevoegd aan
+  `WizardScreenButtonSettings` en `DefaultScreenEditorViewModel`, met dezelfde drielaags-Effective*-
+  resolutie als de overige knopvelden op `WizardScreenEditorViewModel` (`FontFamily` via
+  `ResolveCaption`, `FontSize`/`FontBold` via eenvoudige `??`-val omdat er geen "Inno-ingebouwde"
+  derde laag bestaat voor deze twee).
+- Nieuw model `BrowseButtonSettings` (Enabled/Visible/TextColor/FontFamily/FontSize/FontBold, geen
+  Caption) voor de Bestemmingspagina's eigen Bladeren-knop, met een eigen property
+  `InstallerProject.SelectDestinationBrowseButton` — bewust géén drielaags-resolutie via het
+  Standaardscherm, deze knop komt maar op één scherm voor.
+
+**Kanttekening voor de generator (fase 5/6), nog niet gebouwd.** Inno Setup's eigen knopklasse
+(`TNewButton`) ondersteunt `Font.Color`/`Font.Name`/`Font.Size`/`Font.Style` rechtstreeks via
+Pascal Script — de generator zet deze velden voor Caption/Enabled/Visible/TextColor/Font* op
+dezelfde manier om als de bestaande Caption-velden, geen extra werk nodig. Achtergrondkleur en
+bitmap zijn dus ook geen openstaand punt meer voor de generator: die zijn uit het model geschrapt,
+niet alleen uitgesteld.

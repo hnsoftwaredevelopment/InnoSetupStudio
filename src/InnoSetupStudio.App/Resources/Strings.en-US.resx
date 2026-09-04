@@ -237,11 +237,17 @@
   <data name="LabelButtonTextColor" xml:space="preserve">
     <value>Text color</value>
   </data>
-  <data name="LabelButtonBackgroundColor" xml:space="preserve">
-    <value>Background color</value>
+  <data name="LabelButtonFontFamily" xml:space="preserve">
+    <value>Font</value>
   </data>
-  <data name="LabelButtonBitmap" xml:space="preserve">
-    <value>Bitmap</value>
+  <data name="LabelButtonFontSize" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="LabelButtonFontBold" xml:space="preserve">
+    <value>Bold</value>
+  </data>
+  <data name="SectionBrowseButton" xml:space="preserve">
+    <value>Browse button</value>
   </data>
   <data name="HintButtonColorFormat" xml:space="preserve">
     <value>Hexadecimal color code, for example #FFCC00. Empty = no change.</value>

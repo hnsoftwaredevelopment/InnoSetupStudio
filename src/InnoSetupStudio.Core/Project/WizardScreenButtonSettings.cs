@@ -13,16 +13,20 @@ namespace InnoSetupStudio.Core.Project;
 /// ingeschakeld/zichtbaar-gedrag: Inno Setup's eigen logica (bijvoorbeeld dat Terug op het eerste
 /// scherm vanzelf uitstaat) blijft dan intact. Alleen expliciet true/false overschrijft dat.
 ///
-/// TextColor/BackgroundColor/BitmapFilePath (backlogitem uit sectie 14 van de architectuurdoc)
-/// volgen dezelfde leeg-is-onveranderd-conventie als Caption: een lege string laat Inno Setup's
-/// eigen knopuiterlijk intact. Kleuren zijn hex-tekst ("#RRGGBB" of "#AARRGGBB", zoals WPF's eigen
-/// ColorConverter accepteert) in plaats van een eigen kleurtype, zodat dit model — net als de rest
-/// van dit bestand — geen WPF-afhankelijkheid nodig heeft (InnoSetupStudio.Core kent geen
-/// System.Windows). BitmapFilePath is, net als LicenseFilePath, een pad dat IProjectAssetService
-/// naar de projectmap kopieert zodra het van elders komt. De generator (fase 5/6) zal deze drie
-/// velden, net als Caption, moeten omzetten naar Pascal Script op TNewButton — Inno Setup's eigen
-/// knopklasse ondersteunt Font.Color (tekstkleur) direct, maar geen achtergrondkleur of bitmap op
-/// een standaardknop; die twee vereisen zelf-getekende knoppen in de generator, nog niet gebouwd.
+/// TextColor/FontFamily/FontSize/FontBold (backlogitem uit sectie 14 van de architectuurdoc)
+/// volgen dezelfde leeg-is-onveranderd-conventie als Caption: een lege string/null laat Inno
+/// Setup's eigen knopuiterlijk intact. TextColor is hex-tekst ("#RRGGBB" of "#AARRGGBB", zoals
+/// WPF's eigen ColorConverter accepteert) in plaats van een eigen kleurtype, zodat dit model — net
+/// als de rest van dit bestand — geen WPF-afhankelijkheid nodig heeft (InnoSetupStudio.Core kent
+/// geen System.Windows). De generator (fase 5/6) zal deze velden, net als Caption, moeten omzetten
+/// naar Pascal Script op TNewButton: Font.Color/Font.Name/Font.Size/Font.Style zijn gewone
+/// TFont-eigenschappen die op een standaardknop direct werken.
+///
+/// Achtergrondkleur en een bitmap op de knop zijn bewust NIET opgenomen: TNewButton wordt door
+/// Windows' eigen thema-engine getekend, dus een achtergrondkleur of bitmap zetten vereist het
+/// uitschakelen van de Windows-thematisering en een zelf-getekende knop (OnPaint-achtig) in Pascal
+/// Script — vergelijkbare extra generatorwerk voor beide, en niet iets wat Inno Setup's
+/// standaardknop native ondersteunt. Herbert heeft dit expliciet geschrapt (2026-09-04).
 /// </summary>
 public sealed class WizardScreenButtonSettings
 {
@@ -34,9 +38,11 @@ public sealed class WizardScreenButtonSettings
 
     public string BackButtonTextColor { get; set; } = string.Empty;
 
-    public string BackButtonBackgroundColor { get; set; } = string.Empty;
+    public string BackButtonFontFamily { get; set; } = string.Empty;
 
-    public string BackButtonBitmapFilePath { get; set; } = string.Empty;
+    public int? BackButtonFontSize { get; set; }
+
+    public bool? BackButtonFontBold { get; set; }
 
     public string NextButtonCaption { get; set; } = string.Empty;
 
@@ -46,9 +52,11 @@ public sealed class WizardScreenButtonSettings
 
     public string NextButtonTextColor { get; set; } = string.Empty;
 
-    public string NextButtonBackgroundColor { get; set; } = string.Empty;
+    public string NextButtonFontFamily { get; set; } = string.Empty;
 
-    public string NextButtonBitmapFilePath { get; set; } = string.Empty;
+    public int? NextButtonFontSize { get; set; }
+
+    public bool? NextButtonFontBold { get; set; }
 
     public string CancelButtonCaption { get; set; } = string.Empty;
 
@@ -58,7 +66,9 @@ public sealed class WizardScreenButtonSettings
 
     public string CancelButtonTextColor { get; set; } = string.Empty;
 
-    public string CancelButtonBackgroundColor { get; set; } = string.Empty;
+    public string CancelButtonFontFamily { get; set; } = string.Empty;
 
-    public string CancelButtonBitmapFilePath { get; set; } = string.Empty;
+    public int? CancelButtonFontSize { get; set; }
+
+    public bool? CancelButtonFontBold { get; set; }
 }

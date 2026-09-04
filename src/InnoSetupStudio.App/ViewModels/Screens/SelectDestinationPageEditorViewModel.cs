@@ -16,12 +16,18 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
 {
     private readonly string _appName;
 
-    public SelectDestinationPageEditorViewModel(string appName, string defaultDirName, bool allowUserToChangeDir, IProjectAssetService assetService, string? projectFilePath)
-        : base("ShowSelectDestinationPage", LocalizationManager.Instance["WizardScreenSelectDestination"], "Folder", assetService, projectFilePath)
+    public SelectDestinationPageEditorViewModel(string appName, string defaultDirName, bool allowUserToChangeDir, BrowseButtonSettings browseButtonSettings)
+        : base("ShowSelectDestinationPage", LocalizationManager.Instance["WizardScreenSelectDestination"], "Folder")
     {
         _appName = appName;
         _defaultDirName = defaultDirName;
         _allowUserToChangeDir = allowUserToChangeDir;
+        _browseButtonEnabled = browseButtonSettings.Enabled;
+        _browseButtonVisible = browseButtonSettings.Visible;
+        _browseButtonTextColor = browseButtonSettings.TextColor;
+        _browseButtonFontFamily = browseButtonSettings.FontFamily;
+        _browseButtonFontSize = browseButtonSettings.FontSize;
+        _browseButtonFontBold = browseButtonSettings.FontBold;
     }
 
     [ObservableProperty]
@@ -66,4 +72,41 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
             DefaultDirName = dialog.FolderName;
         }
     }
+
+    // Eigenschappen van de schermspecifieke "Bladeren"-knop zelf (Inno Setup's
+    // WizardForm.DirBrowseButton) — niet te verwarren met de Browse()-opdracht hierboven, die de
+    // knop is in Inno Setup Studio's EIGEN UI om een map te kiezen voor DefaultDirName. Zie
+    // BrowseButtonSettings voor waarom dit los staat van de drie gedeelde Terug-/Volgende-/
+    // Annuleren-knoppen: deze knop komt maar op dit ene scherm voor, dus geen Effective*-resolutie
+    // via het Standaardscherm, en bewust geen Caption (Herbert heeft dat veld niet gevraagd).
+
+    [ObservableProperty]
+    private bool? _browseButtonEnabled;
+
+    [ObservableProperty]
+    private bool? _browseButtonVisible;
+
+    [ObservableProperty]
+    private string _browseButtonTextColor;
+
+    [ObservableProperty]
+    private string _browseButtonFontFamily;
+
+    [ObservableProperty]
+    private int? _browseButtonFontSize;
+
+    [ObservableProperty]
+    private bool? _browseButtonFontBold;
+
+    /// <summary>Tegenhanger van de Bladerknop-velden in de constructor, gebruikt door
+    /// WizardEditorViewModel.ApplyTo.</summary>
+    public BrowseButtonSettings ReadBrowseButtonSettings() => new()
+    {
+        Enabled = BrowseButtonEnabled,
+        Visible = BrowseButtonVisible,
+        TextColor = BrowseButtonTextColor,
+        FontFamily = BrowseButtonFontFamily,
+        FontSize = BrowseButtonFontSize,
+        FontBold = BrowseButtonFontBold,
+    };
 }
