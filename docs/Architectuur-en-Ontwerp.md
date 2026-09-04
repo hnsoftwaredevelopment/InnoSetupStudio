@@ -633,9 +633,11 @@ huidige aanpak.
 
 ### 12.5 Vervolg
 
-Voor de overige tien standaardschermen volgt dezelfde inventarisatie (§12.1-mechanisme × generiek/
-scherm-specifiek) zodra hun editor aan de beurt is in fase 4 — zelfde scope-afbakening-per-PR-
-aanpak als tot nu toe, nu alleen vooraf uitgezocht in plaats van tijdens het bouwen.
+Voor de overige acht standaardschermen (elf in totaal uit §11.6, min de drie die al een editor
+hebben: Welkomst-, licentie- en bestemmingsscherm) volgt dezelfde inventarisatie (§12.1-mechanisme
+× generiek/scherm-specifiek) zodra hun editor aan de beurt is in fase 4 — zelfde
+scope-afbakening-per-PR-aanpak als tot nu toe, nu alleen vooraf uitgezocht in plaats van tijdens
+het bouwen.
 
 ### 12.6 Standaardscherm: één centrale plek voor cascaderende standaardwaarden (2026-09-04, vervolg)
 
@@ -698,7 +700,10 @@ Nog niet gebouwd — vastgelegd ter voorbereiding op de keuze voor de eerstvolge
 
 ### 12.7 Visuele taal en interactie: standaard versus aangepast (2026-09-04, vervolg)
 
-Antwoord op de twee openstaande UI-vragen uit §12.6.
+Antwoord op de eerste van de twee openstaande UI-vragen uit §12.6 (zwart/wit versus kleur, en het
+contextmenu dat daarbij hoort). De tweede vraag — wat de voorvertoning van het Standaardscherm zelf
+toont — blijft open zoals in §12.6 vastgelegd; dat is nog geen ontwerpbeslissing, alleen twee
+werkbare richtingen.
 
 **Zwart/wit versus kleur.** Herberts voorstel: het meegeleverde standaardbeeld (de zwart/wit
 conversie die hij al bij PR #9 koos) blijft het visuele signaal voor "dit is de out-of-the-box
