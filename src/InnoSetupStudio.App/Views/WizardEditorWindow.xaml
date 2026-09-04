@@ -13,6 +13,25 @@
         <converters:BooleanToOpacityConverter x:Key="BooleanToOpacityConverter" />
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
+        <!-- Gedeeld door beide lijsten hieronder (het Standaardscherm bovenaan en de echte
+             installerschermen eronder): icoon + naam, hetzelfde voor allebei. Beide VM-typen
+             (DefaultScreenEditorViewModel en WizardScreenEditorViewModel) hebben een Title- en
+             IconKey-eigenschap met dezelfde naam, dus deze ene template werkt voor beide zonder
+             DataType-onderscheid. -->
+        <DataTemplate x:Key="ScreenRowTemplate">
+            <Grid Margin="6,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Path Grid.Column="0" Data="{Binding IconKey, Converter={StaticResource IconKeyToGeometryConverter}}"
+                      Fill="{DynamicResource Brush.TextSecondary}" Stretch="Uniform"
+                      Width="14" Height="14" Margin="0,0,10,0" />
+                <TextBlock Grid.Column="1" Text="{Binding Title}" VerticalAlignment="Center"
+                           TextWrapping="Wrap" />
+            </Grid>
+        </DataTemplate>
+
         <!-- Gedeeld door alle drie de instellingenpanelen hieronder (Welkom/Licentie/Bestemming):
              Terug-/Volgende-/Annuleren-knop per scherm aanpasbaar maken. Staat op de basisklasse
              WizardScreenEditorViewModel, dus deze template werkt voor elk schermtype zonder een
@@ -51,9 +70,9 @@
                               IsThreeState="True" />
                 </StackPanel>
 
-                <TextBlock Text="{loc:Loc HintButtonCaptionEmpty}" FontSize="11" TextWrapping="Wrap"
+                <TextBlock Text="{Binding HintButtonCaptionEmptyText}" FontSize="11" TextWrapping="Wrap"
                            Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,8,0,0" />
-                <TextBlock Text="{loc:Loc HintButtonTriState}" FontSize="11" TextWrapping="Wrap"
+                <TextBlock Text="{Binding HintButtonTriStateText}" FontSize="11" TextWrapping="Wrap"
                            Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,4,0,0" />
             </StackPanel>
         </DataTemplate>
@@ -113,6 +132,18 @@
                 <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" />
             </StackPanel>
         </DataTemplate>
+
+        <!-- Het Standaardscherm (§12.6/§12.7): geen eigen velden buiten de negen knopvelden, dus
+             alleen de toelichting plus dezelfde ButtonSettingsSectionTemplate als de drie echte
+             schermen hierboven — dit VM-type heeft dezelfde negen eigenschapsnamen (zie
+             DefaultScreenEditorViewModel), dus de gedeelde template werkt hier ongewijzigd. -->
+        <DataTemplate DataType="{x:Type vm:DefaultScreenEditorViewModel}" x:Key="DefaultScreenPropertyPanelTemplate">
+            <StackPanel>
+                <TextBlock Text="{loc:Loc ScreenEditorDefaultScreenInfo}" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Brush.TextSecondary}" />
+                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" />
+            </StackPanel>
+        </DataTemplate>
     </Window.Resources>
 
     <DockPanel Margin="20">
@@ -138,14 +169,17 @@
         <TextBlock DockPanel.Dock="Top" Text="{loc:Loc ScreenEditorPreviewDisclaimer}" TextWrapping="Wrap"
                    Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11" Margin="0,0,0,16" />
 
-        <!-- Geen van de nog ondersteunde schermen staat aan: toelichting in plaats van de drie
-             lege panelen. HasNoScreens is de expliciete tegenhanger van HasScreens hieronder,
-             puur om hier geen tweede (inverterende) converter voor te hoeven schrijven. -->
-        <TextBlock Text="{loc:Loc ScreenEditorNoScreens}" TextWrapping="Wrap"
-                   Foreground="{DynamicResource Brush.TextSecondary}"
+        <!-- Geen van de nog ondersteunde schermen staat aan: aanvullende toelichting BOVEN de
+             editor, niet in plaats ervan — het Standaardscherm hieronder bestaat en is bewerkbaar
+             ongeacht welke echte schermen aan staan (zie WizardEditorViewModel.HasScreens), dus de
+             Grid hieronder blijft altijd zichtbaar. HasNoScreens is de expliciete tegenhanger van
+             HasScreens, puur om hier geen tweede (inverterende) converter voor te hoeven
+             schrijven. -->
+        <TextBlock DockPanel.Dock="Top" Text="{loc:Loc ScreenEditorNoScreens}" TextWrapping="Wrap"
+                   Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,16"
                    Visibility="{Binding HasNoScreens, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
-        <Grid Visibility="{Binding HasScreens, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="180" />
                 <ColumnDefinition Width="16" />
@@ -154,25 +188,22 @@
                 <ColumnDefinition Width="230" />
             </Grid.ColumnDefinitions>
 
-            <!-- Linkerlijst: de schermen in Inno Setup's eigen volgorde. -->
-            <ListBox Grid.Column="0" ItemsSource="{Binding Screens}" SelectedItem="{Binding SelectedScreen}"
-                     Background="Transparent" BorderThickness="0">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <Grid Margin="6,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Path Grid.Column="0" Data="{Binding IconKey, Converter={StaticResource IconKeyToGeometryConverter}}"
-                                  Fill="{DynamicResource Brush.TextSecondary}" Stretch="Uniform"
-                                  Width="14" Height="14" Margin="0,0,10,0" />
-                            <TextBlock Grid.Column="1" Text="{Binding Title}" VerticalAlignment="Center"
-                                       TextWrapping="Wrap" />
-                        </Grid>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+            <!-- Linkerlijst: het Standaardscherm in zijn eigen rij bovenaan, duidelijk visueel
+                 gescheiden door een scheidingslijn (§12.7 — bewust geen "scherm nul" tussen de
+                 echte installerschermen), daaronder de echte schermen in Inno Setup's eigen
+                 volgorde. Twee aparte ListBoxen die allebei naar dezelfde SelectedScreen
+                 two-way-binden: selecteer je een item in de ene lijst, dan verliest de andere zijn
+                 markering vanzelf (SelectedItem vindt daar dan geen match), zonder dat daar extra
+                 code voor nodig is. -->
+            <DockPanel Grid.Column="0">
+                <ListBox DockPanel.Dock="Top" ItemsSource="{Binding DefaultScreenRow}"
+                         SelectedItem="{Binding SelectedScreen}" ItemTemplate="{StaticResource ScreenRowTemplate}"
+                         Background="Transparent" BorderThickness="0" />
+                <Separator DockPanel.Dock="Top" Margin="6,4" />
+                <ListBox ItemsSource="{Binding Screens}" SelectedItem="{Binding SelectedScreen}"
+                         ItemTemplate="{StaticResource ScreenRowTemplate}"
+                         Background="Transparent" BorderThickness="0" />
+            </DockPanel>
 
             <!-- Voorvertoning: een nabootsing van Inno Setup's eigen wizardvenster, met vaste
                  afmetingen en vaste (niet-thema-afhankelijke) kleuren, los van het scherm-VM-type
@@ -182,7 +213,8 @@
                  Visible-instellingen van het geselecteerde scherm te kunnen voorvertonen, zie
                  ButtonSettingsSectionTemplate hierboven. -->
             <Border Grid.Column="2" Width="497" Height="400" BorderBrush="#FF888888" BorderThickness="1"
-                    Background="#FFF0F0F0">
+                    Background="#FFF0F0F0"
+                    Visibility="{Binding IsRealScreenSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <DockPanel>
                     <!-- Nabootsing van Inno Setup's eigen knoppenbalk: Annuleren links, Terug/Volgende
                          rechts. Terug/Volgende blijven de echte navigatie van de schermeditor (zie
@@ -214,6 +246,18 @@
                 </DockPanel>
             </Border>
 
+            <!-- Vervangt de voorvertoning hierboven zodra het Standaardscherm geselecteerd is: dat
+                 stelt geen bestaand installerscherm voor, dus geen 1-op-1 Inno Setup-nabootsing
+                 zoals de andere schermen (§12.6 liet deze vraag open; dit is voorlopig de
+                 eenvoudigste van de twee genoemde opties, zie DefaultScreenEditorViewModel). -->
+            <Border Grid.Column="2" Width="497" Height="400" BorderBrush="#FF888888" BorderThickness="1"
+                    Background="#FFF0F0F0"
+                    Visibility="{Binding IsDefaultScreenSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TextBlock Text="{loc:Loc ScreenEditorDefaultScreenInfo}" TextWrapping="Wrap"
+                           TextAlignment="Center" VerticalAlignment="Center" Margin="30"
+                           Foreground="#FF666666" />
+            </Border>
+
             <!-- Instellingenpaneel: dezelfde SelectedScreen-instantie, maar dan met de templates
                  uit Window.Resources hierboven (LocalizationManager, thema-brushes). -->
             <ScrollViewer Grid.Column="4" VerticalScrollBarVisibility="Auto">
@@ -228,7 +272,8 @@
                         <converters:PropertyPanelTemplateSelector
                             WelcomeTemplate="{StaticResource PropertyPanelTemplate}"
                             LicenseTemplate="{StaticResource LicensePropertyPanelTemplate}"
-                            SelectDestinationTemplate="{StaticResource SelectDestinationPropertyPanelTemplate}" />
+                            SelectDestinationTemplate="{StaticResource SelectDestinationPropertyPanelTemplate}"
+                            DefaultScreenTemplate="{StaticResource DefaultScreenPropertyPanelTemplate}" />
                     </ContentControl.ContentTemplateSelector>
                 </ContentControl>
             </ScrollViewer>

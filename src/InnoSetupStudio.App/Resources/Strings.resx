@@ -235,9 +235,21 @@
     <value>Zichtbaar</value>
   </data>
   <data name="HintButtonTriState" xml:space="preserve">
-    <value>Onbepaald = Inno Setup's eigen standaardgedrag voor dit scherm.</value>
+    <value>Onbepaald = neemt de waarde van het Standaardscherm over, of anders Inno Setup's eigen standaardgedrag.</value>
   </data>
   <data name="HintButtonCaptionEmpty" xml:space="preserve">
-    <value>Leeg = Inno Setup's eigen tekst voor dit scherm.</value>
+    <value>Leeg = neemt de tekst van het Standaardscherm over, of anders Inno Setup's eigen tekst.</value>
+  </data>
+  <data name="WizardScreenDefault" xml:space="preserve">
+    <value>Standaardscherm</value>
+  </data>
+  <data name="ScreenEditorDefaultScreenInfo" xml:space="preserve">
+    <value>Dit is geen echt installerscherm — de eindgebruiker krijgt dit nooit te zien. Hier stel je standaardwaarden in voor de Terug-/Volgende-/Annuleren-knop die de overige schermen overnemen zolang ze zelf niets anders instellen.</value>
+  </data>
+  <data name="HintButtonTriStateDefaultScreen" xml:space="preserve">
+    <value>Onbepaald = Inno Setup's eigen standaardgedrag voor dit veld.</value>
+  </data>
+  <data name="HintButtonCaptionEmptyDefaultScreen" xml:space="preserve">
+    <value>Leeg = Inno Setup's eigen tekst voor dit veld.</value>
   </data>
 </root>

@@ -87,6 +87,18 @@ public class InstallerProjectTests
             CancelButtonEnabled = false,
             CancelButtonVisible = false,
         };
+        project.DefaultScreenButtons = new WizardScreenButtonSettings
+        {
+            BackButtonCaption = "Standaard terug",
+            BackButtonEnabled = true,
+            BackButtonVisible = true,
+            NextButtonCaption = "Standaard volgende",
+            NextButtonEnabled = true,
+            NextButtonVisible = true,
+            CancelButtonCaption = "Standaard annuleren",
+            CancelButtonEnabled = null,
+            CancelButtonVisible = false,
+        };
 
         var service = new JsonInstallerProjectService();
         var tempPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.issproj");
@@ -144,6 +156,15 @@ public class InstallerProjectTests
             Assert.Equal(project.SelectDestinationScreenButtons.CancelButtonCaption, loaded.SelectDestinationScreenButtons.CancelButtonCaption);
             Assert.Equal(project.SelectDestinationScreenButtons.CancelButtonEnabled, loaded.SelectDestinationScreenButtons.CancelButtonEnabled);
             Assert.Equal(project.SelectDestinationScreenButtons.CancelButtonVisible, loaded.SelectDestinationScreenButtons.CancelButtonVisible);
+            Assert.Equal(project.DefaultScreenButtons.BackButtonCaption, loaded.DefaultScreenButtons.BackButtonCaption);
+            Assert.Equal(project.DefaultScreenButtons.BackButtonEnabled, loaded.DefaultScreenButtons.BackButtonEnabled);
+            Assert.Equal(project.DefaultScreenButtons.BackButtonVisible, loaded.DefaultScreenButtons.BackButtonVisible);
+            Assert.Equal(project.DefaultScreenButtons.NextButtonCaption, loaded.DefaultScreenButtons.NextButtonCaption);
+            Assert.Equal(project.DefaultScreenButtons.NextButtonEnabled, loaded.DefaultScreenButtons.NextButtonEnabled);
+            Assert.Equal(project.DefaultScreenButtons.NextButtonVisible, loaded.DefaultScreenButtons.NextButtonVisible);
+            Assert.Equal(project.DefaultScreenButtons.CancelButtonCaption, loaded.DefaultScreenButtons.CancelButtonCaption);
+            Assert.Null(loaded.DefaultScreenButtons.CancelButtonEnabled);
+            Assert.Equal(project.DefaultScreenButtons.CancelButtonVisible, loaded.DefaultScreenButtons.CancelButtonVisible);
         }
         finally
         {
@@ -236,16 +257,17 @@ public class InstallerProjectTests
     public async Task LoadAsyncNormalizesExplicitJsonNullButtonSettingsToDefault()
     {
         // Zelfde risico als bij WizardScreens (zie LoadAsyncNormalizesExplicitJsonNullWizardScreensToDefault),
-        // maar dan voor de drie knopinstellingen-eigenschappen: een handmatig bewerkt of ouder
-        // projectbestand kan expliciet "WelcomeScreenButtons": null (etc.) bevatten. Zonder
-        // normalisatie geeft dat een NullReferenceException zodra de schermeditor voor dat
-        // scherm wordt geopend.
+        // maar dan voor de vier knopinstellingen-eigenschappen (inclusief het Standaardscherm): een
+        // handmatig bewerkt of ouder projectbestand kan expliciet "WelcomeScreenButtons": null
+        // (etc.) bevatten. Zonder normalisatie geeft dat een NullReferenceException zodra de
+        // schermeditor voor dat scherm wordt geopend.
         var service = new JsonInstallerProjectService();
         var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.issproj");
         await File.WriteAllTextAsync(
             path,
             "{\"AppName\":\"Zonder knopinstellingen\"," +
-            "\"WelcomeScreenButtons\":null,\"LicenseScreenButtons\":null,\"SelectDestinationScreenButtons\":null}");
+            "\"WelcomeScreenButtons\":null,\"LicenseScreenButtons\":null,\"SelectDestinationScreenButtons\":null," +
+            "\"DefaultScreenButtons\":null}");
 
         try
         {
@@ -254,9 +276,11 @@ public class InstallerProjectTests
             Assert.NotNull(loaded.WelcomeScreenButtons);
             Assert.NotNull(loaded.LicenseScreenButtons);
             Assert.NotNull(loaded.SelectDestinationScreenButtons);
+            Assert.NotNull(loaded.DefaultScreenButtons);
             Assert.Equal(string.Empty, loaded.WelcomeScreenButtons.NextButtonCaption);
             Assert.Equal(string.Empty, loaded.LicenseScreenButtons.NextButtonCaption);
             Assert.Equal(string.Empty, loaded.SelectDestinationScreenButtons.NextButtonCaption);
+            Assert.Equal(string.Empty, loaded.DefaultScreenButtons.NextButtonCaption);
         }
         finally
         {

@@ -92,6 +92,17 @@ public sealed class InstallerProject
     /// <summary>Zie <see cref="WelcomeScreenButtons"/>, maar dan voor de bestemmingspagina.</summary>
     public WizardScreenButtonSettings SelectDestinationScreenButtons { get; set; } = new();
 
+    /// <summary>
+    /// Standaardwaarden voor de Terug-/Volgende-/Annuleren-knop die elk scherm overneemt zolang
+    /// het zelf niets voor een veld instelt (lege Caption / null Enabled of Visible) — de
+    /// drielaags-resolutie uit §12.6/§12.7 van de architectuurdoc: eigen waarde op het scherm →
+    /// deze standaardwaarde → Inno Setup's eigen ingebouwde standaard. Ingesteld via het
+    /// Standaardscherm in de schermeditor (fase 4); dat is geen echt installerscherm, dus dit veld
+    /// heeft geen tegenhanger in <see cref="WizardScreenSelection"/> en de eindgebruiker ziet het
+    /// nooit als aparte pagina.
+    /// </summary>
+    public WizardScreenButtonSettings DefaultScreenButtons { get; set; } = new();
+
     /// <summary>Maakt een nieuw, leeg project met een vers gegenereerd AppId.</summary>
     public static InstallerProject CreateNew() => new()
     {
