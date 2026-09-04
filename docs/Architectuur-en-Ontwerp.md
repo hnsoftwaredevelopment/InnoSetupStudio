@@ -516,6 +516,19 @@ schermeditor zelf (knoppenbalk-preview, instellingenpaneel) is nog niet interact
 deze sessie — geen schermafbeelding-tooling beschikbaar voor een Windows-desktopapp — dus dat is nog
 Herberts eigen visuele controle, zoals bij eerdere PR's in deze fase.
 
+CodeRabbit's review op PR #10 leverde drie bevindingen op, alle drie verwerkt: (1) de drie
+Caption-TextBoxen in het gedeelde knoppenpaneel misten een toegankelijke naam voor
+schermlezers — opgelost met hetzelfde `AutomationProperties.LabeledBy`-patroon dat
+`ProjectSettingsWindow.xaml` al gebruikt (een `x:Name` op het bijbehorende `TextBlock`-label,
+waarnaar de TextBox verwijst); (2) een handmatig bewerkt of ouder projectbestand met expliciete
+JSON-null voor `WelcomeScreenButtons`/`LicenseScreenButtons`/`SelectDestinationScreenButtons` gaf
+een NullReferenceException zodra de schermeditor werd geopend — opgelost door dezelfde
+`??= new()`-normalisatie toe te passen die `WizardScreens` al had, met een nieuwe regressietest;
+(3) de round-trip-test dekte alleen ingevulde waarden voor `WelcomeScreenButtons`, niet voor
+`LicenseScreenButtons`/`SelectDestinationScreenButtons` — als nitpick optioneel, maar meegenomen
+omdat het weinig moeite kostte en de dekking van alle negen velden per scherm compleet maakt.
+Testsuite na deze wijzigingen: 14/14 groen.
+
 ## 12. Configureerbaarheidscatalogus per wizardscherm (2026-09-04)
 
 Herbert wil dat elk aanpasbaar element van elk wizardscherm uiteindelijk bewerkbaar wordt in Inno

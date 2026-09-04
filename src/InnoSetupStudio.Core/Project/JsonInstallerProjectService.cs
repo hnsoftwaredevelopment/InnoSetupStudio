@@ -33,6 +33,13 @@ public sealed class JsonInstallerProjectService : IInstallerProjectService
             // de wizardschermen-selectie wordt geopend, in plaats van gewoon de standaardwaarden.
             loaded.WizardScreens ??= new();
 
+            // Zelfde verhaal voor de knopinstellingen per scherm: een expliciete JSON-null voor
+            // een van deze drie eigenschappen zou anders pas een NullReferenceException geven
+            // zodra de schermeditor voor dat scherm wordt geopend.
+            loaded.WelcomeScreenButtons ??= new();
+            loaded.LicenseScreenButtons ??= new();
+            loaded.SelectDestinationScreenButtons ??= new();
+
             return loaded;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)

@@ -21,8 +21,9 @@
             <StackPanel Margin="0,20,0,0">
                 <TextBlock Text="{loc:Loc SectionWizardButtons}" FontWeight="Bold" Margin="0,0,0,8" />
 
-                <TextBlock Text="{loc:Loc LabelBackButtonSection}" Margin="0,0,0,4" />
-                <TextBox Text="{Binding BackButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4" />
+                <TextBlock x:Name="BackButtonCaptionLabel" Text="{loc:Loc LabelBackButtonSection}" Margin="0,0,0,4" />
+                <TextBox Text="{Binding BackButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"
+                         AutomationProperties.LabeledBy="{Binding ElementName=BackButtonCaptionLabel}" />
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                     <CheckBox Content="{loc:Loc LabelButtonEnabled}" IsChecked="{Binding BackButtonEnabled}"
                               IsThreeState="True" Margin="0,0,16,0" />
@@ -30,8 +31,9 @@
                               IsThreeState="True" />
                 </StackPanel>
 
-                <TextBlock Text="{loc:Loc LabelNextButtonSection}" Margin="0,12,0,4" />
-                <TextBox Text="{Binding NextButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4" />
+                <TextBlock x:Name="NextButtonCaptionLabel" Text="{loc:Loc LabelNextButtonSection}" Margin="0,12,0,4" />
+                <TextBox Text="{Binding NextButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"
+                         AutomationProperties.LabeledBy="{Binding ElementName=NextButtonCaptionLabel}" />
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                     <CheckBox Content="{loc:Loc LabelButtonEnabled}" IsChecked="{Binding NextButtonEnabled}"
                               IsThreeState="True" Margin="0,0,16,0" />
@@ -39,8 +41,9 @@
                               IsThreeState="True" />
                 </StackPanel>
 
-                <TextBlock Text="{loc:Loc LabelCancelButtonSection}" Margin="0,12,0,4" />
-                <TextBox Text="{Binding CancelButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4" />
+                <TextBlock x:Name="CancelButtonCaptionLabel" Text="{loc:Loc LabelCancelButtonSection}" Margin="0,12,0,4" />
+                <TextBox Text="{Binding CancelButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"
+                         AutomationProperties.LabeledBy="{Binding ElementName=CancelButtonCaptionLabel}" />
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                     <CheckBox Content="{loc:Loc LabelButtonEnabled}" IsChecked="{Binding CancelButtonEnabled}"
                               IsThreeState="True" Margin="0,0,16,0" />
