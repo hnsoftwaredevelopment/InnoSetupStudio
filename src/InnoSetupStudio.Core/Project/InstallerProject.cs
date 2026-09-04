@@ -78,6 +78,20 @@ public sealed class InstallerProject
     /// </summary>
     public string WizardSmallImageFile { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Aanpassingen van de Terug-/Volgende-/Annuleren-knop op de Welkomstpagina. Zie
+    /// <see cref="WizardScreenButtonSettings"/>. Alleen schermen waarvoor al een editor bestaat
+    /// (fase 4) hebben zo'n eigenschap; de overige acht standaardschermen krijgen er één zodra hun
+    /// editor gebouwd wordt.
+    /// </summary>
+    public WizardScreenButtonSettings WelcomeScreenButtons { get; set; } = new();
+
+    /// <summary>Zie <see cref="WelcomeScreenButtons"/>, maar dan voor de licentiepagina.</summary>
+    public WizardScreenButtonSettings LicenseScreenButtons { get; set; } = new();
+
+    /// <summary>Zie <see cref="WelcomeScreenButtons"/>, maar dan voor de bestemmingspagina.</summary>
+    public WizardScreenButtonSettings SelectDestinationScreenButtons { get; set; } = new();
+
     /// <summary>Maakt een nieuw, leeg project met een vers gegenereerd AppId.</summary>
     public static InstallerProject CreateNew() => new()
     {

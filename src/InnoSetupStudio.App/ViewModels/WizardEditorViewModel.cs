@@ -36,6 +36,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
             {
                 WizardImage = wizardImage,
                 WizardSmallImage = wizardSmallImage,
+                ButtonSettings = project.WelcomeScreenButtons,
             });
         }
 
@@ -45,6 +46,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
             {
                 WizardImage = wizardImage,
                 WizardSmallImage = wizardSmallImage,
+                ButtonSettings = project.LicenseScreenButtons,
             });
         }
 
@@ -54,6 +56,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
             {
                 WizardImage = wizardImage,
                 WizardSmallImage = wizardSmallImage,
+                ButtonSettings = project.SelectDestinationScreenButtons,
             });
         }
 
@@ -125,12 +128,17 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
         {
             switch (screen)
             {
+                case WelcomePageEditorViewModel welcome:
+                    project.WelcomeScreenButtons = welcome.ReadButtonSettings();
+                    break;
                 case LicensePageEditorViewModel license:
                     project.LicenseFilePath = license.LicenseFilePath;
+                    project.LicenseScreenButtons = license.ReadButtonSettings();
                     break;
                 case SelectDestinationPageEditorViewModel destination:
                     project.DefaultDirName = destination.DefaultDirName;
                     project.AllowUserToChangeDir = destination.AllowUserToChangeDir;
+                    project.SelectDestinationScreenButtons = destination.ReadButtonSettings();
                     break;
             }
         }

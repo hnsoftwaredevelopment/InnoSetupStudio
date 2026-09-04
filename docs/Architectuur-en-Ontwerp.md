@@ -440,3 +440,78 @@ architectuurvraag, niet drie losse.
 
 Build (0 warnings, 0 errors), bestaande testsuite (13/13 groen) en het opstarten van de app zonder
 crash zijn opnieuw geverifieerd na deze wijzigingen.
+
+### 11.8 Fase 4: Terug-/Volgende-/Annuleren-knop per scherm aanpasbaar (2026-09-04)
+
+Vervolg op §11.7: Herbert wil dat elk aanpasbaar element van een wizardscherm in Inno Setup Studio
+bewerkbaar wordt, ongeacht of Inno Setup dat zelf via een [Setup]-richtlijn (property) of via
+Pascal Scripting aanstuurt. De Terug-/Volgende-/Annuleren-knop is het eerste element van de tweede
+soort: `WizardForm.BackButton`/`NextButton`/`CancelButton` zijn `TNewButton`-objecten die alleen
+via Pascal Script (meestal in een `CurPageChanged`-event) te benaderen zijn, zie het onderzoek
+hierover in §11.6.
+
+**Belangrijke constatering vooraf:** fase 5 (.iss-generatie) en fase 6 (Pascal Script-editor)
+bestaan nog helemaal niet — er is nog geen enkele plek in de code die een `.iss`-bestand of
+Pascal Script genereert, ook niet voor de al bestaande velden zoals `WizardImageFile` (dat wél een
+gewone [Setup]-richtlijn is). Deze PR bouwt daarom, net als alle voorgaande fase 4-PR's, alleen het
+datamodel en de schermeditor-UI; de daadwerkelijke omzetting naar een `CurPageChanged`-procedure in
+het gegenereerde `.iss`-bestand is werk voor fase 5/6, niet voor nu.
+
+**Datamodel:** nieuwe `WizardScreenButtonSettings` (Core) met negen velden: per knop (Back/Next/
+Cancel) een `Caption` (string, leeg = Inno Setup's eigen standaardtekst voor die knop op dat
+scherm), `Enabled` en `Visible` (beide `bool?`, null = Inno Setup's eigen standaardgedrag blijft
+intact, bijvoorbeeld dat Terug op het eerste scherm vanzelf uitstaat). `InstallerProject` krijgt
+drie van dit type — `WelcomeScreenButtons`, `LicenseScreenButtons`,
+`SelectDestinationScreenButtons` — één per scherm dat al een editor heeft, zelfde opzet als
+`WizardScreenSelection`'s elf losse Show*Page-velden: geen dictionary/enum-key, gewoon een
+benoemde eigenschap per scherm. De overige acht standaardschermen krijgen zo'n eigenschap zodra hun
+editor gebouwd wordt.
+
+**ViewModel-laag:** `WizardScreenEditorViewModel` (basisklasse) werd `abstract partial class` en
+kreeg de negen velden als gewone (niet required init) `[ObservableProperty]`'s — anders dan
+`WizardImage`/`WizardSmallImage`, want dit zijn per-scherm gegevens, geen projectbrede waarde die
+overal hetzelfde is. Een nieuwe `required WizardScreenButtonSettings ButtonSettings`-init-
+eigenschap (schrijfalleen, geen backing field) zet die negen velden in één keer, zodat
+`WizardEditorViewModel` ze net als `WizardImage`/`WizardSmallImage` via object-initializer-syntax
+kan meegeven (`new XPageEditorViewModel(...) { WizardImage = ..., ButtonSettings = ... }`) in
+plaats van negen losse constructorparameters. `EffectiveBackButtonCaption`/`EffectiveNextButton
+Caption`/`EffectiveCancelButtonCaption` lossen de leeg-is-standaardtekst-regel op (virtuele
+`DefaultBackButtonCaption` e.d., overschrijfbaar door een toekomstig scherm zoals Klaar-om-te-
+installeren waar Inno Setup zelf al "Install" in plaats van "Next" toont); `IsBackButtonVisible`/
+`IsBackButtonEnabled` e.d. lossen de null-is-standaardgedrag-regel op. `ReadButtonSettings()` is de
+tegenhanger die de negen velden terugleest voor `WizardEditorViewModel.ApplyTo`.
+
+**Voorvertoning:** de knoppenbalk onderaan de schermeditor-preview toonde tot nu toe alleen een
+vaste Terug/Volgende (de eigen navigatie van de schermeditor, niet gekoppeld aan scherminhoud). Nu
+tonen Terug/Volgende de `Effective*Caption` van het geselecteerde scherm, en is er een Annuleren-
+knop bij gekomen (links, net als in de echte installer) die alleen bestaat om `Effective
+CancelButtonCaption`/`IsCancelButtonEnabled`/`IsCancelButtonVisible` te kunnen voorvertonen — hij
+heeft geen Command, dus geen eigen functie in de schermeditor. Bewuste asymmetrie tussen de drie
+knoppen op het punt Enabled: Terug/Volgende zijn ook de echte navigatie van de schermeditor zelf
+(`WizardEditorViewModel.Back/Next`), dus hun `IsEnabled` blijft altijd gestuurd door
+`CanGoBack`/`CanGoNext` (anders zou "Volgende uitschakelen op dit scherm" ook navigeren door de
+schermeditor blokkeren); hun eventuele uitgeschakeld-staan voor de installer wordt in plaats
+daarvan alleen als gedimd uiterlijk getoond (nieuwe `BooleanToOpacityConverter`, 0.4 bij expliciet
+`false`). Annuleren heeft geen navigatiefunctie, dus die knop gebruikt `IsCancelButtonEnabled`
+gewoon als echte `IsEnabled`. Zichtbaarheid (`Visibility`) is voor alle drie knoppen wél echt: de
+linkerlijst met schermen blijft altijd een alternatieve manier om te navigeren, dus een verborgen
+Terug/Volgende in de preview kan de schermeditor niet vastlopen.
+
+Het instellingenpaneel kreeg een gedeelde `ButtonSettingsSectionTemplate` (drie subsecties Terug/
+Volgende/Annuleren, elk een Caption-veld plus twee driewaardige (IsThreeState) CheckBoxen voor
+Enabled/Visible — onbepaald = Inno Setup's eigen gedrag, aan/uit = expliciete override), gebruikt
+door alle drie de bestaande schermtemplates via `ContentControl ContentTemplate="{StaticResource
+...}"`, in plaats van de negen velden drie keer uit te schrijven. Werkt voor elk schermtype zonder
+aanpassing, want de negen velden staan op de basisklasse.
+
+Negen nieuwe vertaalsleutels (NL/EN/DE): `ButtonWizardCancel` (Annuleren-knop's standaardtekst,
+zelfde patroon als de bestaande `ButtonWizardBack`/`ButtonWizardNext`), `SectionWizardButtons` en
+drie `Label*ButtonSection`-koppen, `LabelButtonEnabled`/`LabelButtonVisible`, en twee hints
+(`HintButtonTriState`, `HintButtonCaptionEmpty`) die het leeg/onbepaald-is-standaardgedrag uitleggen
+— zelfde soort hint als `LabelDefaultDirNameHint` uit fase 4's eerste PR.
+
+Build (0 warnings, 0 errors), bestaande testsuite (13/13 groen, uitgebreid met round-trip-assertions
+voor de negen nieuwe velden) en het opstarten van de app zonder crash zijn geverifieerd. De
+schermeditor zelf (knoppenbalk-preview, instellingenpaneel) is nog niet interactief doorgeklikt in
+deze sessie — geen schermafbeelding-tooling beschikbaar voor een Windows-desktopapp — dus dat is nog
+Herberts eigen visuele controle, zoals bij eerdere PR's in deze fase.

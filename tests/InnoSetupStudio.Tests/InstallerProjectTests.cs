@@ -51,6 +51,18 @@ public class InstallerProjectTests
             ShowInfoAfterPage = true,
             ShowFinishedPage = false,
         };
+        project.WelcomeScreenButtons = new WizardScreenButtonSettings
+        {
+            BackButtonCaption = "Terug",
+            BackButtonEnabled = false,
+            BackButtonVisible = true,
+            NextButtonCaption = "Doorgaan",
+            NextButtonEnabled = true,
+            NextButtonVisible = false,
+            CancelButtonCaption = "Stoppen",
+            CancelButtonEnabled = null,
+            CancelButtonVisible = null,
+        };
 
         var service = new JsonInstallerProjectService();
         var tempPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.issproj");
@@ -81,6 +93,23 @@ public class InstallerProjectTests
             Assert.Equal(project.WizardScreens.ShowReadyPage, loaded.WizardScreens.ShowReadyPage);
             Assert.Equal(project.WizardScreens.ShowInfoAfterPage, loaded.WizardScreens.ShowInfoAfterPage);
             Assert.Equal(project.WizardScreens.ShowFinishedPage, loaded.WizardScreens.ShowFinishedPage);
+            Assert.Equal(project.WelcomeScreenButtons.BackButtonCaption, loaded.WelcomeScreenButtons.BackButtonCaption);
+            Assert.Equal(project.WelcomeScreenButtons.BackButtonEnabled, loaded.WelcomeScreenButtons.BackButtonEnabled);
+            Assert.Equal(project.WelcomeScreenButtons.BackButtonVisible, loaded.WelcomeScreenButtons.BackButtonVisible);
+            Assert.Equal(project.WelcomeScreenButtons.NextButtonCaption, loaded.WelcomeScreenButtons.NextButtonCaption);
+            Assert.Equal(project.WelcomeScreenButtons.NextButtonEnabled, loaded.WelcomeScreenButtons.NextButtonEnabled);
+            Assert.Equal(project.WelcomeScreenButtons.NextButtonVisible, loaded.WelcomeScreenButtons.NextButtonVisible);
+            Assert.Equal(project.WelcomeScreenButtons.CancelButtonCaption, loaded.WelcomeScreenButtons.CancelButtonCaption);
+            Assert.Null(loaded.WelcomeScreenButtons.CancelButtonEnabled);
+            Assert.Null(loaded.WelcomeScreenButtons.CancelButtonVisible);
+            // LicenseScreenButtons/SelectDestinationScreenButtons blijven op deze test bewust op hun
+            // default (nieuwe, lege WizardScreenButtonSettings): dit dekt zowel het round-trippen van
+            // een ingevuld exemplaar (hierboven) als van het standaard-lege exemplaar dat elk nieuw
+            // project voor deze twee schermen heeft.
+            Assert.Equal(string.Empty, loaded.LicenseScreenButtons.NextButtonCaption);
+            Assert.Null(loaded.LicenseScreenButtons.NextButtonEnabled);
+            Assert.Equal(string.Empty, loaded.SelectDestinationScreenButtons.NextButtonCaption);
+            Assert.Null(loaded.SelectDestinationScreenButtons.NextButtonEnabled);
         }
         finally
         {

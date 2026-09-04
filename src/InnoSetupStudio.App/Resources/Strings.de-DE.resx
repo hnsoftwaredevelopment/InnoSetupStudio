@@ -213,4 +213,31 @@
   <data name="ScreenEditorNoScreens" xml:space="preserve">
     <value>Keine der vom Seiteneditor bereits unterstützten Seiten (Willkommen, Lizenzvereinbarung, Zielordner wählen) ist aktiviert. Aktivieren Sie sie unter Assistentenseiten, um sie hier zu bearbeiten.</value>
   </data>
+  <data name="ButtonWizardCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="SectionWizardButtons" xml:space="preserve">
+    <value>Schaltflächen</value>
+  </data>
+  <data name="LabelBackButtonSection" xml:space="preserve">
+    <value>Zurück-Schaltfläche</value>
+  </data>
+  <data name="LabelNextButtonSection" xml:space="preserve">
+    <value>Weiter-Schaltfläche</value>
+  </data>
+  <data name="LabelCancelButtonSection" xml:space="preserve">
+    <value>Abbrechen-Schaltfläche</value>
+  </data>
+  <data name="LabelButtonEnabled" xml:space="preserve">
+    <value>Aktiviert</value>
+  </data>
+  <data name="LabelButtonVisible" xml:space="preserve">
+    <value>Sichtbar</value>
+  </data>
+  <data name="HintButtonTriState" xml:space="preserve">
+    <value>Unbestimmt = Inno Setups eigenes Standardverhalten für diesen Bildschirm.</value>
+  </data>
+  <data name="HintButtonCaptionEmpty" xml:space="preserve">
+    <value>Leer = Inno Setups eigener Text für diesen Bildschirm.</value>
+  </data>
 </root>
