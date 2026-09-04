@@ -82,9 +82,26 @@ public partial class App : Application
             // Tot nu toe zag de gebruiker (en wijzelf bij een bugreport) alleen e.Exception.Message
             // in de MessageBox hieronder — zonder stacktrace of inner exceptions was root-causen
             // van een onverwachte fout achteraf vrijwel onmogelijk. Dit bestand staat naast de
-            // .exe, dus het pad blijft geldig ongeacht waar de app geïnstalleerd/uitgepakt is.
-            var logPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "crash-log.txt");
-            System.IO.File.WriteAllText(logPath, $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}{Environment.NewLine}{e.Exception}");
+            // .exe, dus het pad blijft geldig ongeacht waar de app geïnstalleerd/uitgepakt is —
+            // BEHALVE als die map (bijvoorbeeld Program Files) niet schrijfbaar is voor de
+            // huidige gebruiker: dan valt dit terug op de per-gebruiker AppData-map, die altijd
+            // schrijfbaar is. Zonder deze fallback verdween het crashlogboek stilletjes in precies
+            // het scenario waarin je het het hardst nodig hebt (een geïnstalleerde, niet-portable
+            // versie van de app).
+            var logContent = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}{Environment.NewLine}{e.Exception}";
+            try
+            {
+                var logPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "crash-log.txt");
+                System.IO.File.WriteAllText(logPath, logContent);
+            }
+            catch (Exception)
+            {
+                var fallbackDir = System.IO.Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "InnoSetupStudio");
+                System.IO.Directory.CreateDirectory(fallbackDir);
+                System.IO.File.WriteAllText(System.IO.Path.Combine(fallbackDir, "crash-log.txt"), logContent);
+            }
         }
         catch
         {

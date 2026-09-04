@@ -246,4 +246,10 @@
   <data name="ScreenEditorDefaultScreenInfo" xml:space="preserve">
     <value>Dit is geen echt installerscherm — de eindgebruiker krijgt dit nooit te zien. Hier stel je standaardwaarden in voor de Terug-/Volgende-/Annuleren-knop die de overige schermen overnemen zolang ze zelf niets anders instellen.</value>
   </data>
+  <data name="HintButtonTriStateDefaultScreen" xml:space="preserve">
+    <value>Onbepaald = Inno Setup's eigen standaardgedrag voor dit veld.</value>
+  </data>
+  <data name="HintButtonCaptionEmptyDefaultScreen" xml:space="preserve">
+    <value>Leeg = Inno Setup's eigen tekst voor dit veld.</value>
+  </data>
 </root>

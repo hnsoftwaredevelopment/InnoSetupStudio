@@ -96,7 +96,10 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
 
         _defaultScreen.PropertyChanged += (_, _) => MarkDirty();
 
-        _selectedScreen = _screens.Count > 0 ? _screens[0] : null;
+        // Het Standaardscherm bestaat altijd (zie hierboven), dus zonder aangevinkte echte
+        // schermen valt de selectie daarop terug in plaats van op null — anders opent de
+        // schermeditor met niets geselecteerd terwijl er wél iets te bewerken is.
+        _selectedScreen = _screens.Count > 0 ? (object)_screens[0] : _defaultScreen;
 
         EndInit();
     }
@@ -112,14 +115,15 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
     /// blijft — het is bewust geen "scherm nul" tussen de echte installerschermen, zie §12.7.</summary>
     public IReadOnlyList<DefaultScreenEditorViewModel> DefaultScreenRow { get; }
 
-    /// <summary>True als er tenminste één scherm te bewerken is; anders toont het venster een
-    /// toelichting (ScreenEditorNoScreens) in plaats van de drie panelen.</summary>
+    /// <summary>True als er tenminste één echt scherm te bewerken is. Het Standaardscherm bestaat
+    /// altijd (zie <see cref="DefaultScreenRow"/>) en blijft dus ook bereikbaar/bewerkbaar als dit
+    /// false is; WizardEditorWindow.xaml toont in dat geval alleen een aanvullende toelichting
+    /// (ScreenEditorNoScreens) naast de drie panelen, niet in plaats daarvan.</summary>
     public bool HasScreens => _screens.Count > 0;
 
     /// <summary>Exacte tegenhanger van <see cref="HasScreens"/>, puur zodat WizardEditorWindow.xaml
-    /// met dezelfde (niet-inverterende) BooleanToVisibilityConverter kan werken voor zowel de
-    /// toelichting als de drie panelen, in plaats van daar een tweede, inverterende converter
-    /// voor te schrijven.</summary>
+    /// met dezelfde (niet-inverterende) BooleanToVisibilityConverter kan werken, in plaats van
+    /// daar een tweede, inverterende converter voor te schrijven.</summary>
     public bool HasNoScreens => !HasScreens;
 
     // Type object (niet WizardScreenEditorViewModel) omdat SelectedScreen ook het Standaardscherm

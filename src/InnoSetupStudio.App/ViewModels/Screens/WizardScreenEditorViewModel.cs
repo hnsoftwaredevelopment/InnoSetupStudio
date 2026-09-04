@@ -33,6 +33,19 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
     /// <summary>Iconsleutel uit Icons.xaml, getoond naast de naam in de linkerlijst.</summary>
     public string IconKey { get; }
 
+    // Zelfde naam-zonder-gedeelde-basisklasse-patroon als Title/IconKey/EffectiveXxx: het
+    // Standaardscherm heeft een eigen versie van deze twee hieronder (DefaultScreenEditorViewModel)
+    // met andere tekst, want dat scherm kan niet van zichzelf erven — leeg/onbepaald daar valt
+    // direct terug op Inno Setup's eigen standaard, niet op "het Standaardscherm". Gebonden in
+    // plaats van {loc:Loc ...} in ButtonSettingsSectionTemplate, zodat die ene gedeelde template
+    // voor alle vier de schermtypen de juiste tekst toont.
+
+    /// <summary>Toelichting onder de drie knopvelden bij een lege Caption.</summary>
+    public string HintButtonCaptionEmptyText => LocalizationManager.Instance["HintButtonCaptionEmpty"];
+
+    /// <summary>Toelichting onder de drie knopvelden bij een onbepaalde (null) Enabled/Visible.</summary>
+    public string HintButtonTriStateText => LocalizationManager.Instance["HintButtonTriState"];
+
     // De twee wizardafbeeldingen staan hier op de basisklasse (in plaats van alleen op de
     // schermen die ze nodig hebben) omdat het projectbrede instellingen zijn (Inno Setup's
     // WizardImageFile/WizardSmallImageFile), niet iets per scherm: WizardEditorViewModel bepaalt
@@ -154,7 +167,7 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
     /// <summary>Zie <see cref="DefaultBackButtonCaption"/>, maar dan voor de Annuleren-knop.</summary>
     protected virtual string DefaultCancelButtonCaption => LocalizationManager.Instance["ButtonWizardCancel"];
 
-    // Tweelaags-resolutie (§12.6/§12.7 van de architectuurdoc): eigen waarde op dit scherm, indien
+    // Drielaags-resolutie (§12.6/§12.7 van de architectuurdoc): eigen waarde op dit scherm, indien
     // ingevuld → anders de waarde van het Standaardscherm (Defaults), indien die op zijn beurt
     // ingevuld is → anders pas Inno Setup's eigen ingebouwde standaard (Default*ButtonCaption /
     // "true" voor Enabled/Visible). Vervangt de eerdere tweetraps EffectiveXxx/IsXxx-logica uit

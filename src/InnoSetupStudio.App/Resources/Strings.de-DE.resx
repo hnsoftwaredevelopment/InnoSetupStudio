@@ -246,4 +246,10 @@
   <data name="ScreenEditorDefaultScreenInfo" xml:space="preserve">
     <value>Dies ist kein echter Installationsbildschirm — der Endbenutzer sieht ihn nie. Hier legen Sie Standardwerte für die Zurück-/Weiter-/Abbrechen-Schaltfläche fest, die die anderen Bildschirme übernehmen, solange sie selbst nichts anderes festlegen.</value>
   </data>
+  <data name="HintButtonTriStateDefaultScreen" xml:space="preserve">
+    <value>Unbestimmt = Inno Setups eigenes Standardverhalten für dieses Feld.</value>
+  </data>
+  <data name="HintButtonCaptionEmptyDefaultScreen" xml:space="preserve">
+    <value>Leer = Inno Setups eigenen Text für dieses Feld.</value>
+  </data>
 </root>

@@ -10,7 +10,7 @@ namespace InnoSetupStudio.App.ViewModels.Screens;
 /// linkerlijst van de schermeditor waar de gebruiker in één keer standaardwaarden voor de
 /// Terug-/Volgende-/Annuleren-knop vastlegt. Elk scherm dat zelf niets voor een veld instelt (lege
 /// Caption / null Enabled/Visible) neemt de waarde hiervandaan over; zie
-/// <see cref="WizardScreenEditorViewModel"/>'s Effective*/Is*-eigenschappen voor de tweelaags-
+/// <see cref="WizardScreenEditorViewModel"/>'s Effective*/Is*-eigenschappen voor de drielaags-
 /// resolutie (eigen waarde → deze standaardwaarde → Inno Setup's eigen ingebouwde standaard).
 ///
 /// Erft bewust NIET van <see cref="WizardScreenEditorViewModel"/>: die basisklasse vraagt om
@@ -40,6 +40,17 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
     /// <summary>Iconsleutel uit Icons.xaml. Bewust een ander icoon dan de echte schermen
     /// (Document/Folder), zodat de rij ook visueel meteen als "anders" herkenbaar is.</summary>
     public string IconKey => "Edit";
+
+    // Eigen versie van WizardScreenEditorViewModel.HintButtonCaptionEmptyText/HintButtonTriStateText
+    // (zelfde naam, geen gedeelde basisklasse — zie dat commentaar): dit scherm ÍS het
+    // Standaardscherm, dus "neemt de waarde van het Standaardscherm over" zou hier onzin zijn. Een
+    // lege/onbepaalde waarde hier valt direct terug op Inno Setup's eigen standaard.
+
+    /// <summary>Toelichting onder de drie knopvelden bij een lege Caption.</summary>
+    public string HintButtonCaptionEmptyText => LocalizationManager.Instance["HintButtonCaptionEmptyDefaultScreen"];
+
+    /// <summary>Toelichting onder de drie knopvelden bij een onbepaalde (null) Enabled/Visible.</summary>
+    public string HintButtonTriStateText => LocalizationManager.Instance["HintButtonTriStateDefaultScreen"];
 
     // Zelfde negen velden en zelfde leeg/null-is-nog-niet-aangepast-betekenis als op
     // WizardScreenEditorViewModel, maar dan zonder de Effective*/Is*-resolutie: dit scherm ÍS de

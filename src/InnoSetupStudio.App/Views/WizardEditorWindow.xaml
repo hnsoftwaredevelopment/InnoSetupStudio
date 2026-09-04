@@ -70,9 +70,9 @@
                               IsThreeState="True" />
                 </StackPanel>
 
-                <TextBlock Text="{loc:Loc HintButtonCaptionEmpty}" FontSize="11" TextWrapping="Wrap"
+                <TextBlock Text="{Binding HintButtonCaptionEmptyText}" FontSize="11" TextWrapping="Wrap"
                            Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,8,0,0" />
-                <TextBlock Text="{loc:Loc HintButtonTriState}" FontSize="11" TextWrapping="Wrap"
+                <TextBlock Text="{Binding HintButtonTriStateText}" FontSize="11" TextWrapping="Wrap"
                            Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,4,0,0" />
             </StackPanel>
         </DataTemplate>
@@ -169,14 +169,17 @@
         <TextBlock DockPanel.Dock="Top" Text="{loc:Loc ScreenEditorPreviewDisclaimer}" TextWrapping="Wrap"
                    Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11" Margin="0,0,0,16" />
 
-        <!-- Geen van de nog ondersteunde schermen staat aan: toelichting in plaats van de drie
-             lege panelen. HasNoScreens is de expliciete tegenhanger van HasScreens hieronder,
-             puur om hier geen tweede (inverterende) converter voor te hoeven schrijven. -->
-        <TextBlock Text="{loc:Loc ScreenEditorNoScreens}" TextWrapping="Wrap"
-                   Foreground="{DynamicResource Brush.TextSecondary}"
+        <!-- Geen van de nog ondersteunde schermen staat aan: aanvullende toelichting BOVEN de
+             editor, niet in plaats ervan — het Standaardscherm hieronder bestaat en is bewerkbaar
+             ongeacht welke echte schermen aan staan (zie WizardEditorViewModel.HasScreens), dus de
+             Grid hieronder blijft altijd zichtbaar. HasNoScreens is de expliciete tegenhanger van
+             HasScreens, puur om hier geen tweede (inverterende) converter voor te hoeven
+             schrijven. -->
+        <TextBlock DockPanel.Dock="Top" Text="{loc:Loc ScreenEditorNoScreens}" TextWrapping="Wrap"
+                   Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,16"
                    Visibility="{Binding HasNoScreens, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
-        <Grid Visibility="{Binding HasScreens, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="180" />
                 <ColumnDefinition Width="16" />

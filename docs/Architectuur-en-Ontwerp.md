@@ -529,9 +529,9 @@ een NullReferenceException zodra de schermeditor werd geopend — opgelost door 
 omdat het weinig moeite kostte en de dekking van alle negen velden per scherm compleet maakt.
 Testsuite na deze wijzigingen: 14/14 groen.
 
-### 11.9 Fase 4: Standaardscherm en tweelaags-resolutie voor knoppen (2026-09-04, vervolg)
+### 11.9 Fase 4: Standaardscherm en drielaags-resolutie voor knoppen (2026-09-04, vervolg)
 
-Vervolg op §13's "Nu"-beslissing: het Standaardscherm en de tweelaags-resolutie uit §12.6/§12.7
+Vervolg op §13's "Nu"-beslissing: het Standaardscherm en de drielaags-resolutie uit §12.6/§12.7
 gebouwd, bewust beperkt tot wat er al is — de knoppen (`WizardScreenButtonSettings`). Kleuren,
 lettertypen en het verplaatsen van de wizardafbeeldingen blijven bij §13's "Later".
 
@@ -539,7 +539,7 @@ lettertypen en het verplaatsen van de wizardafbeeldingen blijven bij §13's "Lat
 bestaande schermvelden), met dezelfde `??= new()`-normalisatie in `JsonInstallerProjectService.
 LoadAsync` als de andere drie tegen een expliciete JSON-null.
 
-**Tweelaags-resolutie.** `WizardScreenEditorViewModel` (de basisklasse van Welkom/Licentie/
+**Drielaags-resolutie.** `WizardScreenEditorViewModel` (de basisklasse van Welkom/Licentie/
 Bestemming) kreeg een `required DefaultScreenEditorViewModel Defaults`-eigenschap naast de
 bestaande `ButtonSettings`. De Effective*/Is*-eigenschappen zijn uitgebreid van twee naar drie
 lagen: eigen waarde op het scherm zelf → anders de waarde van `Defaults` → anders pas Inno Setup's
@@ -586,7 +586,7 @@ de bewust eenvoudigste tussenoplossing.
 **Verificatie.** Build (0 warnings, 0 errors), testsuite (14/14 groen — de bestaande round-trip- en
 null-normalisatie-tests uitgebreid met `DefaultScreenButtons` in plaats van nieuwe tests erbij) en
 het opstarten van de app zonder crash zijn gecontroleerd. De schermeditor zelf (linkerlijst met de
-nieuwe rij, omschakelen tussen voorvertoning en toelichting, tweelaags-resolutie in de
+nieuwe rij, omschakelen tussen voorvertoning en toelichting, drielaags-resolutie in de
 voorvertoning) is nog niet interactief doorgeklikt in deze sessie, zelfde beperking als bij eerdere
 PR's in deze fase — dat is Herberts eigen visuele controle. Die controle ving meteen een echte
 regressie op, zie hieronder.
@@ -622,6 +622,38 @@ van de collectie-expressie. Een gewone `List<T>` heeft wél een veilige `IList.C
 (`IsCompatibleObject`-controle vóór het casten), dus dat gebruiken we hier bewust in plaats van de
 kortere `[...]`-syntax. Build en testsuite (14/14) blijven groen na de fix; Herbert heeft de
 schermeditor daarna zelf opnieuw doorlopen en bevestigd dat de crash weg is.
+
+**CodeRabbit-feedback op deze fix-commit.** Vier bevindingen, alle vier verwerkt:
+1. *Crashlogboek zonder schrijfbare fallback (minor).* `File.WriteAllText` naast de .exe kan een
+   `UnauthorizedAccessException` geven als de installatiemap (bijvoorbeeld Program Files) niet
+   schrijfbaar is; de lege `catch` verborg dat stilletjes. Fix: bij een fout terugvallen op
+   `%LocalAppData%\InnoSetupStudio\crash-log.txt`, die altijd schrijfbaar is.
+2. *Standaardscherm onbereikbaar zonder echte schermen (major).* Met alle wizardschermen uit
+   (`HasScreens` false) klapte de hele `Grid` in — inclusief de rij van het Standaardscherm, dat
+   nochtans altijd bestaat. Fix: de `Grid` is niet langer aan `HasScreens` gekoppeld en blijft
+   altijd zichtbaar; `ScreenEditorNoScreens` is nu een aanvullende melding erboven in plaats van
+   een vervanging. `WizardEditorViewModel`'s initiële `SelectedScreen` valt bij nul echte schermen
+   nu op het Standaardscherm terug (in plaats van op `null`), zodat de schermeditor meteen iets
+   bewerkbaars toont.
+3. *Foutieve overervingstekst op het Standaardscherm zelf (minor).* De toelichting onder de negen
+   knopvelden ("Leeg = neemt de tekst van het Standaardscherm over...") verscheen via de gedeelde
+   `ButtonSettingsSectionTemplate` ook op het Standaardscherm-paneel zelf — waar die onzin is, want
+   dat scherm kan niet van zichzelf erven. Fix: twee nieuwe resources per taal
+   (`HintButtonCaptionEmptyDefaultScreen`/`HintButtonTriStateDefaultScreen`, tekst "... = Inno
+   Setup's eigen tekst/standaardgedrag voor dit veld", zonder de overervingszin) en twee
+   naam-zonder-gedeelde-basisklasse-eigenschappen (`HintButtonCaptionEmptyText`/
+   `HintButtonTriStateText`, zelfde patroon als `Title`/`IconKey`) die elk VM-type zijn eigen tekst
+   laten teruggeven; de template bindt nu aan die eigenschappen in plaats van rechtstreeks aan
+   `{loc:Loc ...}`.
+4. *Inconsistente naamgeving "tweelaags" (minor).* De keten heeft feitelijk drie lagen (eigen
+   waarde → Standaardscherm → Inno Setup's ingebouwde standaard); alleen de eerste twee zijn
+   instelbaar. Hernoemd naar "drielaags-resolutie" in alle plekken die de huidige stand
+   beschrijven (`InstallerProject.cs`, `WizardScreenEditorViewModel.cs`,
+   `DefaultScreenEditorViewModel.cs`, §11.9's titel/kopjes hierboven). De historische
+   `tweelaags`/`tweetraps`-vermeldingen in §12.4/§12.6/§13 blijven ongewijzigd — die leggen vast
+   wat op dát moment in het gesprek de aanpak was, niet de huidige stand.
+
+Testsuite na deze vier fixes: 14/14 groen.
 
 ## 12. Configureerbaarheidscatalogus per wizardscherm (2026-09-04)
 

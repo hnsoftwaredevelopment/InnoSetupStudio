@@ -246,4 +246,10 @@
   <data name="ScreenEditorDefaultScreenInfo" xml:space="preserve">
     <value>This isn't a real installer screen — the end user never sees it. Here you set default values for the Back/Next/Cancel button that the other screens inherit as long as they don't set something else themselves.</value>
   </data>
+  <data name="HintButtonTriStateDefaultScreen" xml:space="preserve">
+    <value>Indeterminate = Inno Setup's own default behavior for this field.</value>
+  </data>
+  <data name="HintButtonCaptionEmptyDefaultScreen" xml:space="preserve">
+    <value>Empty = Inno Setup's own text for this field.</value>
+  </data>
 </root>
