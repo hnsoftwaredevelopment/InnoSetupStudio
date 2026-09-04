@@ -1,4 +1,6 @@
+using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using InnoSetupStudio.App.Localization;
 using InnoSetupStudio.Core.Project;
 
@@ -136,6 +138,48 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
 
     [ObservableProperty]
     private bool? _cancelButtonFontBold;
+
+    // Zelfde kleurenkiezer als WizardScreenEditorViewModel.PickColor (zie daar voor de reden:
+    // Herberts feedback 2026-09-04 over foutgevoelige hex-invoer); geen gedeelde basisklasse (zie
+    // de klassencommentaar), dus hier een eigen, verder identieke kopie.
+
+    private static string PickColor(string currentHex)
+    {
+        using var dialog = new System.Windows.Forms.ColorDialog { FullOpen = true };
+
+        if (!string.IsNullOrWhiteSpace(currentHex))
+        {
+            try
+            {
+                if (ColorConverter.ConvertFromString(currentHex) is Color current)
+                {
+                    dialog.Color = System.Drawing.Color.FromArgb(current.A, current.R, current.G, current.B);
+                }
+            }
+            catch (FormatException)
+            {
+                // Huidige waarde is (nog) geen geldige hex-kleur: dialoog opent dan gewoon met
+                // zijn eigen standaardkleur, geen crash.
+            }
+        }
+
+        if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+        {
+            return currentHex;
+        }
+
+        var picked = dialog.Color;
+        return $"#{picked.R:X2}{picked.G:X2}{picked.B:X2}";
+    }
+
+    [RelayCommand]
+    private void PickBackButtonTextColor() => BackButtonTextColor = PickColor(BackButtonTextColor);
+
+    [RelayCommand]
+    private void PickNextButtonTextColor() => NextButtonTextColor = PickColor(NextButtonTextColor);
+
+    [RelayCommand]
+    private void PickCancelButtonTextColor() => CancelButtonTextColor = PickColor(CancelButtonTextColor);
 
     /// <summary>Tegenhanger van de constructor: leest de velden terug in een nieuwe
     /// <see cref="WizardScreenButtonSettings"/>, gebruikt door WizardEditorViewModel.ApplyTo.</summary>

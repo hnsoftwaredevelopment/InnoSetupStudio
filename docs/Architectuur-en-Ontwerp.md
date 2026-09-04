@@ -993,3 +993,34 @@ Pascal Script — de generator zet deze velden voor Caption/Enabled/Visible/Text
 dezelfde manier om als de bestaande Caption-velden, geen extra werk nodig. Achtergrondkleur en
 bitmap zijn dus ook geen openstaand punt meer voor de generator: die zijn uit het model geschrapt,
 niet alleen uitgesteld.
+
+**UX-feedback 2026-09-04, na het bekijken van het resultaat.** Herbert: het aparte
+eigenschappenpaneel per knop is de moeite waard (houdt het scherm later rustiger), maar vrije
+tekstinvoer voor TextColor/FontFamily is foutgevoelig — je moet toevallig weten dat je
+"#08BDA1" nodig hebt, en een lettertypenaam intikken kan altijd een typefout zijn. Twee
+toevoegingen, nog in dezelfde PR #14:
+
+- Lettertype-keuzelijst: `SystemFontCatalog` (nieuwe klasse, `InnoSetupStudio.App.Services`) geeft
+  `Fonts.SystemFontFamilies` van deze machine terug; de FontFamily-velden zijn nu een bewerkbare
+  ComboBox in plaats van een vrije TextBox, met de systeemlettertypen als suggestielijst in plaats
+  van verplichte keuze (bewerkbaar gelaten omdat de lettertypen op de doelmachine tijdens
+  installatie sowieso kunnen afwijken van deze ontwikkelmachine — zie ook de vraag hieronder over
+  lettertypebestanden).
+- Kleurenkiezer: een "Kies…"-knop naast elk TextColor-veld (Back/Next/Cancel-knoppen en de
+  Bladeren-knop) opent `System.Windows.Forms.ColorDialog` — WPF heeft zelf geen ingebouwde
+  kleurenkiezer. Vereist `<UseWindowsForms>true</UseWindowsForms>` in
+  `InnoSetupStudio.App.csproj`, wat op zijn beurt de impliciete globale usings voor
+  `System.Windows.Forms`/`System.Drawing` moest laten vervallen (`<Using Remove="..." />`): beide
+  botsen anders met de gelijknamige WPF-typen (`Application`, `Color`, `ColorConverter`,
+  `FontFamily`) die de rest van de app al gebruikt.
+
+**Vraag van Herbert, beantwoord: moet een gekozen lettertype naar de projectmap gekopieerd worden
+(zoals License/eerder ook Bitmap via IProjectAssetService)?** Nee — FontFamily is, anders dan
+LicenseFilePath, geen bestandspad maar een naamverwijzing naar een lettertype dat op de
+doelmachine zelf al geïnstalleerd moet zijn (Pascal Script's `Font.Name` verwijst simpelweg naar
+een systeemlettertype, net zoals "Segoe UI" nu al gebruikt wordt zonder dat dat lettertype ooit
+in het installerproject terechtkomt). Inno Setup heeft geen ingebouwd mechanisme om een eigen
+lettertypebestand mee te installeren en meteen daarna, tijdens de wizard zelf, te gebruiken voor
+de knoppen — de wizard-UI is al getekend voordat een eventuele custom-font-installatie zou
+kunnen draaien. Een lettertype dat niet op de doelmachine staat, valt in de praktijk terug op
+Windows' eigen font-substitutie; dat is een acceptabele beperking, geen bug om op te lossen.

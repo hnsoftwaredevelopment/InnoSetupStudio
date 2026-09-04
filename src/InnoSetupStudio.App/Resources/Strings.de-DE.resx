@@ -246,6 +246,9 @@
   <data name="LabelButtonFontBold" xml:space="preserve">
     <value>Fett</value>
   </data>
+  <data name="ButtonPickColor" xml:space="preserve">
+    <value>Wählen…</value>
+  </data>
   <data name="SectionBrowseButton" xml:space="preserve">
     <value>Durchsuchen-Schaltfläche</value>
   </data>

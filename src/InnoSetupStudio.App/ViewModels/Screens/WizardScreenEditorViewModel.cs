@@ -1,5 +1,6 @@
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using InnoSetupStudio.App.Localization;
 using InnoSetupStudio.Core.Project;
 
@@ -360,6 +361,51 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
     partial void OnNextButtonFontBoldChanged(bool? value) => OnPropertyChanged(nameof(EffectiveNextButtonFontBold));
 
     partial void OnCancelButtonFontBoldChanged(bool? value) => OnPropertyChanged(nameof(EffectiveCancelButtonFontBold));
+
+    // Kleurenkiezer voor TextColor (Herberts feedback 2026-09-04: zelf een hex-code moeten
+    // intikken is foutgevoelig — je moet toevallig weten dat je "#08BDA1" nodig hebt). Gebruikt
+    // WinForms' ColorDialog (System.Windows.Forms.UseWindowsForms staat aan in het .csproj) in
+    // plaats van een eigen WPF-kleurenkiezer te bouwen: WPF heeft er zelf geen, en dit is de
+    // standaard Windows-kleurenkiezer die de gebruiker al kent uit andere programma's. Protected
+    // static zodat SelectDestinationPageEditorViewModel (erft van deze klasse) hem ook kan
+    // gebruiken voor de Bladerknop-tekstkleur, zonder een eigen kopie.
+    protected static string PickColor(string currentHex)
+    {
+        using var dialog = new System.Windows.Forms.ColorDialog { FullOpen = true };
+
+        if (!string.IsNullOrWhiteSpace(currentHex))
+        {
+            try
+            {
+                if (ColorConverter.ConvertFromString(currentHex) is Color current)
+                {
+                    dialog.Color = System.Drawing.Color.FromArgb(current.A, current.R, current.G, current.B);
+                }
+            }
+            catch (FormatException)
+            {
+                // Huidige waarde is (nog) geen geldige hex-kleur: dialoog opent dan gewoon met
+                // zijn eigen standaardkleur, geen crash.
+            }
+        }
+
+        if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+        {
+            return currentHex;
+        }
+
+        var picked = dialog.Color;
+        return $"#{picked.R:X2}{picked.G:X2}{picked.B:X2}";
+    }
+
+    [RelayCommand]
+    private void PickBackButtonTextColor() => BackButtonTextColor = PickColor(BackButtonTextColor);
+
+    [RelayCommand]
+    private void PickNextButtonTextColor() => NextButtonTextColor = PickColor(NextButtonTextColor);
+
+    [RelayCommand]
+    private void PickCancelButtonTextColor() => CancelButtonTextColor = PickColor(CancelButtonTextColor);
 
     /// <summary>Tegenhanger van de <see cref="ButtonSettings"/>-init-eigenschap: leest de velden
     /// terug in een nieuwe <see cref="WizardScreenButtonSettings"/>, gebruikt door

@@ -4,6 +4,7 @@
         xmlns:loc="clr-namespace:InnoSetupStudio.App.Localization"
         xmlns:converters="clr-namespace:InnoSetupStudio.App.Converters"
         xmlns:vm="clr-namespace:InnoSetupStudio.App.ViewModels.Screens"
+        xmlns:services="clr-namespace:InnoSetupStudio.App.Services"
         xmlns:wizard="clr-namespace:InnoSetupStudio.Wizard.Screens;assembly=InnoSetupStudio.Wizard"
         Title="{loc:Loc ScreenEditorTitle}" Height="600" Width="980"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize" ShowInTaskbar="False"
@@ -57,11 +58,14 @@
                     <TextBlock Text="{loc:Loc LabelButtonTextColor}" Width="96" VerticalAlignment="Center" />
                     <Border Width="18" Height="18" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,4,0"
                             Background="{Binding BackButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}" />
-                    <TextBox Width="90" Text="{Binding BackButtonTextColor, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox Width="90" Text="{Binding BackButtonTextColor, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0" />
+                    <Button Content="{loc:Loc ButtonPickColor}" Command="{Binding PickBackButtonTextColorCommand}" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                     <TextBlock Text="{loc:Loc LabelButtonFontFamily}" Width="96" VerticalAlignment="Center" />
-                    <TextBox Width="120" Text="{Binding BackButtonFontFamily, UpdateSourceTrigger=PropertyChanged}" />
+                    <ComboBox Width="150" IsEditable="True" IsTextSearchEnabled="True"
+                              ItemsSource="{x:Static services:SystemFontCatalog.FontFamilyNames}"
+                              Text="{Binding BackButtonFontFamily, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                     <TextBlock Text="{loc:Loc LabelButtonFontSize}" Width="96" VerticalAlignment="Center" />
@@ -82,11 +86,14 @@
                     <TextBlock Text="{loc:Loc LabelButtonTextColor}" Width="96" VerticalAlignment="Center" />
                     <Border Width="18" Height="18" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,4,0"
                             Background="{Binding NextButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}" />
-                    <TextBox Width="90" Text="{Binding NextButtonTextColor, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox Width="90" Text="{Binding NextButtonTextColor, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0" />
+                    <Button Content="{loc:Loc ButtonPickColor}" Command="{Binding PickNextButtonTextColorCommand}" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                     <TextBlock Text="{loc:Loc LabelButtonFontFamily}" Width="96" VerticalAlignment="Center" />
-                    <TextBox Width="120" Text="{Binding NextButtonFontFamily, UpdateSourceTrigger=PropertyChanged}" />
+                    <ComboBox Width="150" IsEditable="True" IsTextSearchEnabled="True"
+                              ItemsSource="{x:Static services:SystemFontCatalog.FontFamilyNames}"
+                              Text="{Binding NextButtonFontFamily, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                     <TextBlock Text="{loc:Loc LabelButtonFontSize}" Width="96" VerticalAlignment="Center" />
@@ -107,11 +114,14 @@
                     <TextBlock Text="{loc:Loc LabelButtonTextColor}" Width="96" VerticalAlignment="Center" />
                     <Border Width="18" Height="18" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,4,0"
                             Background="{Binding CancelButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}" />
-                    <TextBox Width="90" Text="{Binding CancelButtonTextColor, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox Width="90" Text="{Binding CancelButtonTextColor, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0" />
+                    <Button Content="{loc:Loc ButtonPickColor}" Command="{Binding PickCancelButtonTextColorCommand}" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                     <TextBlock Text="{loc:Loc LabelButtonFontFamily}" Width="96" VerticalAlignment="Center" />
-                    <TextBox Width="120" Text="{Binding CancelButtonFontFamily, UpdateSourceTrigger=PropertyChanged}" />
+                    <ComboBox Width="150" IsEditable="True" IsTextSearchEnabled="True"
+                              ItemsSource="{x:Static services:SystemFontCatalog.FontFamilyNames}"
+                              Text="{Binding CancelButtonFontFamily, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                     <TextBlock Text="{loc:Loc LabelButtonFontSize}" Width="96" VerticalAlignment="Center" />
@@ -208,11 +218,14 @@
                     <TextBlock Text="{loc:Loc LabelButtonTextColor}" Width="96" VerticalAlignment="Center" />
                     <Border Width="18" Height="18" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,4,0"
                             Background="{Binding BrowseButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}" />
-                    <TextBox Width="90" Text="{Binding BrowseButtonTextColor, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox Width="90" Text="{Binding BrowseButtonTextColor, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0" />
+                    <Button Content="{loc:Loc ButtonPickColor}" Command="{Binding PickBrowseButtonTextColorCommand}" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                     <TextBlock Text="{loc:Loc LabelButtonFontFamily}" Width="96" VerticalAlignment="Center" />
-                    <TextBox Width="120" Text="{Binding BrowseButtonFontFamily, UpdateSourceTrigger=PropertyChanged}" />
+                    <ComboBox Width="150" IsEditable="True" IsTextSearchEnabled="True"
+                              ItemsSource="{x:Static services:SystemFontCatalog.FontFamilyNames}"
+                              Text="{Binding BrowseButtonFontFamily, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                     <TextBlock Text="{loc:Loc LabelButtonFontSize}" Width="96" VerticalAlignment="Center" />

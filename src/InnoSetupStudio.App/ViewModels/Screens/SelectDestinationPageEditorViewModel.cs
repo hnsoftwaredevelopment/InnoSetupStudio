@@ -98,6 +98,12 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
     [ObservableProperty]
     private bool? _browseButtonFontBold;
 
+    // Hergebruikt de kleurenkiezer van de basisklasse (WizardScreenEditorViewModel.PickColor,
+    // protected static): geen eigen kopie nodig, deze klasse erft al van die basisklasse (anders
+    // dan DefaultScreenEditorViewModel, die geen gedeelde basisklasse heeft).
+    [RelayCommand]
+    private void PickBrowseButtonTextColor() => BrowseButtonTextColor = PickColor(BrowseButtonTextColor);
+
     /// <summary>Tegenhanger van de Bladerknop-velden in de constructor, gebruikt door
     /// WizardEditorViewModel.ApplyTo.</summary>
     public BrowseButtonSettings ReadBrowseButtonSettings() => new()

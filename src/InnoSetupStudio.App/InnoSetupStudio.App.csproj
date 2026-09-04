@@ -28,6 +28,11 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <!-- Alleen voor System.Windows.Forms.ColorDialog (zie WizardScreenEditorViewModel.PickColor):
+         WPF heeft zelf geen ingebouwde kleurenkiezer, en dit is de standaard Windows-kleurenkiezer
+         die de gebruiker al kent, in plaats van een eigen WPF-kleurenkiezer te bouwen of een
+         extra pakket toe te voegen. -->
+    <UseWindowsForms>true</UseWindowsForms>
     <!-- Herbert wil de gebouwde .exe direct terugvinden als InnoSetupStudio.exe in Builds\<Configuration>\,
          niet als InnoSetupStudio.App.exe weggestopt in bin\<Configuration>\net10.0-windows\. AssemblyName
          bepaalt alleen de bestandsnaam van de output, niet de C#/XAML-namespace (die volgt uit
@@ -40,5 +45,17 @@
          geopend venster daarna; dat is een los mechanisme, vandaar beide. -->
     <ApplicationIcon>Resources\AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- UseWindowsForms hierboven (alleen voor System.Windows.Forms.ColorDialog) brengt een
+         impliciete global using voor System.Windows.Forms mee, die botst met WPF's eigen
+         System.Windows.Application ("Application is ambiguous"). Deze ene impliciete using
+         verwijderen is genoeg: overal waar ColorDialog/System.Drawing.Color gebruikt wordt (zie
+         WizardScreenEditorViewModel.PickColor) staat de namespace toch al volledig uitgeschreven. -->
+    <Using Remove="System.Windows.Forms" />
+    <!-- Zelfde reden als hierboven: System.Drawing (Color/ColorConverter/FontFamily) botst met de
+         gelijknamige typen in System.Windows.Media die overal elders in de app gebruikt worden. -->
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
 
 </Project>
