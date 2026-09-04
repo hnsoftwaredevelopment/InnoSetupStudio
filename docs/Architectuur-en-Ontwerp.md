@@ -529,6 +529,67 @@ een NullReferenceException zodra de schermeditor werd geopend — opgelost door 
 omdat het weinig moeite kostte en de dekking van alle negen velden per scherm compleet maakt.
 Testsuite na deze wijzigingen: 14/14 groen.
 
+### 11.9 Fase 4: Standaardscherm en tweelaags-resolutie voor knoppen (2026-09-04, vervolg)
+
+Vervolg op §13's "Nu"-beslissing: het Standaardscherm en de tweelaags-resolutie uit §12.6/§12.7
+gebouwd, bewust beperkt tot wat er al is — de knoppen (`WizardScreenButtonSettings`). Kleuren,
+lettertypen en het verplaatsen van de wizardafbeeldingen blijven bij §13's "Later".
+
+**Model.** `InstallerProject.DefaultScreenButtons` (`WizardScreenButtonSettings`, net als de drie
+bestaande schermvelden), met dezelfde `??= new()`-normalisatie in `JsonInstallerProjectService.
+LoadAsync` als de andere drie tegen een expliciete JSON-null.
+
+**Tweelaags-resolutie.** `WizardScreenEditorViewModel` (de basisklasse van Welkom/Licentie/
+Bestemming) kreeg een `required DefaultScreenEditorViewModel Defaults`-eigenschap naast de
+bestaande `ButtonSettings`. De Effective*/Is*-eigenschappen zijn uitgebreid van twee naar drie
+lagen: eigen waarde op het scherm zelf → anders de waarde van `Defaults` → anders pas Inno Setup's
+eigen ingebouwde standaard (zoals in PR #10). `Defaults` is, anders dan `ButtonSettings`, geen
+eenmalige kopie maar een levende referentie naar dezelfde `DefaultScreenEditorViewModel`-instantie
+voor de hele schermeditor-sessie: de custom init-accessor abonneert zich op `PropertyChanged` van
+die instantie, zodat een wijziging op het Standaardscherm meteen in de andere schermen'
+voorvertoning doorwerkt zonder dat de gebruiker iets opnieuw hoeft te openen.
+
+**Nieuwe klasse: `DefaultScreenEditorViewModel`.** Erft bewust NIET van `WizardScreenEditorViewModel`:
+die basisklasse vraagt om `WizardImage`/`WizardSmallImage` voor een live installervoorvertoning, en
+het Standaardscherm heeft (nog) geen voorvertoning — §12.6 liet die vraag open, "geen voorvertoning"
+is voorlopig de eenvoudigste van de twee genoemde opties. Heeft verder dezelfde negen knopvelden,
+een `Title`/`IconKey` (icoon "Edit", bewust anders dan Document/Folder van de echte schermen) en
+een `ReadButtonSettings()`, in dezelfde vorm als de basisklasse.
+
+**`WizardEditorViewModel`.** Maakt één `DefaultScreenEditorViewModel` per sessie, geeft die aan elk
+scherm door via `Defaults`, en telt wijzigingen erop mee voor de dirty-status. `SelectedScreen` is
+verbreed van `WizardScreenEditorViewModel?` naar `object?`, want het Standaardscherm deelt bewust
+geen basisklasse met de echte schermen; `SelectedIndex`/`Back`/`Next` gaan expliciet met een
+type-check om met het geval dat het Standaardscherm geselecteerd is (dan altijd buiten de
+Terug-/Volgende-navigatie van de echte schermen, `SelectedIndex` = -1). Twee nieuwe eigenschappen
+`IsDefaultScreenSelected`/`IsRealScreenSelected` (zelfde niet-inverterende-`BooleanToVisibilityConverter`-
+patroon als `HasScreens`/`HasNoScreens`) sturen de UI hieronder aan.
+
+**UI (`WizardEditorWindow.xaml`).** Linkerlijst: het Standaardscherm in een eigen `ListBox` met
+precies één item, een `Separator`, en daaronder de bestaande lijst met echte schermen — twee
+losse `ListBox`en die allebei two-way naar dezelfde `SelectedScreen` binden (selecteren in de ene
+lijst laat de andere vanzelf zijn markering verliezen, geen extra code nodig). Beide lijsten delen
+nu `ScreenRowTemplate` (uit de eerder inline `ListBox.ItemTemplate` getrokken), want
+`DefaultScreenEditorViewModel` heeft dezelfde `Title`/`IconKey`-eigenschapsnamen als de echte
+schermen. De installervoorvertoning (met de knoppenbalk) is verborgen zodra het Standaardscherm
+geselecteerd is en vervangen door een toelichtende tekst in hetzelfde kader; het instellingenpaneel
+rechts kreeg een vierde `DataTemplate` (`DefaultScreenPropertyPanelTemplate`) die dezelfde gedeelde
+`ButtonSettingsSectionTemplate` van PR #10 hergebruikt.
+
+**Bewust nog niet gedaan (§13 "Later", ongewijzigd).** Geen zwart/wit-versus-kleur-signalering
+(§12.7) — dat is voor tekst-/kleurvelden sowieso nog niet uitgewerkt, en voor de knoppen bewust
+uitgesteld tot na dit patroon zelf beproefd is. Geen rechtermuisklik-contextmenu (§12.7); de negen
+velden blijven voorlopig gewone tekstvelden/CheckBoxen, hetzelfde als op de echte schermen. Geen
+voorvertoning van het Standaardscherm zelf (§12.6, expliciet nog open) — de toelichtende tekst is
+de bewust eenvoudigste tussenoplossing.
+
+**Verificatie.** Build (0 warnings, 0 errors), testsuite (14/14 groen — de bestaande round-trip- en
+null-normalisatie-tests uitgebreid met `DefaultScreenButtons` in plaats van nieuwe tests erbij) en
+het opstarten van de app zonder crash zijn gecontroleerd. De schermeditor zelf (linkerlijst met de
+nieuwe rij, omschakelen tussen voorvertoning en toelichting, tweelaags-resolutie in de
+voorvertoning) is nog niet interactief doorgeklikt in deze sessie, zelfde beperking als bij eerdere
+PR's in deze fase — dat is Herberts eigen visuele controle.
+
 ## 12. Configureerbaarheidscatalogus per wizardscherm (2026-09-04)
 
 Herbert wil dat elk aanpasbaar element van elk wizardscherm uiteindelijk bewerkbaar wordt in Inno
@@ -755,5 +816,5 @@ al werkende, geteste functionaliteit uit PR #9; dat verdient een eigen afweging 
 het Standaardscherm in de praktijk aanvoelt, niet een meegenomen wijziging in dezelfde PR. De
 zwart/wit-signalering voor afbeeldingen hangt af van die keuze en volgt dus ook later. Nieuwe
 elementen toevoegen aan een bestaand scherm (via Pascal Script aangemaakte controls) en hele nieuwe
-pagina's (`TWizardPage`) blijven ver weg, geen actie nu. De inventarisatie van de overige tien
+pagina's (`TWizardPage`) blijven ver weg, geen actie nu. De inventarisatie van de overige acht
 standaardschermen (§12.5) kan gewoon doorlopen, onafhankelijk van dit alles.

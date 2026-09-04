@@ -17,6 +17,7 @@ namespace InnoSetupStudio.App.ViewModels;
 public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
 {
     private readonly List<WizardScreenEditorViewModel> _screens;
+    private readonly DefaultScreenEditorViewModel _defaultScreen;
 
     public WizardEditorViewModel(InstallerProject project, string? projectFilePath, IProjectAssetService assetService)
     {
@@ -29,6 +30,13 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
         var wizardImage = WizardImageResolver.ResolveWizardImage(project.WizardImageFile);
         var wizardSmallImage = WizardImageResolver.ResolveWizardSmallImage(project.WizardSmallImageFile);
 
+        // Het Standaardscherm (§12.6/§12.7): één instantie voor de hele sessie, hieronder aan elk
+        // scherm doorgegeven via de required Defaults-eigenschap, vóórdat die schermen zelf
+        // aangemaakt worden. Geen aan/uit-vinkje zoals de echte schermen (WizardScreens uit fase
+        // 3) — dit scherm bestaat altijd, ongeacht welke installerschermen aan staan.
+        _defaultScreen = new DefaultScreenEditorViewModel(project.DefaultScreenButtons);
+        DefaultScreenRow = [_defaultScreen];
+
         _screens = [];
         if (project.WizardScreens.ShowWelcomePage)
         {
@@ -37,6 +45,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
                 WizardImage = wizardImage,
                 WizardSmallImage = wizardSmallImage,
                 ButtonSettings = project.WelcomeScreenButtons,
+                Defaults = _defaultScreen,
             });
         }
 
@@ -47,6 +56,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
                 WizardImage = wizardImage,
                 WizardSmallImage = wizardSmallImage,
                 ButtonSettings = project.LicenseScreenButtons,
+                Defaults = _defaultScreen,
             });
         }
 
@@ -57,6 +67,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
                 WizardImage = wizardImage,
                 WizardSmallImage = wizardSmallImage,
                 ButtonSettings = project.SelectDestinationScreenButtons,
+                Defaults = _defaultScreen,
             });
         }
 
@@ -64,11 +75,15 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
         // luisteren naar PropertyChanged van elk scherm om de dirty-status bij te houden — zelfde
         // patroon als WizardScreensViewModel in fase 3. De schermen zijn hierboven net aangemaakt
         // met hun beginwaarde via de constructor, niet via een property-setter, dus dit abonneren
-        // zelf triggert nog geen PropertyChanged en dus ook geen valse dirty-melding.
+        // zelf triggert nog geen PropertyChanged en dus ook geen valse dirty-melding. Het
+        // Standaardscherm telt hier ook mee: wijzig je daar iets, dan is de schermeditor als
+        // geheel net zo goed gewijzigd als bij een van de echte schermen.
         foreach (var screen in _screens)
         {
             screen.PropertyChanged += (_, _) => MarkDirty();
         }
+
+        _defaultScreen.PropertyChanged += (_, _) => MarkDirty();
 
         _selectedScreen = _screens.Count > 0 ? _screens[0] : null;
 
@@ -78,6 +93,13 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
     /// <summary>De schermen die (a) aan staan in de wizardschermen-selectie (fase 3) en (b) al een
     /// editor hebben, in Inno Setup's eigen volgorde.</summary>
     public IReadOnlyList<WizardScreenEditorViewModel> Screens => _screens;
+
+    /// <summary>Enkel-item lijst voor de eigen rij van het Standaardscherm bovenaan de
+    /// linkerlijst (WizardEditorWindow.xaml), boven de scheidingslijn met <see cref="Screens"/>.
+    /// Een losse lijst (in plaats van dit gewoon vóór de echte schermen in <see cref="Screens"/>
+    /// te zetten) zodat het Standaardscherm buiten Back/Next-navigatie (<see cref="SelectedIndex"/>)
+    /// blijft — het is bewust geen "scherm nul" tussen de echte installerschermen, zie §12.7.</summary>
+    public IReadOnlyList<DefaultScreenEditorViewModel> DefaultScreenRow { get; }
 
     /// <summary>True als er tenminste één scherm te bewerken is; anders toont het venster een
     /// toelichting (ScreenEditorNoScreens) in plaats van de drie panelen.</summary>
@@ -89,12 +111,30 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
     /// voor te schrijven.</summary>
     public bool HasNoScreens => !HasScreens;
 
+    // Type object (niet WizardScreenEditorViewModel) omdat SelectedScreen ook het Standaardscherm
+    // moet kunnen zijn (DefaultScreenEditorViewModel), en die twee typen bewust geen gemeenschappelijke
+    // basisklasse delen (zie DefaultScreenEditorViewModel's doc-comment). WizardEditorWindow.xaml
+    // kan de juiste template nog steeds automatisch per runtime-type kiezen; alleen SelectedIndex/
+    // Back/Next hieronder moeten expliciet met een is-check omgaan met het geval dat het
+    // Standaardscherm geselecteerd is (dan -1, buiten de echte-schermen-navigatie).
     [NotifyCanExecuteChangedFor(nameof(BackCommand))]
     [NotifyCanExecuteChangedFor(nameof(NextCommand))]
+    [NotifyPropertyChangedFor(nameof(IsDefaultScreenSelected))]
+    [NotifyPropertyChangedFor(nameof(IsRealScreenSelected))]
     [ObservableProperty]
-    private WizardScreenEditorViewModel? _selectedScreen;
+    private object? _selectedScreen;
 
-    private int SelectedIndex => SelectedScreen is null ? -1 : _screens.IndexOf(SelectedScreen);
+    /// <summary>True zodra het Standaardscherm geselecteerd is, in plaats van een van de echte
+    /// installerschermen. Bepaalt in WizardEditorWindow.xaml of de installervoorvertoning of de
+    /// toelichtende tekst voor het Standaardscherm getoond wordt (zie DefaultScreenEditorViewModel).</summary>
+    public bool IsDefaultScreenSelected => SelectedScreen is DefaultScreenEditorViewModel;
+
+    /// <summary>Exacte tegenhanger van <see cref="IsDefaultScreenSelected"/>, puur zodat
+    /// WizardEditorWindow.xaml met dezelfde (niet-inverterende) BooleanToVisibilityConverter kan
+    /// werken voor beide kanten, net als <see cref="HasNoScreens"/> hierboven.</summary>
+    public bool IsRealScreenSelected => !IsDefaultScreenSelected;
+
+    private int SelectedIndex => SelectedScreen is WizardScreenEditorViewModel screen ? _screens.IndexOf(screen) : -1;
 
     private bool CanGoBack() => SelectedIndex > 0;
 
@@ -142,5 +182,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
                     break;
             }
         }
+
+        project.DefaultScreenButtons = _defaultScreen.ReadButtonSettings();
     }
 }

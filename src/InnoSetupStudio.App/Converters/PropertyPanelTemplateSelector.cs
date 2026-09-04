@@ -19,11 +19,18 @@ public sealed class PropertyPanelTemplateSelector : DataTemplateSelector
 
     public DataTemplate? SelectDestinationTemplate { get; set; }
 
+    /// <summary>Voor het Standaardscherm (§12.6/§12.7); geen echt installerscherm, dus geen eigen
+    /// voorvertoning-template nodig (WizardEditorWindow.xaml schakelt de hele voorvertoning-Border
+    /// om naar een toelichtende tekst via WizardEditorViewModel.IsDefaultScreenSelected), alleen
+    /// dit instellingenpaneel.</summary>
+    public DataTemplate? DefaultScreenTemplate { get; set; }
+
     public override DataTemplate? SelectTemplate(object? item, DependencyObject container) => item switch
     {
         WelcomePageEditorViewModel => WelcomeTemplate,
         LicensePageEditorViewModel => LicenseTemplate,
         SelectDestinationPageEditorViewModel => SelectDestinationTemplate,
+        DefaultScreenEditorViewModel => DefaultScreenTemplate,
         _ => null,
     };
 }

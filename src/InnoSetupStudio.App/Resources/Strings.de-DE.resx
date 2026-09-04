@@ -235,9 +235,15 @@
     <value>Sichtbar</value>
   </data>
   <data name="HintButtonTriState" xml:space="preserve">
-    <value>Unbestimmt = Inno Setups eigenes Standardverhalten für diesen Bildschirm.</value>
+    <value>Unbestimmt = übernimmt den Wert des Standardbildschirms, sonst Inno Setups eigenes Standardverhalten.</value>
   </data>
   <data name="HintButtonCaptionEmpty" xml:space="preserve">
-    <value>Leer = Inno Setups eigener Text für diesen Bildschirm.</value>
+    <value>Leer = übernimmt den Text des Standardbildschirms, sonst Inno Setups eigenen Text.</value>
+  </data>
+  <data name="WizardScreenDefault" xml:space="preserve">
+    <value>Standardbildschirm</value>
+  </data>
+  <data name="ScreenEditorDefaultScreenInfo" xml:space="preserve">
+    <value>Dies ist kein echter Installationsbildschirm — der Endbenutzer sieht ihn nie. Hier legen Sie Standardwerte für die Zurück-/Weiter-/Abbrechen-Schaltfläche fest, die die anderen Bildschirme übernehmen, solange sie selbst nichts anderes festlegen.</value>
   </data>
 </root>

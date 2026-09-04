@@ -69,6 +69,42 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
         }
     }
 
+    private DefaultScreenEditorViewModel? _defaults;
+
+    /// <summary>
+    /// Het Standaardscherm van dezelfde schermeditor-sessie (zie WizardEditorViewModel), de
+    /// tweede laag van de Effective*/Is*-resolutie hieronder. Required init, net als WizardImage/
+    /// WizardSmallImage, zodat een nieuw schermtype dit nooit vergeet. Anders dan die twee heeft
+    /// dit wél een custom init-accessor: WizardEditorViewModel maakt één DefaultScreenEditorViewModel
+    /// voor de hele sessie en geeft dezelfde (levende) instantie aan elk scherm door, dus een
+    /// wijziging op het Standaardscherm moet híer meteen de afgeleide Effective*/Is*-waarden
+    /// bijwerken — vandaar het abonneren op PropertyChanged in plaats van alleen de negen velden
+    /// eenmalig te kopiëren (zoals ButtonSettings hierboven wél doet, want dat IS een kopie van
+    /// het scherm-eigen, niet-cascaderende deel).
+    /// </summary>
+    public required DefaultScreenEditorViewModel Defaults
+    {
+        get => _defaults!;
+        init
+        {
+            _defaults = value;
+            value.PropertyChanged += (_, _) => RaiseEffectivePropertiesChanged();
+        }
+    }
+
+    private void RaiseEffectivePropertiesChanged()
+    {
+        OnPropertyChanged(nameof(EffectiveBackButtonCaption));
+        OnPropertyChanged(nameof(EffectiveNextButtonCaption));
+        OnPropertyChanged(nameof(EffectiveCancelButtonCaption));
+        OnPropertyChanged(nameof(IsBackButtonVisible));
+        OnPropertyChanged(nameof(IsNextButtonVisible));
+        OnPropertyChanged(nameof(IsCancelButtonVisible));
+        OnPropertyChanged(nameof(IsBackButtonEnabled));
+        OnPropertyChanged(nameof(IsNextButtonEnabled));
+        OnPropertyChanged(nameof(IsCancelButtonEnabled));
+    }
+
     // De negen velden hieronder staan, anders dan WizardImage/WizardSmallImage, wél op de
     // basisklasse als gewone (niet required init) [ObservableProperty]'s: dit zijn per-scherm
     // gegevens (elk scherm heeft zijn eigen WizardScreenButtonSettings, zie
@@ -118,41 +154,49 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
     /// <summary>Zie <see cref="DefaultBackButtonCaption"/>, maar dan voor de Annuleren-knop.</summary>
     protected virtual string DefaultCancelButtonCaption => LocalizationManager.Instance["ButtonWizardCancel"];
 
-    /// <summary>Wat de voorvertoning daadwerkelijk op de Terug-knop toont: de eigen tekst van de
-    /// gebruiker, of anders <see cref="DefaultBackButtonCaption"/>.</summary>
-    public string EffectiveBackButtonCaption =>
-        string.IsNullOrWhiteSpace(BackButtonCaption) ? DefaultBackButtonCaption : BackButtonCaption;
+    // Tweelaags-resolutie (§12.6/§12.7 van de architectuurdoc): eigen waarde op dit scherm, indien
+    // ingevuld → anders de waarde van het Standaardscherm (Defaults), indien die op zijn beurt
+    // ingevuld is → anders pas Inno Setup's eigen ingebouwde standaard (Default*ButtonCaption /
+    // "true" voor Enabled/Visible). Vervangt de eerdere tweetraps EffectiveXxx/IsXxx-logica uit
+    // PR #10, die alleen de eerste en de laatste laag kende.
+
+    /// <summary>Wat de voorvertoning daadwerkelijk op de Terug-knop toont.</summary>
+    public string EffectiveBackButtonCaption => ResolveCaption(BackButtonCaption, Defaults.BackButtonCaption, DefaultBackButtonCaption);
 
     /// <summary>Zie <see cref="EffectiveBackButtonCaption"/>, maar dan voor de Volgende-knop.</summary>
-    public string EffectiveNextButtonCaption =>
-        string.IsNullOrWhiteSpace(NextButtonCaption) ? DefaultNextButtonCaption : NextButtonCaption;
+    public string EffectiveNextButtonCaption => ResolveCaption(NextButtonCaption, Defaults.NextButtonCaption, DefaultNextButtonCaption);
 
     /// <summary>Zie <see cref="EffectiveBackButtonCaption"/>, maar dan voor de Annuleren-knop.</summary>
-    public string EffectiveCancelButtonCaption =>
-        string.IsNullOrWhiteSpace(CancelButtonCaption) ? DefaultCancelButtonCaption : CancelButtonCaption;
+    public string EffectiveCancelButtonCaption => ResolveCaption(CancelButtonCaption, Defaults.CancelButtonCaption, DefaultCancelButtonCaption);
 
-    /// <summary>True tenzij de gebruiker dit scherm expliciet op onzichtbaar heeft gezet.</summary>
-    public bool IsBackButtonVisible => BackButtonVisible != false;
+    private static string ResolveCaption(string own, string fromDefaults, string builtIn) =>
+        !string.IsNullOrWhiteSpace(own) ? own
+        : !string.IsNullOrWhiteSpace(fromDefaults) ? fromDefaults
+        : builtIn;
+
+    /// <summary>True tenzij dit scherm, of anders het Standaardscherm, expliciet op onzichtbaar
+    /// gezet is.</summary>
+    public bool IsBackButtonVisible => BackButtonVisible ?? Defaults.BackButtonVisible ?? true;
 
     /// <summary>Zie <see cref="IsBackButtonVisible"/>, maar dan voor de Volgende-knop.</summary>
-    public bool IsNextButtonVisible => NextButtonVisible != false;
+    public bool IsNextButtonVisible => NextButtonVisible ?? Defaults.NextButtonVisible ?? true;
 
     /// <summary>Zie <see cref="IsBackButtonVisible"/>, maar dan voor de Annuleren-knop.</summary>
-    public bool IsCancelButtonVisible => CancelButtonVisible != false;
+    public bool IsCancelButtonVisible => CancelButtonVisible ?? Defaults.CancelButtonVisible ?? true;
 
-    /// <summary>True tenzij de gebruiker dit scherm expliciet op uitgeschakeld heeft gezet. Bepaalt
-    /// in de voorvertoning alleen het gedimde uiterlijk (Opacity), niet de daadwerkelijke
-    /// IsEnabled van de Terug/Volgende-knoppen: die blijven altijd echt klikbaar, want ze zijn ook
-    /// de navigatie van de schermeditor zelf (zie WizardEditorViewModel.Back/Next). De
-    /// Annuleren-knop in de voorvertoning heeft geen eigen functie en gebruikt dit wél als echte
-    /// IsEnabled.</summary>
-    public bool IsBackButtonEnabled => BackButtonEnabled != false;
+    /// <summary>True tenzij dit scherm, of anders het Standaardscherm, expliciet op uitgeschakeld
+    /// gezet is. Bepaalt in de voorvertoning alleen het gedimde uiterlijk (Opacity), niet de
+    /// daadwerkelijke IsEnabled van de Terug/Volgende-knoppen: die blijven altijd echt klikbaar,
+    /// want ze zijn ook de navigatie van de schermeditor zelf (zie
+    /// WizardEditorViewModel.Back/Next). De Annuleren-knop in de voorvertoning heeft geen eigen
+    /// functie en gebruikt dit wél als echte IsEnabled.</summary>
+    public bool IsBackButtonEnabled => BackButtonEnabled ?? Defaults.BackButtonEnabled ?? true;
 
     /// <summary>Zie <see cref="IsBackButtonEnabled"/>, maar dan voor de Volgende-knop.</summary>
-    public bool IsNextButtonEnabled => NextButtonEnabled != false;
+    public bool IsNextButtonEnabled => NextButtonEnabled ?? Defaults.NextButtonEnabled ?? true;
 
     /// <summary>Zie <see cref="IsBackButtonEnabled"/>, maar dan voor de Annuleren-knop.</summary>
-    public bool IsCancelButtonEnabled => CancelButtonEnabled != false;
+    public bool IsCancelButtonEnabled => CancelButtonEnabled ?? Defaults.CancelButtonEnabled ?? true;
 
     partial void OnBackButtonCaptionChanged(string value) => OnPropertyChanged(nameof(EffectiveBackButtonCaption));
 
