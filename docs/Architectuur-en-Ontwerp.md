@@ -682,3 +682,60 @@ toevoegen"-vraag: eerst verifiëren dat Inno Setup het als control aanbiedt, pas
 we het kunnen ondersteunen.
 
 Nog niet gebouwd — vastgelegd ter voorbereiding op de keuze voor de eerstvolgende stap.
+
+### 12.7 Visuele taal en interactie: standaard versus aangepast (2026-09-04, vervolg)
+
+Antwoord op de twee openstaande UI-vragen uit §12.6.
+
+**Zwart/wit versus kleur.** Herberts voorstel: het meegeleverde standaardbeeld (de zwart/wit
+conversie die hij al bij PR #9 koos) blijft het visuele signaal voor "dit is de out-of-the-box
+standaard"; zodra de gebruiker zelf iets instelt, wordt dat in volledige kleur getoond. Een eigen
+`WizardSmallImageFile` verschijnt dus meteen in kleur. Dit werkt letterlijk voor afbeeldingen, en
+sluit direct aan bij een keuze die al in het project zit. Voor tekst- en kleurvelden bestaat geen
+letterlijke zwart/wit-versie; daar vertaalt hetzelfde onderliggende principe (gedempt voor
+standaard, nadrukkelijk voor aangepast) naar een per-elementtype passende uitwerking, bijvoorbeeld
+een gedempte tekstkleur voor een geërfde knopcaption tegenover de volle themakleur voor een
+expliciete. De voorvertoning zelf blijft altijd de daadwerkelijk opgeloste waarde tonen (nooit een
+kleur die de gebruiker wél gekozen heeft kunstmatig grijs maken) — alleen de visuele nadruk
+verschilt tussen geërfd en expliciet.
+
+**Contextmenu in plaats van een reset-icoontje.** Rechtermuisklik op een element geeft een menu dat
+per elementtype verschilt, bijvoorbeeld Bewerken/Terug naar standaard voor een afbeelding of
+tekstveld, Aan/Uit/Verbergen voor een schakelbaar element. Vervangt het "terug naar
+standaard"-icoontje uit §12.6: consistenter (één interactiepatroon voor alle elementen) en
+flexibeler (elk elementtype vult het menu met wat daar relevant is).
+
+**Positionering van het Standaardscherm.** Bevestigd: duidelijk visueel gescheiden van de echte
+installerschermen (§12.6), niet als scherm nul ertussenin.
+
+**Nieuw punt: platte richtlijnen mogelijk ook via het Standaardscherm.** Herbert opent de vraag of
+de platte [Setup]-richtlijnen (§12.2, nu bewerkbaar in de projectinstellingen) misschien ook via
+het Standaardscherm ingesteld zouden moeten worden, met de onderliggende schermen die de opgeloste
+waarde dan alleen tonen, niet meer bewerkbaar. Dat zou `WizardImageFile`/`WizardSmallImageFile` uit
+de projectinstellingen naar het Standaardscherm verplaatsen. Nog geen besluit — zie §13 voor de
+afweging of dit nu of later aan de orde komt.
+
+## 13. Bouwvolgorde: wat nu, wat later (2026-09-04)
+
+Herbert heeft gevraagd om, nu §12 goed is vastgelegd, als development-specialist te bepalen wat
+handig is om nu al op te zetten en wat beter kan wachten.
+
+**Nu.** Eerst PR #10 en #11 afronden (CodeRabbit-feedback verwerken, Herberts visuele controle,
+mergen) — geen van beide is nog gemerged. Daarna het Standaardscherm en de tweelaags-resolutie uit
+§12.6 bouwen, maar bewust beperkt tot wat er al is: de knoppen (`WizardScreenButtonSettings`).
+Reden: dat is het enige element waar al een datamodel en een schermeditor voor bestaat, dus het is
+de kleinste manier om het hele nieuwe patroon (Standaardscherm als apart, visueel gescheiden
+scherm; tweelaags-resolutie; zwart/wit-of-kleur-signalering; contextmenu) in de praktijk te
+beproeven vóór we het uitbreiden naar elementen die nog niet bestaan.
+
+**Later.** Achtergrond-/tekstkleur en lettertype zijn nieuwe elementen zonder enig bestaand
+datamodel (geen `WizardScreenColorSettings` of vergelijkbaar) — dat is een eigen, volwaardige PR
+(inclusief hoe een "geen eigen kleur"-status eruitziet, zie §12.6), niet iets om erbij te nemen
+zolang het Standaardscherm-patroon zelf nog niet beproefd is. Het verplaatsen van
+`WizardImageFile`/`WizardSmallImageFile` van de projectinstellingen naar het Standaardscherm raakt
+al werkende, geteste functionaliteit uit PR #9; dat verdient een eigen afweging zodra we zien hoe
+het Standaardscherm in de praktijk aanvoelt, niet een meegenomen wijziging in dezelfde PR. De
+zwart/wit-signalering voor afbeeldingen hangt af van die keuze en volgt dus ook later. Nieuwe
+elementen toevoegen aan een bestaand scherm (via Pascal Script aangemaakte controls) en hele nieuwe
+pagina's (`TWizardPage`) blijven ver weg, geen actie nu. De inventarisatie van de overige tien
+standaardschermen (§12.5) kan gewoon doorlopen, onafhankelijk van dit alles.
