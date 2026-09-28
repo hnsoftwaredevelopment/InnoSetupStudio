@@ -265,7 +265,10 @@
     <value>Standardbildschirm</value>
   </data>
   <data name="ScreenEditorDefaultScreenInfo" xml:space="preserve">
-    <value>Dies ist kein echter Installationsbildschirm — der Endbenutzer sieht ihn nie. Hier legen Sie Standardwerte für die Zurück-/Weiter-/Abbrechen-Schaltfläche fest, die die anderen Bildschirme übernehmen, solange sie selbst nichts anderes festlegen.</value>
+    <value>Dies ist kein echter Installationsbildschirm — der Endbenutzer sieht ihn nie. Hier legen Sie die Assistentenbilder und Standardwerte für die Zurück-/Weiter-/Abbrechen-Schaltfläche fest, die die anderen Bildschirme übernehmen, solange sie selbst nichts anderes festlegen.</value>
+  </data>
+  <data name="SectionWizardImages" xml:space="preserve">
+    <value>Assistentenbilder</value>
   </data>
   <data name="HintButtonTriStateDefaultScreen" xml:space="preserve">
     <value>Unbestimmt = Inno Setups eigenes Standardverhalten für dieses Feld.</value>

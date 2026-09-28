@@ -1059,3 +1059,56 @@ Geen actie nu, alleen vastgelegd zodat het niet kwijtraakt. Bij het bouwen van d
 ook gekeken te worden naar `CreateVectorResourceDictionary` (zie de kickoff-werkafspraken, sectie
 over het icon-systeem) als basis om deze SVG's als vector-resource in te laden in plaats van losse
 bestanden.
+
+## 16. Wizardafbeeldingen naar het Standaardscherm (backlogitem 1, sectie 14) (2026-09-28)
+
+Herbert koos bij het hervatten van het project (na vakantie) zijn eigen volgorde voor de
+resterende backlogpunten uit sectie 14: eerst punt 1 (wizardafbeeldingen), daarna punt 4
+(meertaligheid).
+
+**Reversal van §12.6.** §12.6 concludeerde destijds nog expliciet dat `WizardImageFile`/
+`WizardSmallImageFile` "gewoon bij de bestaande projectinstellingen" horen, omdat het platte
+`[Setup]`-richtlijnen zijn (altijd projectbreed, geen per-scherm-afwijking mogelijk). Diezelfde
+dag, later in sectie 14, bevestigde Herbert desondanks dat hij deze twee velden op het
+Standaardscherm in de schermeditor wil bewerken, niet meer in de projectinstellingen — dat
+voorstel is nu uitgevoerd. De projectbrede aard van de velden zelf verandert niet (zie hieronder),
+alleen waar de gebruiker ze bewerkt.
+
+**Wat is verplaatst.** `ProjectSettingsWindow`/`ProjectSettingsViewModel` tonen `WizardImageFile`/
+`WizardSmallImageFile` niet langer; `DefaultScreenEditorViewModel` heeft nu de twee velden, met
+dezelfde Bladeren-knop-en-kopieer-naar-projectmap-flow (`IProjectAssetService`) als een
+licentiebestand. `ProjectSettingsViewModel` geeft de twee velden nog wel ongewijzigd door bij het
+opslaan (`_wizardImageFile`/`_wizardSmallImageFile`, zelfde pass-through-patroon als
+`_wizardScreens`/`_licenseFilePath`/`_defaultDirName`/`_allowUserToChangeDir` al deden) — zonder
+die velden zou opslaan vanuit de projectinstellingen een eerder op het Standaardscherm gekozen
+afbeelding stilzwijgend terugzetten naar leeg.
+
+**Architectuurwijziging: van eenmalige init-waarde naar live berekende waarde.**
+`WizardScreenEditorViewModel.WizardImage`/`WizardSmallImage` waren `required init`-eigenschappen:
+`WizardEditorViewModel` loste ze één keer op bij het openen van de schermeditor (via
+`WizardImageResolver`) en gaf ze aan elk scherm mee, wijzigbaar pas na een nieuwe sessie. Nu de
+gebruiker ze tijdens dezelfde sessie op het Standaardscherm kan wijzigen, moesten ze live
+meeveranderen in elk scherm dat ze toont (Welkomst-/Voltooid-pagina's voor `WizardImage`, de
+overige pagina's voor `WizardSmallImage`). Beide zijn nu berekende eigenschappen die rechtstreeks
+van `Defaults` (de gedeelde `DefaultScreenEditorViewModel`-instantie) lezen, en
+`RaiseEffectivePropertiesChanged` — die al bestond voor de Effective*-knopvelden — meldt nu ook
+deze twee door zodra het Standaardscherm wijzigt. Geen drielaags-resolutie zoals de knoppen: er is
+geen "eigen waarde per scherm" voor een projectbrede afbeelding om naar terug te vallen, de twee
+velden op het Standaardscherm zijn de enige waarde.
+
+**Kleine thumbnail, geen mockup-voorvertoning.** De tweede openstaande UI-vraag uit §12.6 (wat
+toont de voorvertoning van het Standaardscherm zelf) blijft bewust open — geen volledige
+mockup-pagina. Wel een kleine thumbnail naast elk van de twee velden op het Standaardscherm zelf,
+met dezelfde breedte:hoogte-verhouding als Inno Setup's eigen afmetingen (164:314 / 55×55), puur
+als directe bevestiging van de gekozen afbeelding — geen nieuwe UI-vraag, alleen hergebruik van
+hetzelfde swatch-naast-het-veld-patroon dat de tekstkleurvelden al gebruiken.
+
+**Niet meegenomen.** Tijdens dit werk viel op dat `ProjectSettingsViewModel.SaveAsync` de
+schermspecifieke knopinstellingen (`WelcomeScreenButtons`, `LicenseScreenButtons`,
+`SelectDestinationScreenButtons`, `SelectDestinationBrowseButton`, `DefaultScreenButtons`) niet
+doorgeeft bij het opbouwen van het opgeslagen project — alleen `WizardScreens`/`LicenseFilePath`/
+`DefaultDirName`/`AllowUserToChangeDir` (en nu de twee wizardafbeeldingen) hebben een
+pass-through-veld. Opslaan vanuit de projectinstellingen ná het aanpassen van knopkleuren/
+lettertype in de schermeditor zou die aanpassingen dus stilzwijgend terugzetten naar leeg. Niet
+gefixt in deze PR (buiten scope van "wizardafbeeldingen verplaatsen"), wel hier vastgelegd zodat
+het niet kwijtraakt — apart punt om Herbert voor te leggen.

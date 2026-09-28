@@ -162,37 +162,11 @@
                     </Button>
                 </Grid>
 
-                <Grid Margin="0,0,0,10">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="150" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <TextBlock x:Name="WizardImageFileLabel" Grid.Column="0" Text="{loc:Loc LabelWizardImageFile}" VerticalAlignment="Center" />
-                    <TextBox Grid.Column="1" Text="{Binding WizardImageFile, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0"
-                             AutomationProperties.LabeledBy="{Binding ElementName=WizardImageFileLabel}" />
-                    <Button Grid.Column="2" Command="{Binding BrowseWizardImageCommand}" ToolTip="{loc:Loc ButtonBrowse}"
-                            AutomationProperties.Name="{loc:Loc ButtonBrowse}">
-                        <Path Data="{StaticResource Folder}" Fill="{DynamicResource Brush.TextPrimary}"
-                              Stretch="Uniform" Width="16" Height="16" />
-                    </Button>
-                </Grid>
-
-                <Grid Margin="0,0,0,10">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="150" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <TextBlock x:Name="WizardSmallImageFileLabel" Grid.Column="0" Text="{loc:Loc LabelWizardSmallImageFile}" VerticalAlignment="Center" />
-                    <TextBox Grid.Column="1" Text="{Binding WizardSmallImageFile, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0"
-                             AutomationProperties.LabeledBy="{Binding ElementName=WizardSmallImageFileLabel}" />
-                    <Button Grid.Column="2" Command="{Binding BrowseWizardSmallImageCommand}" ToolTip="{loc:Loc ButtonBrowse}"
-                            AutomationProperties.Name="{loc:Loc ButtonBrowse}">
-                        <Path Data="{StaticResource Folder}" Fill="{DynamicResource Brush.TextPrimary}"
-                              Stretch="Uniform" Width="16" Height="16" />
-                    </Button>
-                </Grid>
+                <!-- Wizardafbeeldingen (WizardImageFile/WizardSmallImageFile) stonden hier tot
+                     backlogitem 1 (sectie 14): ze worden nu op het Standaardscherm in de
+                     schermeditor bewerkt (WizardEditorWindow.xaml,
+                     DefaultScreenPropertyPanelTemplate), samen met de andere pagina-brede
+                     standaardwaarden, in plaats van hier los van die editor. -->
             </StackPanel>
         </ScrollViewer>
     </DockPanel>

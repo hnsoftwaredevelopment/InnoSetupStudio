@@ -49,23 +49,24 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
 
     // De twee wizardafbeeldingen staan hier op de basisklasse (in plaats van alleen op de
     // schermen die ze nodig hebben) omdat het projectbrede instellingen zijn (Inno Setup's
-    // WizardImageFile/WizardSmallImageFile), niet iets per scherm: WizardEditorViewModel bepaalt
-    // ze één keer bij het openen van de schermeditor (zie WizardImageResolver) en geeft ze aan elk
-    // scherm door, zodat een toekomstig scherm dat ze nodig heeft ze automatisch al beschikbaar
-    // heeft. Alleen-lezen: binnen één schermeditor-sessie wijzigen deze niet, ze veranderen pas
-    // wanneer de gebruiker in de projectinstellingen een andere afbeelding kiest en de
-    // schermeditor opnieuw opent.
-    public required ImageSource WizardImage { get; init; }
+    // WizardImageFile/WizardSmallImageFile), niet iets per scherm — zie DefaultScreenEditorViewModel,
+    // dat sinds backlogitem 1 (sectie 14) de daadwerkelijke eigenaar is. Berekend via Defaults in
+    // plaats van required init (zoals vóór backlogitem 1): de gebruiker kan de afbeelding nu
+    // tijdens dezelfde schermeditor-sessie wijzigen op het Standaardscherm, dus dit moet live
+    // meeveranderen in elk scherm dat het gebruikt — zelfde aanpak als EffectiveBackButtonCaption
+    // hieronder, alleen zonder de drielaags-resolutie (er is geen "eigen waarde per scherm" voor
+    // een projectbrede afbeelding om naar terug te vallen). RaiseEffectivePropertiesChanged
+    // hieronder meldt de wijziging door.
+    public ImageSource WizardImage => Defaults.WizardImage;
 
     /// <summary>Zie <see cref="WizardImage"/>, maar dan de kleine afbeelding rechtsboven.</summary>
-    public required ImageSource WizardSmallImage { get; init; }
+    public ImageSource WizardSmallImage => Defaults.WizardSmallImage;
 
     /// <summary>
-    /// Schrijfalleen init-eigenschap zodat WizardEditorViewModel de knopvelden hieronder in
-    /// één keer kan meegeven via dezelfde object-initializer-syntax als WizardImage/
-    /// WizardSmallImage (<c>new XPageEditorViewModel(...) { ButtonSettings = ... }</c>), in plaats
-    /// van losse constructorparameters per veld. <see langword="required"/> zodat een nieuw
-    /// schermtype dit nooit per ongeluk leeg laat staan.
+    /// Schrijfalleen init-eigenschap zodat WizardEditorViewModel de knopvelden hieronder in één
+    /// keer kan meegeven via object-initializer-syntax (<c>new XPageEditorViewModel(...) {
+    /// ButtonSettings = ... }</c>), in plaats van losse constructorparameters per veld.
+    /// <see langword="required"/> zodat een nieuw schermtype dit nooit per ongeluk leeg laat staan.
     /// </summary>
     public required WizardScreenButtonSettings ButtonSettings
     {
@@ -120,6 +121,8 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
 
     private void RaiseEffectivePropertiesChanged()
     {
+        OnPropertyChanged(nameof(WizardImage));
+        OnPropertyChanged(nameof(WizardSmallImage));
         OnPropertyChanged(nameof(EffectiveBackButtonCaption));
         OnPropertyChanged(nameof(EffectiveNextButtonCaption));
         OnPropertyChanged(nameof(EffectiveCancelButtonCaption));

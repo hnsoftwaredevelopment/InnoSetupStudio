@@ -74,7 +74,8 @@ public sealed class InstallerProject
     /// Voltooid-pagina's staat, Inno Setup's <c>WizardImageFile</c>-richtlijn. Leeg betekent: nog
     /// niet aangepast door de gebruiker. De schermeditor toont in dat geval een meegeleverde
     /// standaardafbeelding (zie WizardImageResolver), maar dit veld blijft leeg totdat de
-    /// gebruiker in de projectinstellingen echt een eigen bestand kiest.
+    /// gebruiker op het Standaardscherm in de schermeditor echt een eigen bestand kiest (vóór
+    /// backlogitem 1, sectie 14: dat was de projectinstellingen).
     /// </summary>
     public string WizardImageFile { get; set; } = string.Empty;
 

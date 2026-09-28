@@ -254,14 +254,57 @@
             </StackPanel>
         </DataTemplate>
 
-        <!-- Het Standaardscherm (§12.6/§12.7): geen eigen velden buiten de negen knopvelden, dus
-             alleen de toelichting plus dezelfde ButtonSettingsSectionTemplate als de drie echte
-             schermen hierboven — dit VM-type heeft dezelfde negen eigenschapsnamen (zie
-             DefaultScreenEditorViewModel), dus de gedeelde template werkt hier ongewijzigd. -->
+        <!-- Het Standaardscherm (§12.6/§12.7): de toelichting, de twee wizardafbeeldingen
+             (backlogitem 1, sectie 14) en daaronder dezelfde ButtonSettingsSectionTemplate als de
+             drie echte schermen hierboven — dit VM-type heeft dezelfde negen knopvelden (zie
+             DefaultScreenEditorViewModel), dus die gedeelde template werkt hier ongewijzigd. -->
         <DataTemplate DataType="{x:Type vm:DefaultScreenEditorViewModel}" x:Key="DefaultScreenPropertyPanelTemplate">
             <StackPanel>
                 <TextBlock Text="{loc:Loc ScreenEditorDefaultScreenInfo}" TextWrapping="Wrap"
                            Foreground="{DynamicResource Brush.TextSecondary}" />
+
+                <!-- Wizardafbeeldingen (backlogitem 1, sectie 14: verplaatst hierheen vanuit de
+                     projectinstellingen). Inno Setup's WizardImageFile/WizardSmallImageFile zijn
+                     altijd projectbreed (§12.6), dus geen drielaags-resolutie zoals de knoppen
+                     hieronder — deze twee velden ZIJN de enige waarde, er is geen "eigen waarde
+                     per scherm". De thumbnail ernaast is geen volledige mockup-voorvertoning van
+                     het Standaardscherm (§12.6, nog bewust open), alleen een directe bevestiging
+                     van de gekozen afbeelding, met dezelfde breedte:hoogte-verhouding als Inno
+                     Setup's eigen afmetingen (164:314 / 55x55, zie WizardImageResolver). -->
+                <TextBlock Text="{loc:Loc SectionWizardImages}" FontWeight="Bold" Margin="0,20,0,8" />
+
+                <TextBlock x:Name="WizardImageFileLabel" Text="{loc:Loc LabelWizardImageFile}" Margin="0,0,0,4" />
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                    <Border Width="26" Height="50" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,8,0" Background="White">
+                        <Image Source="{Binding WizardImage}" Stretch="UniformToFill" />
+                    </Border>
+                    <TextBox Width="180" VerticalAlignment="Center" Margin="0,0,4,0"
+                             Text="{Binding WizardImageFile, UpdateSourceTrigger=PropertyChanged}"
+                             AutomationProperties.LabeledBy="{Binding ElementName=WizardImageFileLabel}" />
+                    <Button VerticalAlignment="Center" Command="{Binding BrowseWizardImageCommand}" ToolTip="{loc:Loc ButtonBrowse}"
+                            AutomationProperties.Name="{loc:Loc ButtonBrowse}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=WizardImageFileLabel}">
+                        <Path Data="{StaticResource Folder}" Fill="{DynamicResource Brush.TextPrimary}"
+                              Stretch="Uniform" Width="16" Height="16" />
+                    </Button>
+                </StackPanel>
+
+                <TextBlock x:Name="WizardSmallImageFileLabel" Text="{loc:Loc LabelWizardSmallImageFile}" Margin="0,0,0,4" />
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                    <Border Width="30" Height="30" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,8,0" Background="White">
+                        <Image Source="{Binding WizardSmallImage}" Stretch="UniformToFill" />
+                    </Border>
+                    <TextBox Width="180" VerticalAlignment="Center" Margin="0,0,4,0"
+                             Text="{Binding WizardSmallImageFile, UpdateSourceTrigger=PropertyChanged}"
+                             AutomationProperties.LabeledBy="{Binding ElementName=WizardSmallImageFileLabel}" />
+                    <Button VerticalAlignment="Center" Command="{Binding BrowseWizardSmallImageCommand}" ToolTip="{loc:Loc ButtonBrowse}"
+                            AutomationProperties.Name="{loc:Loc ButtonBrowse}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=WizardSmallImageFileLabel}">
+                        <Path Data="{StaticResource Folder}" Fill="{DynamicResource Brush.TextPrimary}"
+                              Stretch="Uniform" Width="16" Height="16" />
+                    </Button>
+                </StackPanel>
+
                 <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" />
             </StackPanel>
         </DataTemplate>

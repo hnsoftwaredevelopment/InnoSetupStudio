@@ -1,8 +1,11 @@
+using System.IO;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using InnoSetupStudio.App.Localization;
+using InnoSetupStudio.App.Services;
 using InnoSetupStudio.Core.Project;
+using Microsoft.Win32;
 
 namespace InnoSetupStudio.App.ViewModels.Screens;
 
@@ -10,21 +13,39 @@ namespace InnoSetupStudio.App.ViewModels.Screens;
 /// Het Standaardscherm (§12.6/§12.7 van de architectuurdoc): geen echt installerscherm — de
 /// eindgebruiker krijgt dit nooit te zien — maar een aparte, visueel gescheiden plek bovenaan de
 /// linkerlijst van de schermeditor waar de gebruiker in één keer standaardwaarden voor de
-/// Terug-/Volgende-/Annuleren-knop vastlegt. Elk scherm dat zelf niets voor een veld instelt (lege
-/// Caption / null Enabled/Visible) neemt de waarde hiervandaan over; zie
-/// <see cref="WizardScreenEditorViewModel"/>'s Effective*/Is*-eigenschappen voor de drielaags-
-/// resolutie (eigen waarde → deze standaardwaarde → Inno Setup's eigen ingebouwde standaard).
+/// Terug-/Volgende-/Annuleren-knop vastlegt, en sinds backlogitem 1 (sectie 14) ook de twee
+/// wizardafbeeldingen. Elk scherm dat zelf niets voor een knopveld instelt (lege Caption / null
+/// Enabled/Visible) neemt de waarde hiervandaan over; zie <see cref="WizardScreenEditorViewModel"/>'s
+/// Effective*/Is*-eigenschappen voor de drielaags-resolutie (eigen waarde → deze standaardwaarde →
+/// Inno Setup's eigen ingebouwde standaard). De wizardafbeeldingen kennen die drielaags-resolutie
+/// niet — Inno Setup's <c>WizardImageFile</c>/<c>WizardSmallImageFile</c> zijn altijd projectbreed
+/// (§12.6), dus hier is geen "eigen waarde per scherm" mogelijk om naar terug te vallen; elk echt
+/// scherm leest <see cref="WizardImage"/>/<see cref="WizardSmallImage"/> rechtstreeks van hier via
+/// <see cref="WizardScreenEditorViewModel.Defaults"/>.
 ///
-/// Erft bewust NIET van <see cref="WizardScreenEditorViewModel"/>: die basisklasse vraagt om
-/// WizardImage/WizardSmallImage voor een live installervoorvertoning, en het Standaardscherm heeft
-/// (nog) geen voorvertoning — §12.6 liet die vraag open, "geen voorvertoning" is voorlopig de
+/// Erft bewust NIET van <see cref="WizardScreenEditorViewModel"/>: die basisklasse heeft de
+/// Effective*/Is*-knopresolutie die hier niet van toepassing is (dit scherm ÍS de bron van de
+/// standaardwaarde, het lost er zelf geen op), en het Standaardscherm heeft (nog) geen eigen
+/// installervoorvertoning — §12.6 liet die vraag open, "geen voorvertoning" is voorlopig de
 /// eenvoudigste van de twee genoemde opties. WizardEditorWindow.xaml toont in plaats daarvan een
-/// toelichtende tekst wanneer dit scherm geselecteerd is.
+/// toelichtende tekst wanneer dit scherm geselecteerd is, met de twee afbeeldingvelden zelf mét een
+/// kleine thumbnail (zie <see cref="WizardImage"/>/<see cref="WizardSmallImage"/> hieronder) — dat
+/// is geen volledige mockup-pagina, alleen een directe bevestiging van wat er gekozen is.
 /// </summary>
 public sealed partial class DefaultScreenEditorViewModel : ObservableObject
 {
-    public DefaultScreenEditorViewModel(WizardScreenButtonSettings settings)
+    // Alleen nodig voor BrowseForImage hieronder (WizardImageFile/WizardSmallImageFile gaan, net
+    // als een licentiebestand, via IProjectAssetService naar de projectmap) — zelfde patroon als
+    // LicensePageEditorViewModel._projectFilePath/_assetService.
+    private readonly string? _projectFilePath;
+    private readonly IProjectAssetService _assetService;
+
+    public DefaultScreenEditorViewModel(WizardScreenButtonSettings settings, string wizardImageFile, string wizardSmallImageFile, string? projectFilePath, IProjectAssetService assetService)
     {
+        _projectFilePath = projectFilePath;
+        _assetService = assetService;
+        _wizardImageFile = wizardImageFile;
+        _wizardSmallImageFile = wizardSmallImageFile;
         _backButtonCaption = settings.BackButtonCaption;
         _backButtonEnabled = settings.BackButtonEnabled;
         _backButtonVisible = settings.BackButtonVisible;
@@ -54,6 +75,58 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
     /// <summary>Iconsleutel uit Icons.xaml. Bewust een ander icoon dan de echte schermen
     /// (Document/Folder), zodat de rij ook visueel meteen als "anders" herkenbaar is.</summary>
     public string IconKey => "Edit";
+
+    // Wizardafbeeldingen (backlogitem 1, sectie 14: verplaatst hierheen vanuit de
+    // projectinstellingen). Zelfde leeg-betekent-nog-niet-aangepast-gedrag als
+    // InstallerProject.WizardImageFile/WizardSmallImageFile; WizardImage/WizardSmallImage
+    // hieronder lossen dat leeg-is-standaard-gedrag op voor de thumbnail hier én, via
+    // WizardScreenEditorViewModel.Defaults, voor de voorvertoning van elk echt scherm.
+
+    [ObservableProperty]
+    private string _wizardImageFile;
+
+    [ObservableProperty]
+    private string _wizardSmallImageFile;
+
+    partial void OnWizardImageFileChanged(string value) => OnPropertyChanged(nameof(WizardImage));
+
+    partial void OnWizardSmallImageFileChanged(string value) => OnPropertyChanged(nameof(WizardSmallImage));
+
+    /// <summary>Opgeloste afbeelding voor de thumbnail naast <see cref="WizardImageFile"/> hier, en
+    /// (via <see cref="WizardScreenEditorViewModel.Defaults"/>) voor de Welkomst-/Voltooid-pagina's
+    /// in de echte voorvertoning. Valt terug op een meegeleverde standaardafbeelding zolang
+    /// <see cref="WizardImageFile"/> leeg is, zie <see cref="WizardImageResolver"/>.</summary>
+    public ImageSource WizardImage => WizardImageResolver.ResolveWizardImage(WizardImageFile);
+
+    /// <summary>Zie <see cref="WizardImage"/>, maar dan de kleine afbeelding rechtsboven op de
+    /// overige wizardpagina's.</summary>
+    public ImageSource WizardSmallImage => WizardImageResolver.ResolveWizardSmallImage(WizardSmallImageFile);
+
+    [RelayCommand]
+    private void BrowseWizardImage() => WizardImageFile = BrowseForImage(WizardImageFile);
+
+    [RelayCommand]
+    private void BrowseWizardSmallImage() => WizardSmallImageFile = BrowseForImage(WizardSmallImageFile);
+
+    // Kopieert de gekozen afbeelding naar de projectmap zodra die van elders komt (zie
+    // IProjectAssetService), zelfde patroon als LicensePageEditorViewModel.Browse en de vroegere
+    // ProjectSettingsViewModel.BrowseForImage (vóór backlogitem 1: verplaatst hierheen). Bij een
+    // nog niet opgeslagen project (_projectFilePath leeg) geeft dit ongewijzigd het gekozen pad
+    // terug.
+    private string BrowseForImage(string currentPath)
+    {
+        var dialog = new OpenFileDialog
+        {
+            Filter = LocalizationManager.Instance["DialogFilterImageFiles"],
+        };
+
+        if (!string.IsNullOrWhiteSpace(currentPath))
+        {
+            dialog.InitialDirectory = Path.GetDirectoryName(currentPath);
+        }
+
+        return dialog.ShowDialog() == true ? _assetService.Import(_projectFilePath, dialog.FileName) : currentPath;
+    }
 
     // Eigen versie van WizardScreenEditorViewModel.HintButtonCaptionEmptyText/HintButtonTriStateText
     // (zelfde naam, geen gedeelde basisklasse — zie dat commentaar): dit scherm ÍS het
