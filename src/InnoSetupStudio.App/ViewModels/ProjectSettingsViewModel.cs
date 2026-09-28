@@ -20,17 +20,26 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
     // Bewaard vanuit het project waarmee dit venster is geopend, zodat SaveAsync deze waarden kan
     // meenemen in het opgeslagen project: dit scherm toont en wijzigt alleen de algemene
     // instellingen, dus zonder deze velden zou een simpele naam- of paden-wijziging de elders (in
-    // de schermeditor) gekozen wizardschermen-selectie, licentiebestand, installatiemap en
-    // wizardafbeeldingen stilzwijgend terugzetten naar de standaardwaarden. WizardImageFile/
-    // WizardSmallImageFile staan hier sinds backlogitem 1 (sectie 14) om dezelfde reden als de
-    // andere drie: ze worden voortaan op het Standaardscherm in de schermeditor bewerkt, niet meer
-    // hier, dus dit scherm mag ze alleen ongewijzigd doorgeven.
+    // de schermeditor) gekozen wizardschermen-selectie, licentiebestand, installatiemap,
+    // wizardafbeeldingen en knopinstellingen per scherm stilzwijgend terugzetten naar de
+    // standaardwaarden. WizardImageFile/WizardSmallImageFile staan hier sinds backlogitem 1
+    // (sectie 14) om dezelfde reden als de eerste vier: ze worden voortaan op het Standaardscherm
+    // in de schermeditor bewerkt, niet meer hier, dus dit scherm mag ze alleen ongewijzigd
+    // doorgeven. De vijf knopinstellingen-velden (WelcomeScreenButtons t/m DefaultScreenButtons)
+    // ontbraken hier tot nu toe — zie sectie 16 van de architectuurdoc: zonder pass-through zette
+    // Opslaan vanuit dit scherm elke in de schermeditor gekozen tekstkleur/lettertype/Enabled/
+    // Visible per scherm stilzwijgend terug naar leeg/onbepaald.
     private readonly WizardScreenSelection _wizardScreens;
     private readonly string _licenseFilePath;
     private readonly string _defaultDirName;
     private readonly bool _allowUserToChangeDir;
     private readonly string _wizardImageFile;
     private readonly string _wizardSmallImageFile;
+    private readonly WizardScreenButtonSettings _welcomeScreenButtons;
+    private readonly WizardScreenButtonSettings _licenseScreenButtons;
+    private readonly WizardScreenButtonSettings _selectDestinationScreenButtons;
+    private readonly BrowseButtonSettings _selectDestinationBrowseButton;
+    private readonly WizardScreenButtonSettings _defaultScreenButtons;
 
     public ProjectSettingsViewModel(InstallerProject project, IInstallerProjectService projectService, string? projectFilePath)
     {
@@ -43,6 +52,11 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
         _allowUserToChangeDir = project.AllowUserToChangeDir;
         _wizardImageFile = project.WizardImageFile;
         _wizardSmallImageFile = project.WizardSmallImageFile;
+        _welcomeScreenButtons = project.WelcomeScreenButtons;
+        _licenseScreenButtons = project.LicenseScreenButtons;
+        _selectDestinationScreenButtons = project.SelectDestinationScreenButtons;
+        _selectDestinationBrowseButton = project.SelectDestinationBrowseButton;
+        _defaultScreenButtons = project.DefaultScreenButtons;
 
         AppId = project.AppId;
         AppName = project.AppName;
@@ -247,6 +261,11 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
             LicenseFilePath = _licenseFilePath,
             DefaultDirName = _defaultDirName,
             AllowUserToChangeDir = _allowUserToChangeDir,
+            WelcomeScreenButtons = _welcomeScreenButtons,
+            LicenseScreenButtons = _licenseScreenButtons,
+            SelectDestinationScreenButtons = _selectDestinationScreenButtons,
+            SelectDestinationBrowseButton = _selectDestinationBrowseButton,
+            DefaultScreenButtons = _defaultScreenButtons,
         };
 
         IsSaving = true;

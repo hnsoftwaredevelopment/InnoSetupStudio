@@ -1103,12 +1103,14 @@ met dezelfde breedte:hoogte-verhouding als Inno Setup's eigen afmetingen (164:31
 als directe bevestiging van de gekozen afbeelding — geen nieuwe UI-vraag, alleen hergebruik van
 hetzelfde swatch-naast-het-veld-patroon dat de tekstkleurvelden al gebruiken.
 
-**Niet meegenomen.** Tijdens dit werk viel op dat `ProjectSettingsViewModel.SaveAsync` de
+**Update: bijgevoegde bugfix, zelfde PR.** Tijdens dit werk viel op dat `ProjectSettingsViewModel.SaveAsync` de
 schermspecifieke knopinstellingen (`WelcomeScreenButtons`, `LicenseScreenButtons`,
 `SelectDestinationScreenButtons`, `SelectDestinationBrowseButton`, `DefaultScreenButtons`) niet
-doorgeeft bij het opbouwen van het opgeslagen project — alleen `WizardScreens`/`LicenseFilePath`/
-`DefaultDirName`/`AllowUserToChangeDir` (en nu de twee wizardafbeeldingen) hebben een
+doorgaf bij het opbouwen van het opgeslagen project — alleen `WizardScreens`/`LicenseFilePath`/
+`DefaultDirName`/`AllowUserToChangeDir` (en nu de twee wizardafbeeldingen) hadden een
 pass-through-veld. Opslaan vanuit de projectinstellingen ná het aanpassen van knopkleuren/
-lettertype in de schermeditor zou die aanpassingen dus stilzwijgend terugzetten naar leeg. Niet
-gefixt in deze PR (buiten scope van "wizardafbeeldingen verplaatsen"), wel hier vastgelegd zodat
-het niet kwijtraakt — apart punt om Herbert voor te leggen.
+lettertype in de schermeditor zou die aanpassingen dus stilzwijgend hebben teruggezet naar leeg.
+Eerst als apart punt vastgelegd, op Herberts verzoek alsnog in dezelfde PR meegenomen: alle vijf
+knopinstellingen-velden hebben nu hetzelfde pass-through-patroon als de andere vier, zodat Opslaan
+vanuit de projectinstellingen niets meer stilzwijgend terugzet — alles wat op dit moment in de
+schermeditor in te stellen is, blijft nu ook bewaard.
