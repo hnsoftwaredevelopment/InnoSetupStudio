@@ -276,4 +276,22 @@
   <data name="HintButtonCaptionEmptyDefaultScreen" xml:space="preserve">
     <value>Leeg = Inno Setup's eigen tekst voor dit veld.</value>
   </data>
+  <data name="LabelButtonCaption" xml:space="preserve">
+    <value>Knoptekst</value>
+  </data>
+  <data name="LabelButtonTooltip" xml:space="preserve">
+    <value>Tooltip</value>
+  </data>
+  <data name="ButtonOpenProperties" xml:space="preserve">
+    <value>Knop eigenschappen bewerken</value>
+  </data>
+  <data name="ButtonSelectColor" xml:space="preserve">
+    <value>Selecteer de tekstkleur</value>
+  </data>
+  <data name="DialogButtonPropertiesTitleFormat" xml:space="preserve">
+    <value>{0} eigenschappen</value>
+  </data>
+  <data name="SectionPreview" xml:space="preserve">
+    <value>Voorvertoning</value>
+  </data>
 </root>

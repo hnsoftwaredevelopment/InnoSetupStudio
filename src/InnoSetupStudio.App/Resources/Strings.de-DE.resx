@@ -276,4 +276,22 @@
   <data name="HintButtonCaptionEmptyDefaultScreen" xml:space="preserve">
     <value>Leer = Inno Setups eigenen Text für dieses Feld.</value>
   </data>
+  <data name="LabelButtonCaption" xml:space="preserve">
+    <value>Beschriftung</value>
+  </data>
+  <data name="LabelButtonTooltip" xml:space="preserve">
+    <value>Tooltip</value>
+  </data>
+  <data name="ButtonOpenProperties" xml:space="preserve">
+    <value>Schaltflächeneigenschaften bearbeiten</value>
+  </data>
+  <data name="ButtonSelectColor" xml:space="preserve">
+    <value>Textfarbe auswählen</value>
+  </data>
+  <data name="DialogButtonPropertiesTitleFormat" xml:space="preserve">
+    <value>{0}-Eigenschaften</value>
+  </data>
+  <data name="SectionPreview" xml:space="preserve">
+    <value>Vorschau</value>
+  </data>
 </root>

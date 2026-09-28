@@ -1208,3 +1208,50 @@ Fix: Margin weg bij PART_ContentHost. PlaceholderText houdt zijn eigen `Margin="
 Padding}"` als enige inspringing, en beide elementen zijn verplaatst naar dezelfde Grid ín de
 Border (waren eerst op twee verschillende boomniveaus genest, zie de vorige update) zodat ze
 gegarandeerd exact dezelfde oorsprong delen.
+
+
+## 18. Properties-knop per knop voor het Schermeditor-paneel (backlogitem 3, sectie 17) (2026-09-28)
+
+Uitgevoerd: het "Niet meegenomen" punt uit sectie 17 hierboven. Herbert leverde een mockup
+(properties.pdf) aan: elk van de drie tekstvelden (Terug/Volgende/Annuleren) wordt teruggebracht
+tot alleen de knoptekst zelf - bewerkbaar, getoond in de knop zijn eigen (of overgeërfde, als
+grijze hint) tekstkleur - met een klein eigenschappenknopje ernaast. Dat knopje opent een "Knop
+eigenschappen"-dialoogvenster met de overige velden: tekstkleur (met kleurvlakje en
+kleurenkiezer-knop), lettertype (dezelfde doorzoekbare ComboBox als voorheen), lettergrootte,
+vet, een nieuw Tooltip-veld, Ingeschakeld/Zichtbaar-checkboxes en een live voorvertoning
+onderaan. Dezelfde dialoog wordt hergebruikt op alle plekken waar een knop bewerkt wordt: de drie
+echte schermen (Welkom/Licentie/Bestemming, drielaagse Effective*-resolutie via SS12.6/SS12.7),
+het Standaardscherm zelf (eigen, tweelaagse Terug/Volgende/Annuleren-waarden) en de Bladerknop op
+het Bestemmingsscherm (geen cascade, geen Caption).
+
+Herberts scope-beslissingen (bevestigd 2026-09-28): de knopachtergrondkleur en afgeronde hoeken
+uit een eerdere mockup-versie zijn geschrapt (TNewButton is en blijft een door Windows getekende
+standaardknop, zie sectie 12.6/WizardScreenButtonSettings), de Ingeschakeld/Zichtbaar-checkboxes
+horen er wél bij, en de overgeërfde/effectieve waarde blijft als grijze hint zichtbaar zodra een
+veld leeg is - hetzelfde patroon als PR #16 al voor het oude paneel gebruikte.
+
+**ButtonPropertiesViewModel: één dialoog, acht contexten.** In plaats van deze ene dialoog aan
+een specifiek schermtype te binden (die drie types - WizardScreenEditorViewModel,
+DefaultScreenEditorViewModel, SelectDestinationPageEditorViewModel - hebben bewust geen gedeelde
+basisklasse, zie sectie 11.8), werkt de nieuwe `ButtonPropertiesViewModel` als een pure adapter:
+elk veld krijgt een get/set-delegatenpaar mee, opgebouwd in `WizardEditorWindow.xaml.cs`
+(`BuildForScreenButton`/`BuildForDefaultScreenButton`/`BuildForBrowseButton`) aan de hand van de
+Tag ("Back"/"Next"/"Cancel") op het aangeklikte eigenschappenknopje en het DataContext-type
+erachter. De dialoog werkt met een momentopname: de get-delegates vullen de velden eenmalig bij
+het openen, de set-delegates schrijven pas terug bij een geslaagde Opslaan - dezelfde aanpak als
+`WizardEditorViewModel.ApplyTo`, zodat Annuleren/Sluiten de lokale wijzigingen simpelweg
+weggooit zonder aparte revert-logica per veld (zie `DirtyTrackingViewModel`).
+
+**Nieuwe iconen.** Herberts handgetekende `properties.svg`/`selectcolor.svg` (Inkscape, met
+geneste groep-transforms en Bezier-curves) zijn omgezet naar de WPF Geometry-mini-taal die
+`Icons.xaml` al gebruikt, via een Python-script (`svgelements` voor transform-resolutie en
+curve-afvlakking naar dichte polylijnen, `cairosvg` voor visuele verificatie vooraf) - dezelfde
+"F1"-voorvoegsel-conventie (NonZero fill-rule) als de bestaande geïmporteerde iconen
+(BuildInstaller/Renew/Search).
+
+**Bouw- en testresultaat.** `dotnet build` slaagt zonder waarschuwingen of fouten, alle 14
+bestaande tests slagen. De gebouwde `InnoSetupStudio.exe` start zonder crash (geen nieuwe regel
+in `crash-log.txt`); een volledige interactieve doorloop van de nieuwe dialoogvensters zelf kon
+in deze sessie niet automatisch worden getest (geen UI-automatiseringstool voor dit
+bureaubladvenster beschikbaar) - Herbert wordt gevraagd dit handmatig te controleren voordat de
+PR wordt samengevoegd.

@@ -59,6 +59,7 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
         _backButtonFontFamily = NormalizeWhitespace(settings.BackButtonFontFamily);
         _backButtonFontSize = settings.BackButtonFontSize;
         _backButtonFontBold = settings.BackButtonFontBold;
+        _backButtonTooltip = NormalizeWhitespace(settings.BackButtonTooltip);
         _nextButtonCaption = NormalizeWhitespace(settings.NextButtonCaption);
         _nextButtonEnabled = settings.NextButtonEnabled;
         _nextButtonVisible = settings.NextButtonVisible;
@@ -66,6 +67,7 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
         _nextButtonFontFamily = NormalizeWhitespace(settings.NextButtonFontFamily);
         _nextButtonFontSize = settings.NextButtonFontSize;
         _nextButtonFontBold = settings.NextButtonFontBold;
+        _nextButtonTooltip = NormalizeWhitespace(settings.NextButtonTooltip);
         _cancelButtonCaption = NormalizeWhitespace(settings.CancelButtonCaption);
         _cancelButtonEnabled = settings.CancelButtonEnabled;
         _cancelButtonVisible = settings.CancelButtonVisible;
@@ -73,6 +75,7 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
         _cancelButtonFontFamily = NormalizeWhitespace(settings.CancelButtonFontFamily);
         _cancelButtonFontSize = settings.CancelButtonFontSize;
         _cancelButtonFontBold = settings.CancelButtonFontBold;
+        _cancelButtonTooltip = NormalizeWhitespace(settings.CancelButtonTooltip);
     }
 
     /// <summary>Vertaalde naam, getoond in de linkerlijst (eigen rij boven de scheidingslijn).</summary>
@@ -234,6 +237,16 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
     /// <summary>Zie <see cref="EffectiveBackButtonFontSize"/>, maar dan voor de Annuleren-knop.</summary>
     public int? EffectiveCancelButtonFontSize => null;
 
+    /// <summary>Altijd leeg: geen terugvaltooltip om te tonen op het Standaardscherm zelf (er
+    /// bestaat geen "Inno-ingebouwde" tooltip om naar terug te vallen).</summary>
+    public string EffectiveBackButtonTooltip => string.Empty;
+
+    /// <summary>Zie <see cref="EffectiveBackButtonTooltip"/>, maar dan voor de Volgende-knop.</summary>
+    public string EffectiveNextButtonTooltip => string.Empty;
+
+    /// <summary>Zie <see cref="EffectiveBackButtonTooltip"/>, maar dan voor de Annuleren-knop.</summary>
+    public string EffectiveCancelButtonTooltip => string.Empty;
+
     // Alleen-witruimte-invoer terugbrengen naar leeg (Herberts melding, 2026-09-28): zonder dit
     // bleven de echte spaties in de TextBox staan terwijl de spooktekst ("Volgende >" enz.) er
     // toch al overheen werd getoond (ResolveCaption behandelt witruimte al als "niet ingevuld"),
@@ -292,6 +305,9 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
     private bool? _backButtonFontBold;
 
     [ObservableProperty]
+    private string _backButtonTooltip;
+
+    [ObservableProperty]
     private string _nextButtonTextColor;
 
     [ObservableProperty]
@@ -304,6 +320,9 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
     private bool? _nextButtonFontBold;
 
     [ObservableProperty]
+    private string _nextButtonTooltip;
+
+    [ObservableProperty]
     private string _cancelButtonTextColor;
 
     [ObservableProperty]
@@ -314,6 +333,9 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
 
     [ObservableProperty]
     private bool? _cancelButtonFontBold;
+
+    [ObservableProperty]
+    private string _cancelButtonTooltip;
 
     // Zelfde alleen-witruimte-normalisatie als bij de captions hierboven, nu voor TextColor/
     // FontFamily: zonder dit zou ReadButtonSettings() (en dus het opgeslagen project) een
@@ -333,6 +355,12 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
     partial void OnNextButtonFontFamilyChanged(string value) => NormalizeWhitespaceOnly(value, v => NextButtonFontFamily = v);
 
     partial void OnCancelButtonFontFamilyChanged(string value) => NormalizeWhitespaceOnly(value, v => CancelButtonFontFamily = v);
+
+    partial void OnBackButtonTooltipChanged(string value) => NormalizeWhitespaceOnly(value, v => BackButtonTooltip = v);
+
+    partial void OnNextButtonTooltipChanged(string value) => NormalizeWhitespaceOnly(value, v => NextButtonTooltip = v);
+
+    partial void OnCancelButtonTooltipChanged(string value) => NormalizeWhitespaceOnly(value, v => CancelButtonTooltip = v);
 
     // Zelfde kleurenkiezer als WizardScreenEditorViewModel.PickColor (zie daar voor de reden:
     // Herberts feedback 2026-09-04 over foutgevoelige hex-invoer); geen gedeelde basisklasse (zie
@@ -387,6 +415,7 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
         BackButtonFontFamily = BackButtonFontFamily,
         BackButtonFontSize = BackButtonFontSize,
         BackButtonFontBold = BackButtonFontBold,
+        BackButtonTooltip = BackButtonTooltip,
         NextButtonCaption = NextButtonCaption,
         NextButtonEnabled = NextButtonEnabled,
         NextButtonVisible = NextButtonVisible,
@@ -394,6 +423,7 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
         NextButtonFontFamily = NextButtonFontFamily,
         NextButtonFontSize = NextButtonFontSize,
         NextButtonFontBold = NextButtonFontBold,
+        NextButtonTooltip = NextButtonTooltip,
         CancelButtonCaption = CancelButtonCaption,
         CancelButtonEnabled = CancelButtonEnabled,
         CancelButtonVisible = CancelButtonVisible,
@@ -401,5 +431,6 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
         CancelButtonFontFamily = CancelButtonFontFamily,
         CancelButtonFontSize = CancelButtonFontSize,
         CancelButtonFontBold = CancelButtonFontBold,
+        CancelButtonTooltip = CancelButtonTooltip,
     };
 }
