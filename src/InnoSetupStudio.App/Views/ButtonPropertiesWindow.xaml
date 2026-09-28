@@ -129,7 +129,7 @@
                             Foreground="{Binding PreviewTextColor, Converter={StaticResource HexColorToBrushConverter}}"
                             FontFamily="{Binding PreviewFontFamily, Converter={StaticResource FontFamilyOrUnsetConverter}}"
                             FontSize="{Binding PreviewFontSize, Converter={StaticResource FontSizeOrUnsetConverter}}"
-                            FontWeight="{Binding FontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"
+                            FontWeight="{Binding PreviewFontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"
                             ToolTip="{Binding PreviewTooltip}">
                         <TextBlock Text="{Binding PreviewButtonText}" />
                     </Button>

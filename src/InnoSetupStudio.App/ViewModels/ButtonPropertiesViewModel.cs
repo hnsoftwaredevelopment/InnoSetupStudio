@@ -49,7 +49,7 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
         Func<string> getTextColor, Action<string> setTextColor, string effectiveTextColor,
         Func<string> getFontFamily, Action<string> setFontFamily, string effectiveFontFamily,
         Func<int?> getFontSize, Action<int?> setFontSize, int? effectiveFontSize,
-        Func<bool?> getFontBold, Action<bool?> setFontBold,
+        Func<bool?> getFontBold, Action<bool?> setFontBold, bool? effectiveFontBold,
         Func<string> getTooltip, Action<string> setTooltip, string effectiveTooltip)
     {
         DialogTitle = dialogTitle;
@@ -68,6 +68,7 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
         EffectiveTextColor = effectiveTextColor;
         EffectiveFontFamily = effectiveFontFamily;
         EffectiveFontSize = effectiveFontSize;
+        EffectiveFontBold = effectiveFontBold;
         EffectiveTooltip = effectiveTooltip;
 
         BeginInit();
@@ -106,6 +107,14 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
 
     public int? EffectiveFontSize { get; }
 
+    /// <summary>Zie <see cref="EffectiveFontSize"/>, maar dan voor vetgedrukt. CodeRabbit-
+    /// opmerking op PR #17 (2026-09-28): zonder deze terugvalwaarde toonde de voorvertoning
+    /// hieronder een inconsistent beeld met de echte voorvertoning in WizardEditorWindow.xaml -
+    /// die laatste gebruikt wél EffectiveXxxButtonFontBold (drielaagse cascade), dus als het
+    /// Standaardscherm op vet staat en dit scherm's eigen FontBold op null (onbepaald), toonde de
+    /// echte voorvertoning vet terwijl deze dialoog gewone tekst toonde.</summary>
+    public bool? EffectiveFontBold { get; }
+
     public string EffectiveTooltip { get; }
 
     /// <summary>Wat de voorvertoning onderaan daadwerkelijk als knoptekst toont: eigen tekst,
@@ -132,6 +141,9 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
     /// <summary>Zie <see cref="PreviewCaption"/>, maar dan voor de lettergrootte van de
     /// voorvertoning.</summary>
     public int? PreviewFontSize => FontSize ?? EffectiveFontSize;
+
+    /// <summary>Zie <see cref="PreviewFontSize"/>, maar dan voor vetgedrukt.</summary>
+    public bool? PreviewFontBold => FontBold ?? EffectiveFontBold;
 
     /// <summary>Zie <see cref="PreviewCaption"/>, maar dan voor de tooltip van de
     /// voorvertoning.</summary>
@@ -202,7 +214,11 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
         MarkDirty();
     }
 
-    partial void OnFontBoldChanged(bool? value) => MarkDirty();
+    partial void OnFontBoldChanged(bool? value)
+    {
+        OnPropertyChanged(nameof(PreviewFontBold));
+        MarkDirty();
+    }
 
     partial void OnTooltipChanged(string value)
     {

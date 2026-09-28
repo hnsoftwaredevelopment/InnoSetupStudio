@@ -82,7 +82,7 @@ public partial class WizardEditorWindow : Window
             () => vm.BackButtonTextColor, v => vm.BackButtonTextColor = v, vm.EffectiveBackButtonTextColor,
             () => vm.BackButtonFontFamily, v => vm.BackButtonFontFamily = v, vm.EffectiveBackButtonFontFamily,
             () => vm.BackButtonFontSize, v => vm.BackButtonFontSize = v, vm.EffectiveBackButtonFontSize,
-            () => vm.BackButtonFontBold, v => vm.BackButtonFontBold = v,
+            () => vm.BackButtonFontBold, v => vm.BackButtonFontBold = v, vm.EffectiveBackButtonFontBold,
             () => vm.BackButtonTooltip, v => vm.BackButtonTooltip = v, vm.EffectiveBackButtonTooltip),
         "Next" => new ButtonPropertiesViewModel(
             BuildDialogTitle("LabelNextButtonSection"), hasCaption: true, vm.HintButtonTriStateText,
@@ -92,7 +92,7 @@ public partial class WizardEditorWindow : Window
             () => vm.NextButtonTextColor, v => vm.NextButtonTextColor = v, vm.EffectiveNextButtonTextColor,
             () => vm.NextButtonFontFamily, v => vm.NextButtonFontFamily = v, vm.EffectiveNextButtonFontFamily,
             () => vm.NextButtonFontSize, v => vm.NextButtonFontSize = v, vm.EffectiveNextButtonFontSize,
-            () => vm.NextButtonFontBold, v => vm.NextButtonFontBold = v,
+            () => vm.NextButtonFontBold, v => vm.NextButtonFontBold = v, vm.EffectiveNextButtonFontBold,
             () => vm.NextButtonTooltip, v => vm.NextButtonTooltip = v, vm.EffectiveNextButtonTooltip),
         "Cancel" => new ButtonPropertiesViewModel(
             BuildDialogTitle("LabelCancelButtonSection"), hasCaption: true, vm.HintButtonTriStateText,
@@ -102,11 +102,17 @@ public partial class WizardEditorWindow : Window
             () => vm.CancelButtonTextColor, v => vm.CancelButtonTextColor = v, vm.EffectiveCancelButtonTextColor,
             () => vm.CancelButtonFontFamily, v => vm.CancelButtonFontFamily = v, vm.EffectiveCancelButtonFontFamily,
             () => vm.CancelButtonFontSize, v => vm.CancelButtonFontSize = v, vm.EffectiveCancelButtonFontSize,
-            () => vm.CancelButtonFontBold, v => vm.CancelButtonFontBold = v,
+            () => vm.CancelButtonFontBold, v => vm.CancelButtonFontBold = v, vm.EffectiveCancelButtonFontBold,
             () => vm.CancelButtonTooltip, v => vm.CancelButtonTooltip = v, vm.EffectiveCancelButtonTooltip),
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Onbekende knop-Tag op het properties-knopje."),
     };
 
+    // DefaultScreenEditorViewModel heeft geen EffectiveXxxButtonFontBold (geen cascade, dit
+    // scherm ÍS de bron van de standaardwaarde - zelfde reden als de string.Empty/null bij
+    // EffectiveXxxButtonFontFamily/-FontSize daar), dus hier steeds "null" als effectiveFontBold:
+    // de voorvertoning in dit dialoogvenster valt dan simpelweg terug op de knop zijn eigen,
+    // mogelijk onbepaalde FontBold, precies zoals de echte voorvertoning in
+    // WizardEditorWindow.xaml voor het Standaardscherm dat ook doet.
     private static ButtonPropertiesViewModel BuildForDefaultScreenButton(DefaultScreenEditorViewModel vm, string kind) => kind switch
     {
         "Back" => new ButtonPropertiesViewModel(
@@ -117,7 +123,7 @@ public partial class WizardEditorWindow : Window
             () => vm.BackButtonTextColor, v => vm.BackButtonTextColor = v, vm.EffectiveBackButtonTextColor,
             () => vm.BackButtonFontFamily, v => vm.BackButtonFontFamily = v, vm.EffectiveBackButtonFontFamily,
             () => vm.BackButtonFontSize, v => vm.BackButtonFontSize = v, vm.EffectiveBackButtonFontSize,
-            () => vm.BackButtonFontBold, v => vm.BackButtonFontBold = v,
+            () => vm.BackButtonFontBold, v => vm.BackButtonFontBold = v, null,
             () => vm.BackButtonTooltip, v => vm.BackButtonTooltip = v, vm.EffectiveBackButtonTooltip),
         "Next" => new ButtonPropertiesViewModel(
             BuildDialogTitle("LabelNextButtonSection"), hasCaption: true, vm.HintButtonTriStateText,
@@ -127,7 +133,7 @@ public partial class WizardEditorWindow : Window
             () => vm.NextButtonTextColor, v => vm.NextButtonTextColor = v, vm.EffectiveNextButtonTextColor,
             () => vm.NextButtonFontFamily, v => vm.NextButtonFontFamily = v, vm.EffectiveNextButtonFontFamily,
             () => vm.NextButtonFontSize, v => vm.NextButtonFontSize = v, vm.EffectiveNextButtonFontSize,
-            () => vm.NextButtonFontBold, v => vm.NextButtonFontBold = v,
+            () => vm.NextButtonFontBold, v => vm.NextButtonFontBold = v, null,
             () => vm.NextButtonTooltip, v => vm.NextButtonTooltip = v, vm.EffectiveNextButtonTooltip),
         "Cancel" => new ButtonPropertiesViewModel(
             BuildDialogTitle("LabelCancelButtonSection"), hasCaption: true, vm.HintButtonTriStateText,
@@ -137,7 +143,7 @@ public partial class WizardEditorWindow : Window
             () => vm.CancelButtonTextColor, v => vm.CancelButtonTextColor = v, vm.EffectiveCancelButtonTextColor,
             () => vm.CancelButtonFontFamily, v => vm.CancelButtonFontFamily = v, vm.EffectiveCancelButtonFontFamily,
             () => vm.CancelButtonFontSize, v => vm.CancelButtonFontSize = v, vm.EffectiveCancelButtonFontSize,
-            () => vm.CancelButtonFontBold, v => vm.CancelButtonFontBold = v,
+            () => vm.CancelButtonFontBold, v => vm.CancelButtonFontBold = v, null,
             () => vm.CancelButtonTooltip, v => vm.CancelButtonTooltip = v, vm.EffectiveCancelButtonTooltip),
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Onbekende knop-Tag op het properties-knopje."),
     };
@@ -158,6 +164,6 @@ public partial class WizardEditorWindow : Window
         () => vm.BrowseButtonTextColor, v => vm.BrowseButtonTextColor = v, string.Empty,
         () => vm.BrowseButtonFontFamily, v => vm.BrowseButtonFontFamily = v, string.Empty,
         () => vm.BrowseButtonFontSize, v => vm.BrowseButtonFontSize = v, null,
-        () => vm.BrowseButtonFontBold, v => vm.BrowseButtonFontBold = v,
+        () => vm.BrowseButtonFontBold, v => vm.BrowseButtonFontBold = v, null,
         () => vm.BrowseButtonTooltip, v => vm.BrowseButtonTooltip = v, string.Empty);
 }

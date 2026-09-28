@@ -201,22 +201,24 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
 
     private static string ResolveCaption(string own, string builtIn) => !string.IsNullOrWhiteSpace(own) ? own : builtIn;
 
-    // EffectiveXxxButtonTextColor/-FontFamily/-FontSize hieronder bestaan puur zodat
-    // ButtonSettingsSectionTemplate dezelfde Placeholder.Text-bindingen kan gebruiken als op de
-    // drie echte schermen (zie WizardScreenEditorViewModel), zonder WPF-bindingsfouten wanneer dit
-    // scherm de DataContext is. Anders dan Caption hierboven hebben deze géén zinvolle
-    // terugvalwaarde om te tonen: leeg hier betekent Inno Setup's eigen, niet als kleur/lettertype
-    // te benoemen standaarduiterlijk, dus altijd leeg/null - geen placeholder zichtbaar.
+    // EffectiveXxxButtonTextColor hieronder: anders dan -FontFamily/-FontSize verderop (nog
+    // steeds altijd leeg/null, puur voor WPF-bindingsfouten, zie die toelichting), geeft dit nu de
+    // EIGEN tekstkleur terug. CodeRabbit-opmerking op PR #17 (2026-09-28): sinds sectie 17/18's
+    // ButtonSettingsSectionTemplate ook de captiontekst zelf in de Foreground van
+    // EffectiveXxxButtonTextColor toont (niet meer alleen als Placeholder.Text-hint), zou
+    // string.Empty hier betekenen dat de knoptekst op het Standaardscherm nooit de ingestelde
+    // kleur laat zien. Dit scherm ÍS de bron van de standaardwaarde (geen aparte terugvallaag),
+    // dus "effectief" is hier simpelweg de eigen waarde.
 
-    /// <summary>Altijd leeg: er is geen terugvaltekstkleur om te tonen op het Standaardscherm
-    /// zelf.</summary>
-    public string EffectiveBackButtonTextColor => string.Empty;
+    /// <summary>De eigen tekstkleur van de Terug-knop op het Standaardscherm zelf (geen aparte
+    /// terugvallaag, zie hierboven).</summary>
+    public string EffectiveBackButtonTextColor => BackButtonTextColor;
 
     /// <summary>Zie <see cref="EffectiveBackButtonTextColor"/>, maar dan voor de Volgende-knop.</summary>
-    public string EffectiveNextButtonTextColor => string.Empty;
+    public string EffectiveNextButtonTextColor => NextButtonTextColor;
 
     /// <summary>Zie <see cref="EffectiveBackButtonTextColor"/>, maar dan voor de Annuleren-knop.</summary>
-    public string EffectiveCancelButtonTextColor => string.Empty;
+    public string EffectiveCancelButtonTextColor => CancelButtonTextColor;
 
     /// <summary>Altijd leeg: geen terugvallettertype om te tonen op het Standaardscherm zelf.</summary>
     public string EffectiveBackButtonFontFamily => string.Empty;
@@ -344,11 +346,23 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
     // enz. (CodeRabbit-opmerking op PR #16, 2026-09-28). Geen Effective*-heropbouw nodig zoals bij
     // Caption: dit scherm heeft zelf geen zichtbare terugvaltekst voor deze twee velden.
 
-    partial void OnBackButtonTextColorChanged(string value) => NormalizeWhitespaceOnly(value, v => BackButtonTextColor = v);
+    partial void OnBackButtonTextColorChanged(string value)
+    {
+        NormalizeWhitespaceOnly(value, v => BackButtonTextColor = v);
+        OnPropertyChanged(nameof(EffectiveBackButtonTextColor));
+    }
 
-    partial void OnNextButtonTextColorChanged(string value) => NormalizeWhitespaceOnly(value, v => NextButtonTextColor = v);
+    partial void OnNextButtonTextColorChanged(string value)
+    {
+        NormalizeWhitespaceOnly(value, v => NextButtonTextColor = v);
+        OnPropertyChanged(nameof(EffectiveNextButtonTextColor));
+    }
 
-    partial void OnCancelButtonTextColorChanged(string value) => NormalizeWhitespaceOnly(value, v => CancelButtonTextColor = v);
+    partial void OnCancelButtonTextColorChanged(string value)
+    {
+        NormalizeWhitespaceOnly(value, v => CancelButtonTextColor = v);
+        OnPropertyChanged(nameof(EffectiveCancelButtonTextColor));
+    }
 
     partial void OnBackButtonFontFamilyChanged(string value) => NormalizeWhitespaceOnly(value, v => BackButtonFontFamily = v);
 

@@ -358,6 +358,7 @@
                                  in Styles.xaml) - een eigen TextBlock met een expliciete
                                  AncestorType=Button-binding op Foreground sluit die twijfel uit. -->
                             <Button DockPanel.Dock="Left"
+                                    ToolTip="{Binding SelectedScreen.EffectiveCancelButtonTooltip}"
                                     IsEnabled="{Binding SelectedScreen.IsCancelButtonEnabled}"
                                     Visibility="{Binding SelectedScreen.IsCancelButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                     Foreground="{Binding SelectedScreen.EffectiveCancelButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
@@ -370,6 +371,7 @@
                             </Button>
                             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                                 <Button Command="{Binding BackCommand}"
+                                        ToolTip="{Binding SelectedScreen.EffectiveBackButtonTooltip}"
                                         Visibility="{Binding SelectedScreen.IsBackButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                         Opacity="{Binding SelectedScreen.IsBackButtonEnabled, Converter={StaticResource BooleanToOpacityConverter}}"
                                         Foreground="{Binding SelectedScreen.EffectiveBackButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
@@ -381,6 +383,7 @@
                                                Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                                 </Button>
                                 <Button Command="{Binding NextCommand}"
+                                        ToolTip="{Binding SelectedScreen.EffectiveNextButtonTooltip}"
                                         Visibility="{Binding SelectedScreen.IsNextButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                         Opacity="{Binding SelectedScreen.IsNextButtonEnabled, Converter={StaticResource BooleanToOpacityConverter}}"
                                         Foreground="{Binding SelectedScreen.EffectiveNextButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
