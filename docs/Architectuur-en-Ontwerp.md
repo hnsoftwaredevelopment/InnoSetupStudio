@@ -1187,3 +1187,24 @@ Text=""-triggers door een IsNullOrWhiteSpace-check. En een nieuwe NormalizeWhite
 in WizardScreenEditorViewModel (Caption/TextColor/FontFamily) en DefaultScreenEditorViewModel
 (Caption) zet een alleen-witruimte-waarde meteen terug naar leeg in de OnXxxChanged-hook zelf, zodat
 er geen "onzichtbare" spaties meer achterblijven om de cursor te verwarren.
+
+
+**Update: derde vervolgfix, zelfde PR.** Herberts vorige screenshot bleek geen witruimte-
+probleem: hij bevestigde expliciet dat het veld leeg was. Een nieuw vergelijkingsscreenshot
+(eigen tekst in het ene veld naast de spooktekst in een leeg veld ernaast, met een verticale
+referentielijn) liet zien dat de spooktekst een paar tekenposities te ver naar links stond t.o.v.
+waar de echte tekst/cursor landt.
+
+Root cause: PART_ContentHost (de ScrollViewer die de echte tekst toont) kreeg in onze
+ControlTemplate een expliciete `Margin="{TemplateBinding Padding}"`. Maar WPF past de
+Padding-eigenschap van een TextBox altijd al automatisch toe op de echte tekst/cursor daarbinnen,
+los van wat de ControlTemplate daar zelf op zet - geverifieerd tegen het officiele WPF-
+broncjabloon (PresentationFramework's eigen TextBox.xaml zet nergens een Margin op
+PART_ContentHost, terwijl Padding daar wel degelijk werkt). Onze eigen Margin kwam er dus gewoon
+bovenop: de echte tekst kreeg de Padding dubbel toegepast, de spooktekst (een gewone TextBlock,
+geen TextBoxBase, dus zonder dat automatisme) maar enkel - vandaar het verschil.
+
+Fix: Margin weg bij PART_ContentHost. PlaceholderText houdt zijn eigen `Margin="{TemplateBinding
+Padding}"` als enige inspringing, en beide elementen zijn verplaatst naar dezelfde Grid ín de
+Border (waren eerst op twee verschillende boomniveaus genest, zie de vorige update) zodat ze
+gegarandeerd exact dezelfde oorsprong delen.
