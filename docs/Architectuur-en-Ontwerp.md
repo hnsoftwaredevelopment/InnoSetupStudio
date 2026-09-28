@@ -1114,3 +1114,52 @@ Eerst als apart punt vastgelegd, op Herberts verzoek alsnog in dezelfde PR meege
 knopinstellingen-velden hebben nu hetzelfde pass-through-patroon als de andere vier, zodat Opslaan
 vanuit de projectinstellingen niets meer stilzwijgend terugzet — alles wat op dit moment in de
 schermeditor in te stellen is, blijft nu ook bewaard.
+
+## 17. Twee bugs en zichtbare defaultwaardes in de knopinstellingen (2026-09-28)
+
+Herberts feedback na het testen van PR #15: het lettertype van een knop was direct zichtbaar in
+de voorvertoning zodra je het wijzigde, de tekstkleur niet. En belangrijker: de
+instellingenvelden per scherm (Terug-/Volgende-/Annuleren-knop) toonden alleen wat dat scherm
+zelf had ingevuld, nooit wat er via het Standaardscherm (of Inno Setup's eigen ingebouwde tekst)
+daadwerkelijk gold zolang het eigen veld leeg is, terwijl de drielaags-resolutie (SS12.6/SS12.7)
+daar juist voor bestaat.
+
+**Bug: tekstkleur niet live.** Oorzaak: een globale `Style TargetType="TextBlock"` in
+Styles.xaml geeft elke TextBlock een vaste `Brush.TextPrimary`-kleur. Knoptekst is intern ook
+een TextBlock (WPF's eigen string-naar-TextBlock-sjabloon), en een Style-Setter wint het van een
+via overerving doorgegeven waarde, dus de globale TextBlock-stijl overschreef altijd de
+Foreground die de knop zelf zou moeten hebben. Voor lettertype bestaat geen vergelijkbare
+globale regel, dus dat werkte toevallig altijd al goed. Fix: de Button-ControlTemplate in
+Styles.xaml krijgt een `ControlTemplate.Resources` met een TextBlock-stijl die Foreground weer
+terugbindt naar de knop zelf (`RelativeSource TemplatedParent`), zonder `BasedOn` op de globale
+stijl (StaticResource kan niet vooruitwijzen binnen hetzelfde ResourceDictionary, en die globale
+stijl zet toch alleen Foreground).
+
+**Defaultwaardes zichtbaar maken.** Nieuw: `InnoSetupStudio.App.Controls.Placeholder`, een
+bindbare attached property (`Placeholder.Text`) die een lichtgrijze, niet-interactieve
+spooktekst toont zolang het echte veld leeg is, nooit onderdeel van de opgeslagen waarde, puur
+ter info, zoals Herbert vroeg. Uitgebreid in de bestaande TextBox- en ComboBox-ControlTemplates
+in Styles.xaml (de editable ComboBox had al een los `PART_EditableTextBox` met `Style="{x:Null}"`
+voor de lettertypevelden, dus die kreeg een eigen kopie van hetzelfde mechanisme). In
+WizardEditorWindow.xaml's ButtonSettingsSectionTemplate (gedeeld door alle vier de schermtypen)
+gebruikt elk veld nu `Placeholder.Text`, gebonden aan de bijbehorende `EffectiveXxx`-eigenschap:
+Terug-/Volgende-/Annuleren-tekst, tekstkleur (inclusief het kleurvlakje ernaast, dat nu ook de
+effectieve kleur toont in plaats van alleen de eigen), lettertype en lettergrootte. Voor de drie
+echte schermen bestonden die EffectiveXxx-eigenschappen al (WizardScreenEditorViewModel);
+`DefaultScreenEditorViewModel` kreeg ze er nu ook bij: voor Caption twee lagen (eigen tekst,
+anders Inno Setup's eigen ingebouwde tekst), voor tekstkleur/lettertype/lettergrootte altijd
+leeg/null (er is op het Standaardscherm zelf geen zinvolle terugvalwaarde om te tonen), puur
+zodat de gedeelde template overal dezelfde bindingen kan gebruiken zonder WPF-bindingsfouten.
+De schermspecifieke Bladerknop (SelectDestinationPageEditorViewModel) heeft bewust geen
+Effective*-resolutie (SS12.6) en dus ook geen placeholder, alleen de lettergrootte daar is
+verbreed, zie hieronder.
+
+**Lettergrootteveld verbreed.** Herberts feedback: het veld toonde maar een cijfer. Breedte van
+alle vier de voorkomens (Terug/Volgende/Annuleren + Bladerknop) van 50 naar 70.
+
+**Niet meegenomen: Properties-knop per knop.** Herbert stelde ook voor om de instellingenvelden
+per knop (nu zeven regels: tekst, aan/uit, zichtbaar/verborgen, kleur, lettertype, grootte, vet)
+compact te maken tot alleen de knoptekst met een "Properties"-knop ernaast die de rest in een
+apart paneel toont. Hij is daar zelf nog naar een geschikt mockup-gereedschap aan het zoeken,
+dus bewust niet in deze PR meegenomen, om dat werk niet dubbel te doen. Volgt als apart
+backlogpunt zodra hij een ontwerp heeft.

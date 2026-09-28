@@ -172,6 +172,68 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
     [ObservableProperty]
     private bool? _cancelButtonVisible;
 
+    // EffectiveXxxButtonCaption hieronder: zelfde naam als WizardScreenEditorViewModel's
+    // drielaags-resolutie (geen gedeelde basisklasse, zie de klassencommentaar hierboven), maar
+    // hier maar twee lagen - dit scherm ÍS de bron van de standaardwaarde, dus eigen tekst indien
+    // ingevuld, anders meteen Inno Setup's eigen ingebouwde tekst. Herberts feedback (2026-09-28):
+    // ButtonSettingsSectionTemplate (WizardEditorWindow.xaml) is dezelfde template voor dit scherm
+    // én de drie echte schermen, en gebruikt deze eigenschap als Placeholder.Text (zie dat
+    // bestand) zodat ook hier zichtbaar is wat er geldt zolang het eigen veld leeg is - dus ook op
+    // het Standaardscherm zelf, niet alleen in de schermen die ervan overerven.
+
+    /// <summary>Wat er geldt op de Terug-knop zolang <see cref="BackButtonCaption"/> leeg is.</summary>
+    public string EffectiveBackButtonCaption => ResolveCaption(BackButtonCaption, LocalizationManager.Instance["ButtonWizardBack"]);
+
+    /// <summary>Zie <see cref="EffectiveBackButtonCaption"/>, maar dan voor de Volgende-knop.</summary>
+    public string EffectiveNextButtonCaption => ResolveCaption(NextButtonCaption, LocalizationManager.Instance["ButtonWizardNext"]);
+
+    /// <summary>Zie <see cref="EffectiveBackButtonCaption"/>, maar dan voor de Annuleren-knop.</summary>
+    public string EffectiveCancelButtonCaption => ResolveCaption(CancelButtonCaption, LocalizationManager.Instance["ButtonWizardCancel"]);
+
+    private static string ResolveCaption(string own, string builtIn) => !string.IsNullOrWhiteSpace(own) ? own : builtIn;
+
+    // EffectiveXxxButtonTextColor/-FontFamily/-FontSize hieronder bestaan puur zodat
+    // ButtonSettingsSectionTemplate dezelfde Placeholder.Text-bindingen kan gebruiken als op de
+    // drie echte schermen (zie WizardScreenEditorViewModel), zonder WPF-bindingsfouten wanneer dit
+    // scherm de DataContext is. Anders dan Caption hierboven hebben deze géén zinvolle
+    // terugvalwaarde om te tonen: leeg hier betekent Inno Setup's eigen, niet als kleur/lettertype
+    // te benoemen standaarduiterlijk, dus altijd leeg/null - geen placeholder zichtbaar.
+
+    /// <summary>Altijd leeg: er is geen terugvaltekstkleur om te tonen op het Standaardscherm
+    /// zelf.</summary>
+    public string EffectiveBackButtonTextColor => string.Empty;
+
+    /// <summary>Zie <see cref="EffectiveBackButtonTextColor"/>, maar dan voor de Volgende-knop.</summary>
+    public string EffectiveNextButtonTextColor => string.Empty;
+
+    /// <summary>Zie <see cref="EffectiveBackButtonTextColor"/>, maar dan voor de Annuleren-knop.</summary>
+    public string EffectiveCancelButtonTextColor => string.Empty;
+
+    /// <summary>Altijd leeg: geen terugvallettertype om te tonen op het Standaardscherm zelf.</summary>
+    public string EffectiveBackButtonFontFamily => string.Empty;
+
+    /// <summary>Zie <see cref="EffectiveBackButtonFontFamily"/>, maar dan voor de Volgende-knop.</summary>
+    public string EffectiveNextButtonFontFamily => string.Empty;
+
+    /// <summary>Zie <see cref="EffectiveBackButtonFontFamily"/>, maar dan voor de Annuleren-knop.</summary>
+    public string EffectiveCancelButtonFontFamily => string.Empty;
+
+    /// <summary>Altijd null: geen terugvallettergrootte om te tonen op het Standaardscherm
+    /// zelf.</summary>
+    public int? EffectiveBackButtonFontSize => null;
+
+    /// <summary>Zie <see cref="EffectiveBackButtonFontSize"/>, maar dan voor de Volgende-knop.</summary>
+    public int? EffectiveNextButtonFontSize => null;
+
+    /// <summary>Zie <see cref="EffectiveBackButtonFontSize"/>, maar dan voor de Annuleren-knop.</summary>
+    public int? EffectiveCancelButtonFontSize => null;
+
+    partial void OnBackButtonCaptionChanged(string value) => OnPropertyChanged(nameof(EffectiveBackButtonCaption));
+
+    partial void OnNextButtonCaptionChanged(string value) => OnPropertyChanged(nameof(EffectiveNextButtonCaption));
+
+    partial void OnCancelButtonCaptionChanged(string value) => OnPropertyChanged(nameof(EffectiveCancelButtonCaption));
+
     // Zelfde tekstkleur-/lettertypevelden als WizardScreenEditorViewModel (backlogitem 3, sectie
     // 14), ook hier zonder Effective*-resolutie: dit scherm ÍS de bron van de standaardwaarde.
     // Achtergrondkleur en bitmap zijn bewust niet opgenomen (zie WizardScreenButtonSettings).
