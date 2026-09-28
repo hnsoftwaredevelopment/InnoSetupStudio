@@ -1163,3 +1163,27 @@ compact te maken tot alleen de knoptekst met een "Properties"-knop ernaast die d
 apart paneel toont. Hij is daar zelf nog naar een geschikt mockup-gereedschap aan het zoeken,
 dus bewust niet in deze PR meegenomen, om dat werk niet dubbel te doen. Volgt als apart
 backlogpunt zodra hij een ontwerp heeft.
+
+
+**Update: twee vervolgfixes, zelfde PR.** CodeRabbit's review op PR #16 en Herbert's eigen test
+brachten nog twee gaten aan het licht in de hierboven beschreven fix.
+
+Ten eerste: de knoppen in de voorvertoning (Annuleren/Terug/Volgende, links in de schermeditor)
+gebruikten nog een kale string als Content. WPF's automatische omzetting van zo'n string naar een
+interne TextBlock erft niet gegarandeerd de Foreground-binding van de knop zelf, dus de
+tekstkleur kwam daar alsnog niet altijd door, ook al werkte de ControlTemplate.Resources-fix
+elders wel. Elke voorvertoningsknop heeft nu een expliciete TextBlock als content, met Foreground
+rechtstreeks gebonden aan de eigen Button (RelativeSource AncestorType=Button) - dat sluit de
+twijfel over WPF's interne string-omzetting helemaal uit.
+
+Ten tweede: de spooktekst-trigger vergeleek Text met een exacte lege string (""), terwijl
+ResolveCaption een waarde van uitsluitend witruimte al als "niet ingevuld" behandelde. Bij zo'n
+veld bleef de spooktekst dus verborgen, of - erger - verscheen hij wel (na de eerste fix hieronder)
+maar bleven de echte spaties in de TextBox staan als klikbare tekst, wat een verwarrende
+invoegcursor middenin de spooktekst gaf (Herberts screenshot: "Vo|lgende >" i.p.v. aan het begin).
+Twee nieuwe converters (BlankStringToVisibilityConverter voor de gewone TextBox,
+EditableBlankToVisibilityConverter voor de editable ComboBox) vervangen de exacte
+Text=""-triggers door een IsNullOrWhiteSpace-check. En een nieuwe NormalizeWhitespaceOnly-helper
+in WizardScreenEditorViewModel (Caption/TextColor/FontFamily) en DefaultScreenEditorViewModel
+(Caption) zet een alleen-witruimte-waarde meteen terug naar leeg in de OnXxxChanged-hook zelf, zodat
+er geen "onzichtbare" spaties meer achterblijven om de cursor te verwarren.
