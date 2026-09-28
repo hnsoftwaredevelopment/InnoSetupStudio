@@ -87,25 +87,44 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type TextBox}">
-                    <Grid>
-                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8">
-                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" />
-                        </Border>
-                        <!-- Placeholder.Text (Herberts feedback 2026-09-28, zie dat bestand):
-                             alleen zichtbaar zolang Text leeg is, dus nooit in de weg van wat de
-                             gebruiker daadwerkelijk heeft ingevuld. Standaard leeg (zie
-                             PropertyMetadata) dus onzichtbaar/onschadelijk voor elke TextBox die
-                             deze eigenschap niet zet. -->
-                        <!-- Visibility rechtstreeks gebonden (i.p.v. een Trigger op Text=""):
-                             BlankStringToVisibilityConverter behandelt ook een tekst van enkel
-                             spaties als "leeg", een exacte Trigger-match op "" kon dat niet. -->
-                        <TextBlock x:Name="PlaceholderText" Text="{TemplateBinding controls:Placeholder.Text}"
-                                   Foreground="{DynamicResource Brush.TextSecondary}"
-                                   Margin="{TemplateBinding Padding}" VerticalAlignment="Center"
-                                   IsHitTestVisible="False"
-                                   Visibility="{TemplateBinding Text, Converter={StaticResource BlankStringToVisibilityConverter}}" />
-                    </Grid>
+                    <!-- Herbert meldde 2026-09-28 (met een vergelijkingsscreenshot: het begin van
+                         zijn eigen ingetikte tekst in het ene veld versus de spooktekst in een
+                         leeg veld ernaast) dat de spooktekst een paar posities te ver naar links
+                         stond t.o.v. waar de echte cursor/tekst landt. Oorzaak: ScrollViewer
+                         (PART_ContentHost, de echte tekst) zat genest ín de Border, PlaceholderText
+                         zat ernaast als sibling van diezelfde Border in een buitenste Grid - een
+                         andere plek in de boom, ook al leek de Margin identiek. Nu allebei
+                         rechtstreeks kind van dezelfde Grid, zelf weer het enige kind van Border:
+                         gegarandeerd dezelfde Margin vanaf hetzelfde punt, dus gegarandeerd
+                         dezelfde startpositie. -->
+                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8">
+                        <Grid>
+                            <!-- PART_ContentHost krijgt hier bewust GEEN Margin="{TemplateBinding
+                                 Padding}": WPF's interne tekstweergave (TextBoxView) past de
+                                 TextBox's Padding-eigenschap zelf al toe op de echte tekst/cursor,
+                                 los van wat wij hier op de ScrollViewer zetten. Die twee opgeteld
+                                 gaf dubbele inspringing voor de echte tekst t.o.v. de spooktekst
+                                 hieronder (die maar één Margin krijgt) - exact de 2-posities-te-
+                                 ver-naar-links die Herbert meldde (2026-09-28, met vergelijkings-
+                                 screenshot: eigen tekst in het ene veld naast de spooktekst in het
+                                 andere). -->
+                            <ScrollViewer x:Name="PART_ContentHost" />
+                            <!-- Placeholder.Text (Herberts feedback 2026-09-28, zie dat bestand):
+                                 alleen zichtbaar zolang Text leeg is, dus nooit in de weg van wat de
+                                 gebruiker daadwerkelijk heeft ingevuld. Standaard leeg (zie
+                                 PropertyMetadata) dus onzichtbaar/onschadelijk voor elke TextBox die
+                                 deze eigenschap niet zet. Visibility rechtstreeks gebonden (i.p.v.
+                                 een Trigger op Text=""): BlankStringToVisibilityConverter behandelt
+                                 ook een tekst van enkel spaties als "leeg", een exacte
+                                 Trigger-match op "" kon dat niet. -->
+                            <TextBlock x:Name="PlaceholderText" Text="{TemplateBinding controls:Placeholder.Text}"
+                                       Foreground="{DynamicResource Brush.TextSecondary}"
+                                       Margin="{TemplateBinding Padding}" VerticalAlignment="Center"
+                                       IsHitTestVisible="False"
+                                       Visibility="{TemplateBinding Text, Converter={StaticResource BlankStringToVisibilityConverter}}" />
+                        </Grid>
+                    </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
