@@ -417,31 +417,47 @@
                                  binding meer: TNewButton is een door Windows getekende
                                  standaardknop, een achtergrondkleur/bitmap is bewust geschrapt
                                  (zie WizardScreenButtonSettings). -->
-                            <Button DockPanel.Dock="Left" Content="{Binding SelectedScreen.EffectiveCancelButtonCaption}"
+                            <!-- Content als expliciete TextBlock i.p.v. een kale string (Herbert
+                                 meldde 2026-09-28 dat de tekstkleur hier niet live bijwerkte):
+                                 WPF's automatische string-naar-TextBlock-omzetting voor Content is
+                                 geen garantie dat die interne TextBlock de Button's eigen
+                                 Foreground-binding erft (zie de ControlTemplate.Resources-notitie
+                                 in Styles.xaml) - een eigen TextBlock met een expliciete
+                                 AncestorType=Button-binding op Foreground sluit die twijfel uit. -->
+                            <Button DockPanel.Dock="Left"
                                     IsEnabled="{Binding SelectedScreen.IsCancelButtonEnabled}"
                                     Visibility="{Binding SelectedScreen.IsCancelButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                     Foreground="{Binding SelectedScreen.EffectiveCancelButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
                                     FontFamily="{Binding SelectedScreen.EffectiveCancelButtonFontFamily, Converter={StaticResource FontFamilyOrUnsetConverter}}"
                                     FontSize="{Binding SelectedScreen.EffectiveCancelButtonFontSize, Converter={StaticResource FontSizeOrUnsetConverter}}"
                                     FontWeight="{Binding SelectedScreen.EffectiveCancelButtonFontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"
-                                    Padding="12,4" MinWidth="80" />
+                                    Padding="12,4" MinWidth="80">
+                                <TextBlock Text="{Binding SelectedScreen.EffectiveCancelButtonCaption}"
+                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                            </Button>
                             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                                <Button Content="{Binding SelectedScreen.EffectiveBackButtonCaption}" Command="{Binding BackCommand}"
+                                <Button Command="{Binding BackCommand}"
                                         Visibility="{Binding SelectedScreen.IsBackButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                         Opacity="{Binding SelectedScreen.IsBackButtonEnabled, Converter={StaticResource BooleanToOpacityConverter}}"
                                         Foreground="{Binding SelectedScreen.EffectiveBackButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
                                         FontFamily="{Binding SelectedScreen.EffectiveBackButtonFontFamily, Converter={StaticResource FontFamilyOrUnsetConverter}}"
                                         FontSize="{Binding SelectedScreen.EffectiveBackButtonFontSize, Converter={StaticResource FontSizeOrUnsetConverter}}"
                                         FontWeight="{Binding SelectedScreen.EffectiveBackButtonFontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"
-                                        Padding="12,4" Margin="0,0,8,0" MinWidth="80" />
-                                <Button Content="{Binding SelectedScreen.EffectiveNextButtonCaption}" Command="{Binding NextCommand}"
+                                        Padding="12,4" Margin="0,0,8,0" MinWidth="80">
+                                    <TextBlock Text="{Binding SelectedScreen.EffectiveBackButtonCaption}"
+                                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                </Button>
+                                <Button Command="{Binding NextCommand}"
                                         Visibility="{Binding SelectedScreen.IsNextButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                         Opacity="{Binding SelectedScreen.IsNextButtonEnabled, Converter={StaticResource BooleanToOpacityConverter}}"
                                         Foreground="{Binding SelectedScreen.EffectiveNextButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
                                         FontFamily="{Binding SelectedScreen.EffectiveNextButtonFontFamily, Converter={StaticResource FontFamilyOrUnsetConverter}}"
                                         FontSize="{Binding SelectedScreen.EffectiveNextButtonFontSize, Converter={StaticResource FontSizeOrUnsetConverter}}"
                                         FontWeight="{Binding SelectedScreen.EffectiveNextButtonFontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"
-                                        Padding="12,4" MinWidth="80" />
+                                        Padding="12,4" MinWidth="80">
+                                    <TextBlock Text="{Binding SelectedScreen.EffectiveNextButtonCaption}"
+                                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                </Button>
                             </StackPanel>
                         </DockPanel>
                     </Border>
