@@ -492,3 +492,9 @@ version.generated.props
 # Syncfusion-licentie hoort hier nooit te staan (leeft buiten de repo, zie
 # src/InnoSetupStudio.App/Services/LicenseService.cs), dit is alleen een extra vangnet.
 **/syncfusionlicense.txt
+
+# Tijdelijke scratch-bestanden voor commit-/PR-berichten (git commit -F / gh pr create --body-file),
+# gebruikt om PowerShell-tekentransmissieproblemen met leestekens te omzeilen - per ongeluk eens
+# meegecommit (2026-09-28), voortaan genegeerd zodat dat niet meer kan gebeuren.
+.git-commit-msg.txt
+.git-pr-body.txt
