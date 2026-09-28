@@ -1,6 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using InnoSetupStudio.App.Services;
 using InnoSetupStudio.App.ViewModels.Screens;
 using InnoSetupStudio.Core.Project;
 
@@ -23,18 +22,15 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
     {
         BeginInit();
 
-        // Eén keer bepaald voor de hele schermeditor-sessie en aan elk scherm doorgegeven (zie
-        // WizardScreenEditorViewModel.WizardImage/WizardSmallImage): dit zijn projectbrede
-        // instellingen (Inno Setup's WizardImageFile/WizardSmallImageFile), geen scherm-specifieke
-        // data, dus ze hoeven maar één keer opgezocht/geladen te worden.
-        var wizardImage = WizardImageResolver.ResolveWizardImage(project.WizardImageFile);
-        var wizardSmallImage = WizardImageResolver.ResolveWizardSmallImage(project.WizardSmallImageFile);
-
         // Het Standaardscherm (§12.6/§12.7): één instantie voor de hele sessie, hieronder aan elk
         // scherm doorgegeven via de required Defaults-eigenschap, vóórdat die schermen zelf
         // aangemaakt worden. Geen aan/uit-vinkje zoals de echte schermen (WizardScreens uit fase
-        // 3) — dit scherm bestaat altijd, ongeacht welke installerschermen aan staan.
-        _defaultScreen = new DefaultScreenEditorViewModel(project.DefaultScreenButtons);
+        // 3) — dit scherm bestaat altijd, ongeacht welke installerschermen aan staan. Sinds
+        // backlogitem 1 (sectie 14) is dit ook de plek waar WizardImageFile/WizardSmallImageFile
+        // vandaan komen (voorheen hier zelf één keer opgezocht via WizardImageResolver); elk scherm
+        // leest ze voortaan live van hier via WizardScreenEditorViewModel.WizardImage/
+        // WizardSmallImage, in plaats van een eenmalige init-waarde te krijgen.
+        _defaultScreen = new DefaultScreenEditorViewModel(project.DefaultScreenButtons, project.WizardImageFile, project.WizardSmallImageFile, projectFilePath, assetService);
 
         // Bewust GEEN collectie-expressie ([_defaultScreen]) hier: de compiler bakt die voor een
         // IReadOnlyList<T>-doeltype met precies één element in tot een intern eenmalig-element-
@@ -53,8 +49,6 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
         {
             _screens.Add(new WelcomePageEditorViewModel(project.AppName, project.AppVersion)
             {
-                WizardImage = wizardImage,
-                WizardSmallImage = wizardSmallImage,
                 ButtonSettings = project.WelcomeScreenButtons,
                 Defaults = _defaultScreen,
             });
@@ -64,8 +58,6 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
         {
             _screens.Add(new LicensePageEditorViewModel(project.LicenseFilePath, projectFilePath, assetService)
             {
-                WizardImage = wizardImage,
-                WizardSmallImage = wizardSmallImage,
                 ButtonSettings = project.LicenseScreenButtons,
                 Defaults = _defaultScreen,
             });
@@ -75,8 +67,6 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
         {
             _screens.Add(new SelectDestinationPageEditorViewModel(project.AppName, project.DefaultDirName, project.AllowUserToChangeDir, project.SelectDestinationBrowseButton)
             {
-                WizardImage = wizardImage,
-                WizardSmallImage = wizardSmallImage,
                 ButtonSettings = project.SelectDestinationScreenButtons,
                 Defaults = _defaultScreen,
             });
@@ -200,5 +190,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
         }
 
         project.DefaultScreenButtons = _defaultScreen.ReadButtonSettings();
+        project.WizardImageFile = _defaultScreen.WizardImageFile;
+        project.WizardSmallImageFile = _defaultScreen.WizardSmallImageFile;
     }
 }

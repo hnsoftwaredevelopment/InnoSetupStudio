@@ -13,9 +13,10 @@
 
         De afbeelding links over de volledige hoogte is Inno Setup's eigen WizardImageFile
         (164:314 breedte:hoogte-verhouding, vandaar Width="150" bij deze 290px hoge voorvertoning);
-        WizardImage komt van de projectinstellingen of anders een meegeleverde standaardafbeelding
-        (zie WizardImageResolver in InnoSetupStudio.App). Ontbrak in de eerste versie van deze
-        pagina, wat niet overeenkwam met een echte Inno Setup-installer.
+        WizardImage komt van het Standaardscherm in de schermeditor (vóór backlogitem 1, sectie 14:
+        de projectinstellingen) of anders een meegeleverde standaardafbeelding (zie
+        WizardImageResolver in InnoSetupStudio.App). Ontbrak in de eerste versie van deze pagina,
+        wat niet overeenkwam met een echte Inno Setup-installer.
     -->
     <DockPanel Background="White">
         <Image DockPanel.Dock="Left" Source="{Binding WizardImage}" Stretch="UniformToFill"

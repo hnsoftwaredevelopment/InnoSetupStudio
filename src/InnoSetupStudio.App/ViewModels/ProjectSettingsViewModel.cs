@@ -16,28 +16,47 @@ namespace InnoSetupStudio.App.ViewModels;
 public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
 {
     private readonly IInstallerProjectService _projectService;
-    private readonly IProjectAssetService _assetService;
 
     // Bewaard vanuit het project waarmee dit venster is geopend, zodat SaveAsync deze waarden kan
     // meenemen in het opgeslagen project: dit scherm toont en wijzigt alleen de algemene
     // instellingen, dus zonder deze velden zou een simpele naam- of paden-wijziging de elders (in
-    // de schermeditor) gekozen wizardschermen-selectie, licentiebestand en installatiemap
-    // stilzwijgend terugzetten naar de standaardwaarden.
+    // de schermeditor) gekozen wizardschermen-selectie, licentiebestand, installatiemap,
+    // wizardafbeeldingen en knopinstellingen per scherm stilzwijgend terugzetten naar de
+    // standaardwaarden. WizardImageFile/WizardSmallImageFile staan hier sinds backlogitem 1
+    // (sectie 14) om dezelfde reden als de eerste vier: ze worden voortaan op het Standaardscherm
+    // in de schermeditor bewerkt, niet meer hier, dus dit scherm mag ze alleen ongewijzigd
+    // doorgeven. De vijf knopinstellingen-velden (WelcomeScreenButtons t/m DefaultScreenButtons)
+    // ontbraken hier tot nu toe — zie sectie 16 van de architectuurdoc: zonder pass-through zette
+    // Opslaan vanuit dit scherm elke in de schermeditor gekozen tekstkleur/lettertype/Enabled/
+    // Visible per scherm stilzwijgend terug naar leeg/onbepaald.
     private readonly WizardScreenSelection _wizardScreens;
     private readonly string _licenseFilePath;
     private readonly string _defaultDirName;
     private readonly bool _allowUserToChangeDir;
+    private readonly string _wizardImageFile;
+    private readonly string _wizardSmallImageFile;
+    private readonly WizardScreenButtonSettings _welcomeScreenButtons;
+    private readonly WizardScreenButtonSettings _licenseScreenButtons;
+    private readonly WizardScreenButtonSettings _selectDestinationScreenButtons;
+    private readonly BrowseButtonSettings _selectDestinationBrowseButton;
+    private readonly WizardScreenButtonSettings _defaultScreenButtons;
 
-    public ProjectSettingsViewModel(InstallerProject project, IInstallerProjectService projectService, string? projectFilePath, IProjectAssetService assetService)
+    public ProjectSettingsViewModel(InstallerProject project, IInstallerProjectService projectService, string? projectFilePath)
     {
         _projectService = projectService;
-        _assetService = assetService;
         BeginInit();
         _projectFilePath = projectFilePath;
         _wizardScreens = project.WizardScreens;
         _licenseFilePath = project.LicenseFilePath;
         _defaultDirName = project.DefaultDirName;
         _allowUserToChangeDir = project.AllowUserToChangeDir;
+        _wizardImageFile = project.WizardImageFile;
+        _wizardSmallImageFile = project.WizardSmallImageFile;
+        _welcomeScreenButtons = project.WelcomeScreenButtons;
+        _licenseScreenButtons = project.LicenseScreenButtons;
+        _selectDestinationScreenButtons = project.SelectDestinationScreenButtons;
+        _selectDestinationBrowseButton = project.SelectDestinationBrowseButton;
+        _defaultScreenButtons = project.DefaultScreenButtons;
 
         AppId = project.AppId;
         AppName = project.AppName;
@@ -49,8 +68,6 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
         OutputPath = project.OutputPath;
         CustomImagesPath = project.CustomImagesPath;
         SetupIconFile = project.SetupIconFile;
-        WizardImageFile = project.WizardImageFile;
-        WizardSmallImageFile = project.WizardSmallImageFile;
 
         EndInit();
 
@@ -125,12 +142,6 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
     [ObservableProperty]
     private string _setupIconFile = string.Empty;
 
-    [ObservableProperty]
-    private string _wizardImageFile = string.Empty;
-
-    [ObservableProperty]
-    private string _wizardSmallImageFile = string.Empty;
-
     [RelayCommand]
     private void BrowseSourceFiles() => SourceFilesPath = BrowseForFolder(SourceFilesPath) ?? SourceFilesPath;
 
@@ -157,31 +168,6 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
         {
             SetupIconFile = dialog.FileName;
         }
-    }
-
-    [RelayCommand]
-    private void BrowseWizardImage() => WizardImageFile = BrowseForImage(WizardImageFile);
-
-    [RelayCommand]
-    private void BrowseWizardSmallImage() => WizardSmallImageFile = BrowseForImage(WizardSmallImageFile);
-
-    // Kopieert de gekozen afbeelding net als bij het licentiebestand naar de projectmap zodra die
-    // van elders komt (zie IProjectAssetService), zodat het project verplaatsbaar blijft. Bij een
-    // nog niet opgeslagen project (ProjectFilePath leeg) geeft dit ongewijzigd het gekozen pad
-    // terug.
-    private string BrowseForImage(string currentPath)
-    {
-        var dialog = new OpenFileDialog
-        {
-            Filter = LocalizationManager.Instance["DialogFilterImageFiles"],
-        };
-
-        if (!string.IsNullOrWhiteSpace(currentPath))
-        {
-            dialog.InitialDirectory = Path.GetDirectoryName(currentPath);
-        }
-
-        return dialog.ShowDialog() == true ? _assetService.Import(ProjectFilePath, dialog.FileName) : currentPath;
     }
 
     // True zolang SaveAsync bezig is. De velden worden hiermee uitgeschakeld (zie CanEdit) zodat
@@ -237,10 +223,6 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
 
     partial void OnSetupIconFileChanged(string value) => MarkDirty();
 
-    partial void OnWizardImageFileChanged(string value) => MarkDirty();
-
-    partial void OnWizardSmallImageFileChanged(string value) => MarkDirty();
-
     [RelayCommand(CanExecute = nameof(CanSave))]
     private async Task SaveAsync()
     {
@@ -273,12 +255,17 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
             OutputPath = OutputPath,
             CustomImagesPath = CustomImagesPath,
             SetupIconFile = SetupIconFile,
-            WizardImageFile = WizardImageFile,
-            WizardSmallImageFile = WizardSmallImageFile,
+            WizardImageFile = _wizardImageFile,
+            WizardSmallImageFile = _wizardSmallImageFile,
             WizardScreens = _wizardScreens,
             LicenseFilePath = _licenseFilePath,
             DefaultDirName = _defaultDirName,
             AllowUserToChangeDir = _allowUserToChangeDir,
+            WelcomeScreenButtons = _welcomeScreenButtons,
+            LicenseScreenButtons = _licenseScreenButtons,
+            SelectDestinationScreenButtons = _selectDestinationScreenButtons,
+            SelectDestinationBrowseButton = _selectDestinationBrowseButton,
+            DefaultScreenButtons = _defaultScreenButtons,
         };
 
         IsSaving = true;
