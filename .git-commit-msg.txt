@@ -1,0 +1,18 @@
+Normaliseer alleen-witruimte knopvelden terug naar leeg
+
+Herberts test bevestigde een verwarrende invoegcursor middenin de spooktekst
+(bijv. "Vo|lgende >" i.p.v. aan het begin) bij het klikken in een leeg
+ogend caption-/tekstkleur-/lettertypeveld. Oorzaak: ResolveCaption en de
+Effective*-eigenschappen behandelden een waarde van uitsluitend witruimte
+al als "niet ingevuld" en toonden de spooktekst erover, maar de TextBox
+zelf hield de echte spaties vast als klikbare tekst - vandaar de cursor
+middenin.
+
+Nieuwe NormalizeWhitespaceOnly-helper in WizardScreenEditorViewModel (voor
+Caption/TextColor/FontFamily van Welkom/Licentie/Bestemming) en in
+DefaultScreenEditorViewModel (voor Caption, het enige veld daar met een
+zichtbare terugvaltekst) zet zo'n waarde meteen terug naar leeg in de
+OnXxxChanged-hook zelf.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_014yqqitjuUE1UkCgh2PygkK

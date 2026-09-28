@@ -228,11 +228,37 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
     /// <summary>Zie <see cref="EffectiveBackButtonFontSize"/>, maar dan voor de Annuleren-knop.</summary>
     public int? EffectiveCancelButtonFontSize => null;
 
-    partial void OnBackButtonCaptionChanged(string value) => OnPropertyChanged(nameof(EffectiveBackButtonCaption));
+    // Alleen-witruimte-invoer terugbrengen naar leeg (Herberts melding, 2026-09-28): zonder dit
+    // bleven de echte spaties in de TextBox staan terwijl de spooktekst ("Volgende >" enz.) er
+    // toch al overheen werd getoond (ResolveCaption behandelt witruimte al als "niet ingevuld"),
+    // wat een verwarrende invoegcursor middenin de spooktekst gaf (bv. "Vo|lgende >" i.p.v. aan
+    // het begin) — die spaties waren immers nog altijd echte, klikbare tekst. Roept de generated
+    // setter opnieuw aan (leeg voldoet niet meer aan de voorwaarde), dus geen oneindige lus.
+    private static void NormalizeWhitespaceOnly(string? value, Action<string> setter)
+    {
+        if (!string.IsNullOrEmpty(value) && string.IsNullOrWhiteSpace(value))
+        {
+            setter(string.Empty);
+        }
+    }
 
-    partial void OnNextButtonCaptionChanged(string value) => OnPropertyChanged(nameof(EffectiveNextButtonCaption));
+    partial void OnBackButtonCaptionChanged(string value)
+    {
+        NormalizeWhitespaceOnly(value, v => BackButtonCaption = v);
+        OnPropertyChanged(nameof(EffectiveBackButtonCaption));
+    }
 
-    partial void OnCancelButtonCaptionChanged(string value) => OnPropertyChanged(nameof(EffectiveCancelButtonCaption));
+    partial void OnNextButtonCaptionChanged(string value)
+    {
+        NormalizeWhitespaceOnly(value, v => NextButtonCaption = v);
+        OnPropertyChanged(nameof(EffectiveNextButtonCaption));
+    }
+
+    partial void OnCancelButtonCaptionChanged(string value)
+    {
+        NormalizeWhitespaceOnly(value, v => CancelButtonCaption = v);
+        OnPropertyChanged(nameof(EffectiveCancelButtonCaption));
+    }
 
     // Zelfde tekstkleur-/lettertypevelden als WizardScreenEditorViewModel (backlogitem 3, sectie
     // 14), ook hier zonder Effective*-resolutie: dit scherm ÍS de bron van de standaardwaarde.

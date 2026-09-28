@@ -323,11 +323,37 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
     /// <summary>Zie <see cref="IsBackButtonEnabled"/>, maar dan voor de Annuleren-knop.</summary>
     public bool IsCancelButtonEnabled => CancelButtonEnabled ?? Defaults.CancelButtonEnabled ?? true;
 
-    partial void OnBackButtonCaptionChanged(string value) => OnPropertyChanged(nameof(EffectiveBackButtonCaption));
+    // Alleen-witruimte-invoer terugbrengen naar leeg (Herberts melding, 2026-09-28): ResolveCaption/
+    // EffectiveXxx behandelden zo'n waarde al als "niet ingevuld" en toonden dan de spooktekst
+    // eroverheen, maar de TextBox zelf hield de echte spaties vast. Dat gaf een verwarrende
+    // invoegcursor middenin de spooktekst (bv. "Vo|lgende >" i.p.v. aan het begin) zodra je erin
+    // klikte, want de spaties waren nog altijd echte, klikbare tekst. Roept de generated setter
+    // opnieuw aan (leeg voldoet niet meer aan de voorwaarde), dus geen oneindige lus.
+    private static void NormalizeWhitespaceOnly(string? value, Action<string> setter)
+    {
+        if (!string.IsNullOrEmpty(value) && string.IsNullOrWhiteSpace(value))
+        {
+            setter(string.Empty);
+        }
+    }
 
-    partial void OnNextButtonCaptionChanged(string value) => OnPropertyChanged(nameof(EffectiveNextButtonCaption));
+    partial void OnBackButtonCaptionChanged(string value)
+    {
+        NormalizeWhitespaceOnly(value, v => BackButtonCaption = v);
+        OnPropertyChanged(nameof(EffectiveBackButtonCaption));
+    }
 
-    partial void OnCancelButtonCaptionChanged(string value) => OnPropertyChanged(nameof(EffectiveCancelButtonCaption));
+    partial void OnNextButtonCaptionChanged(string value)
+    {
+        NormalizeWhitespaceOnly(value, v => NextButtonCaption = v);
+        OnPropertyChanged(nameof(EffectiveNextButtonCaption));
+    }
+
+    partial void OnCancelButtonCaptionChanged(string value)
+    {
+        NormalizeWhitespaceOnly(value, v => CancelButtonCaption = v);
+        OnPropertyChanged(nameof(EffectiveCancelButtonCaption));
+    }
 
     partial void OnBackButtonVisibleChanged(bool? value) => OnPropertyChanged(nameof(IsBackButtonVisible));
 
@@ -341,17 +367,41 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
 
     partial void OnCancelButtonEnabledChanged(bool? value) => OnPropertyChanged(nameof(IsCancelButtonEnabled));
 
-    partial void OnBackButtonTextColorChanged(string value) => OnPropertyChanged(nameof(EffectiveBackButtonTextColor));
+    partial void OnBackButtonTextColorChanged(string value)
+    {
+        NormalizeWhitespaceOnly(value, v => BackButtonTextColor = v);
+        OnPropertyChanged(nameof(EffectiveBackButtonTextColor));
+    }
 
-    partial void OnNextButtonTextColorChanged(string value) => OnPropertyChanged(nameof(EffectiveNextButtonTextColor));
+    partial void OnNextButtonTextColorChanged(string value)
+    {
+        NormalizeWhitespaceOnly(value, v => NextButtonTextColor = v);
+        OnPropertyChanged(nameof(EffectiveNextButtonTextColor));
+    }
 
-    partial void OnCancelButtonTextColorChanged(string value) => OnPropertyChanged(nameof(EffectiveCancelButtonTextColor));
+    partial void OnCancelButtonTextColorChanged(string value)
+    {
+        NormalizeWhitespaceOnly(value, v => CancelButtonTextColor = v);
+        OnPropertyChanged(nameof(EffectiveCancelButtonTextColor));
+    }
 
-    partial void OnBackButtonFontFamilyChanged(string value) => OnPropertyChanged(nameof(EffectiveBackButtonFontFamily));
+    partial void OnBackButtonFontFamilyChanged(string value)
+    {
+        NormalizeWhitespaceOnly(value, v => BackButtonFontFamily = v);
+        OnPropertyChanged(nameof(EffectiveBackButtonFontFamily));
+    }
 
-    partial void OnNextButtonFontFamilyChanged(string value) => OnPropertyChanged(nameof(EffectiveNextButtonFontFamily));
+    partial void OnNextButtonFontFamilyChanged(string value)
+    {
+        NormalizeWhitespaceOnly(value, v => NextButtonFontFamily = v);
+        OnPropertyChanged(nameof(EffectiveNextButtonFontFamily));
+    }
 
-    partial void OnCancelButtonFontFamilyChanged(string value) => OnPropertyChanged(nameof(EffectiveCancelButtonFontFamily));
+    partial void OnCancelButtonFontFamilyChanged(string value)
+    {
+        NormalizeWhitespaceOnly(value, v => CancelButtonFontFamily = v);
+        OnPropertyChanged(nameof(EffectiveCancelButtonFontFamily));
+    }
 
     partial void OnBackButtonFontSizeChanged(int? value) => OnPropertyChanged(nameof(EffectiveBackButtonFontSize));
 
