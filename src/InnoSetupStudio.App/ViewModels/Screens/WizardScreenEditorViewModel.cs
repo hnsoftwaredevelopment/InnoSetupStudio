@@ -79,6 +79,7 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
             BackButtonFontFamily = value.BackButtonFontFamily;
             BackButtonFontSize = value.BackButtonFontSize;
             BackButtonFontBold = value.BackButtonFontBold;
+            BackButtonTooltip = value.BackButtonTooltip;
             NextButtonCaption = value.NextButtonCaption;
             NextButtonEnabled = value.NextButtonEnabled;
             NextButtonVisible = value.NextButtonVisible;
@@ -86,6 +87,7 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
             NextButtonFontFamily = value.NextButtonFontFamily;
             NextButtonFontSize = value.NextButtonFontSize;
             NextButtonFontBold = value.NextButtonFontBold;
+            NextButtonTooltip = value.NextButtonTooltip;
             CancelButtonCaption = value.CancelButtonCaption;
             CancelButtonEnabled = value.CancelButtonEnabled;
             CancelButtonVisible = value.CancelButtonVisible;
@@ -93,6 +95,7 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
             CancelButtonFontFamily = value.CancelButtonFontFamily;
             CancelButtonFontSize = value.CancelButtonFontSize;
             CancelButtonFontBold = value.CancelButtonFontBold;
+            CancelButtonTooltip = value.CancelButtonTooltip;
         }
     }
 
@@ -144,6 +147,9 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
         OnPropertyChanged(nameof(EffectiveBackButtonFontBold));
         OnPropertyChanged(nameof(EffectiveNextButtonFontBold));
         OnPropertyChanged(nameof(EffectiveCancelButtonFontBold));
+        OnPropertyChanged(nameof(EffectiveBackButtonTooltip));
+        OnPropertyChanged(nameof(EffectiveNextButtonTooltip));
+        OnPropertyChanged(nameof(EffectiveCancelButtonTooltip));
     }
 
     // De velden hieronder staan, anders dan WizardImage/WizardSmallImage, wél op de
@@ -221,6 +227,21 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
     [ObservableProperty]
     private bool? _cancelButtonFontBold;
 
+    // Tooltip (backlogitem 3, sectie 17, uit het Knop-eigenschappenscherm-mockup): TNewButton is
+    // een gewone TControl-afstammeling, dus Hint/ShowHint werken net zo rechtstreeks als de
+    // Font-eigenschappen (zie WizardScreenButtonSettings). Tweelaags net als TextColor/FontFamily
+    // hieronder: eigen tekst, anders het Standaardscherm — er bestaat geen "Inno-ingebouwde"
+    // derde laag voor een tooltip.
+
+    [ObservableProperty]
+    private string _backButtonTooltip = string.Empty;
+
+    [ObservableProperty]
+    private string _nextButtonTooltip = string.Empty;
+
+    [ObservableProperty]
+    private string _cancelButtonTooltip = string.Empty;
+
     /// <summary>Inno Setup's eigen standaardtekst voor de Terug-knop op dit scherm, gebruikt zolang
     /// <see cref="BackButtonCaption"/> leeg is. De schermeditor toont hier de studio's eigen
     /// UI-taal (net als de knoppen zelf al deden vóór dit veld bestond), niet Inno Setup's vaste
@@ -280,6 +301,17 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
 
     /// <summary>Zie <see cref="EffectiveBackButtonFontFamily"/>, maar dan voor de Annuleren-knop.</summary>
     public string EffectiveCancelButtonFontFamily => ResolveCaption(CancelButtonFontFamily, Defaults.CancelButtonFontFamily, string.Empty);
+
+    /// <summary>Wat de voorvertoning daadwerkelijk als tooltip op de Terug-knop toont, leeg = geen
+    /// tooltip. Tweelaags, geen "builtIn": Inno Setup heeft geen eigen standaardtooltip om naar
+    /// terug te vallen.</summary>
+    public string EffectiveBackButtonTooltip => ResolveCaption(BackButtonTooltip, Defaults.BackButtonTooltip, string.Empty);
+
+    /// <summary>Zie <see cref="EffectiveBackButtonTooltip"/>, maar dan voor de Volgende-knop.</summary>
+    public string EffectiveNextButtonTooltip => ResolveCaption(NextButtonTooltip, Defaults.NextButtonTooltip, string.Empty);
+
+    /// <summary>Zie <see cref="EffectiveBackButtonTooltip"/>, maar dan voor de Annuleren-knop.</summary>
+    public string EffectiveCancelButtonTooltip => ResolveCaption(CancelButtonTooltip, Defaults.CancelButtonTooltip, string.Empty);
 
     /// <summary>Zie <see cref="EffectiveBackButtonTextColor"/>, maar dan voor de lettergrootte.</summary>
     public int? EffectiveBackButtonFontSize => BackButtonFontSize ?? Defaults.BackButtonFontSize;
@@ -403,6 +435,24 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
         OnPropertyChanged(nameof(EffectiveCancelButtonFontFamily));
     }
 
+    partial void OnBackButtonTooltipChanged(string value)
+    {
+        NormalizeWhitespaceOnly(value, v => BackButtonTooltip = v);
+        OnPropertyChanged(nameof(EffectiveBackButtonTooltip));
+    }
+
+    partial void OnNextButtonTooltipChanged(string value)
+    {
+        NormalizeWhitespaceOnly(value, v => NextButtonTooltip = v);
+        OnPropertyChanged(nameof(EffectiveNextButtonTooltip));
+    }
+
+    partial void OnCancelButtonTooltipChanged(string value)
+    {
+        NormalizeWhitespaceOnly(value, v => CancelButtonTooltip = v);
+        OnPropertyChanged(nameof(EffectiveCancelButtonTooltip));
+    }
+
     partial void OnBackButtonFontSizeChanged(int? value) => OnPropertyChanged(nameof(EffectiveBackButtonFontSize));
 
     partial void OnNextButtonFontSizeChanged(int? value) => OnPropertyChanged(nameof(EffectiveNextButtonFontSize));
@@ -472,6 +522,7 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
         BackButtonFontFamily = BackButtonFontFamily,
         BackButtonFontSize = BackButtonFontSize,
         BackButtonFontBold = BackButtonFontBold,
+        BackButtonTooltip = BackButtonTooltip,
         NextButtonCaption = NextButtonCaption,
         NextButtonEnabled = NextButtonEnabled,
         NextButtonVisible = NextButtonVisible,
@@ -479,6 +530,7 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
         NextButtonFontFamily = NextButtonFontFamily,
         NextButtonFontSize = NextButtonFontSize,
         NextButtonFontBold = NextButtonFontBold,
+        NextButtonTooltip = NextButtonTooltip,
         CancelButtonCaption = CancelButtonCaption,
         CancelButtonEnabled = CancelButtonEnabled,
         CancelButtonVisible = CancelButtonVisible,
@@ -486,5 +538,6 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
         CancelButtonFontFamily = CancelButtonFontFamily,
         CancelButtonFontSize = CancelButtonFontSize,
         CancelButtonFontBold = CancelButtonFontBold,
+        CancelButtonTooltip = CancelButtonTooltip,
     };
 }

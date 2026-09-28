@@ -26,7 +26,9 @@ namespace InnoSetupStudio.Core.Project;
 /// Windows' eigen thema-engine getekend, dus een achtergrondkleur of bitmap zetten vereist het
 /// uitschakelen van de Windows-thematisering en een zelf-getekende knop (OnPaint-achtig) in Pascal
 /// Script — vergelijkbare extra generatorwerk voor beide, en niet iets wat Inno Setup's
-/// standaardknop native ondersteunt. Herbert heeft dit expliciet geschrapt (2026-09-04).
+/// standaardknop native ondersteunt. Herbert heeft dit expliciet geschrapt (2026-09-04). Diezelfde
+/// afweging gold niet voor Tooltip hieronder (backlogitem 3, sectie 17): TNewButton is een gewone
+/// TControl-afstammeling, dus Hint/ShowHint werken net zo rechtstreeks als de Font-eigenschappen.
 /// </summary>
 public sealed class WizardScreenButtonSettings
 {
@@ -44,6 +46,8 @@ public sealed class WizardScreenButtonSettings
 
     public bool? BackButtonFontBold { get; set; }
 
+    public string BackButtonTooltip { get; set; } = string.Empty;
+
     public string NextButtonCaption { get; set; } = string.Empty;
 
     public bool? NextButtonEnabled { get; set; }
@@ -58,6 +62,8 @@ public sealed class WizardScreenButtonSettings
 
     public bool? NextButtonFontBold { get; set; }
 
+    public string NextButtonTooltip { get; set; } = string.Empty;
+
     public string CancelButtonCaption { get; set; } = string.Empty;
 
     public bool? CancelButtonEnabled { get; set; }
@@ -71,4 +77,6 @@ public sealed class WizardScreenButtonSettings
     public int? CancelButtonFontSize { get; set; }
 
     public bool? CancelButtonFontBold { get; set; }
+
+    public string CancelButtonTooltip { get; set; } = string.Empty;
 }

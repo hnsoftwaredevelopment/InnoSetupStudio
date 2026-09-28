@@ -42,124 +42,73 @@
         <!-- Gedeeld door alle drie de instellingenpanelen hieronder (Welkom/Licentie/Bestemming):
              Terug-/Volgende-/Annuleren-knop per scherm aanpasbaar maken. Staat op de basisklasse
              WizardScreenEditorViewModel, dus deze template werkt voor elk schermtype zonder een
-             eigen kopie per scherm. -->
+             eigen kopie per scherm.
+
+             Vereenvoudigd (backlogitem 3, sectie 17, Herberts mockup): in plaats van alle negen
+             velden per knop hier rechtstreeks te tonen, nu nog maar één tekstveld per knop (meteen
+             bewerkbaar, getoond in de knop zijn eigen - of overgeërfde, als grijze hint - tekstkleur)
+             plus een klein eigenschappenknopje ernaast dat het Knop-eigenschappenscherm opent
+             (ButtonPropertiesWindow) met alle overige velden: kleur, lettertype, grootte, vet,
+             tooltip, ingeschakeld/zichtbaar. Zie WizardEditorWindow.xaml.cs/ButtonProperties_Click
+             voor hoe dat knopje via zijn Tag ("Back"/"Next"/"Cancel") en de DataContext hier
+             (WizardScreenEditorViewModel of DefaultScreenEditorViewModel) de juiste
+             ButtonPropertiesViewModel opbouwt. -->
         <DataTemplate x:Key="ButtonSettingsSectionTemplate">
             <StackPanel Margin="0,20,0,0">
                 <TextBlock Text="{loc:Loc SectionWizardButtons}" FontWeight="Bold" Margin="0,0,0,8" />
 
-                <TextBlock x:Name="BackButtonCaptionLabel" Text="{loc:Loc LabelBackButtonSection}" Margin="0,0,0,4" />
-                <TextBox Text="{Binding BackButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"
-                         controls:Placeholder.Text="{Binding EffectiveBackButtonCaption}"
-                         AutomationProperties.LabeledBy="{Binding ElementName=BackButtonCaptionLabel}" />
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                    <CheckBox Content="{loc:Loc LabelButtonEnabled}" IsChecked="{Binding BackButtonEnabled}"
-                              IsThreeState="True" Margin="0,0,16,0" />
-                    <CheckBox Content="{loc:Loc LabelButtonVisible}" IsChecked="{Binding BackButtonVisible}"
-                              IsThreeState="True" />
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock x:Name="BackButtonTextColorLabel" Text="{loc:Loc LabelButtonTextColor}" Width="96" VerticalAlignment="Center" />
-                    <Border Width="18" Height="18" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,4,0"
-                            Background="{Binding EffectiveBackButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}" />
-                    <TextBox Width="90" Text="{Binding BackButtonTextColor, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"
-                             controls:Placeholder.Text="{Binding EffectiveBackButtonTextColor}"
-                             AutomationProperties.LabeledBy="{Binding ElementName=BackButtonTextColorLabel}" />
-                    <Button Content="{loc:Loc ButtonPickColor}" Command="{Binding PickBackButtonTextColorCommand}"
-                            AutomationProperties.LabeledBy="{Binding ElementName=BackButtonTextColorLabel}" />
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock x:Name="BackButtonFontFamilyLabel" Text="{loc:Loc LabelButtonFontFamily}" Width="96" VerticalAlignment="Center" />
-                    <ComboBox Width="150" IsEditable="True" IsTextSearchEnabled="True"
-                              ItemsSource="{x:Static services:SystemFontCatalog.FontFamilyNames}"
-                              Text="{Binding BackButtonFontFamily, UpdateSourceTrigger=PropertyChanged}"
-                              controls:Placeholder.Text="{Binding EffectiveBackButtonFontFamily}"
-                              AutomationProperties.LabeledBy="{Binding ElementName=BackButtonFontFamilyLabel}" />
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock x:Name="BackButtonFontSizeLabel" Text="{loc:Loc LabelButtonFontSize}" Width="96" VerticalAlignment="Center" />
-                    <TextBox Width="70" Text="{Binding BackButtonFontSize, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,16,0"
-                             controls:Placeholder.Text="{Binding EffectiveBackButtonFontSize}"
-                             AutomationProperties.LabeledBy="{Binding ElementName=BackButtonFontSizeLabel}" />
-                    <CheckBox Content="{loc:Loc LabelButtonFontBold}" IsChecked="{Binding BackButtonFontBold}" IsThreeState="True" />
-                </StackPanel>
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="BackButtonCaptionBox" Grid.Column="0"
+                             Text="{Binding BackButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"
+                             Foreground="{Binding EffectiveBackButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
+                             controls:Placeholder.Text="{Binding EffectiveBackButtonCaption}" />
+                    <Button Grid.Column="1" Tag="Back" Click="ButtonProperties_Click"
+                            ToolTip="{loc:Loc ButtonOpenProperties}" AutomationProperties.Name="{loc:Loc ButtonOpenProperties}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=BackButtonCaptionBox}">
+                        <Path Data="{StaticResource Properties}" Fill="{DynamicResource Brush.TextPrimary}"
+                              Stretch="Uniform" Width="16" Height="16" />
+                    </Button>
+                </Grid>
 
-                <TextBlock x:Name="NextButtonCaptionLabel" Text="{loc:Loc LabelNextButtonSection}" Margin="0,12,0,4" />
-                <TextBox Text="{Binding NextButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"
-                         controls:Placeholder.Text="{Binding EffectiveNextButtonCaption}"
-                         AutomationProperties.LabeledBy="{Binding ElementName=NextButtonCaptionLabel}" />
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                    <CheckBox Content="{loc:Loc LabelButtonEnabled}" IsChecked="{Binding NextButtonEnabled}"
-                              IsThreeState="True" Margin="0,0,16,0" />
-                    <CheckBox Content="{loc:Loc LabelButtonVisible}" IsChecked="{Binding NextButtonVisible}"
-                              IsThreeState="True" />
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock x:Name="NextButtonTextColorLabel" Text="{loc:Loc LabelButtonTextColor}" Width="96" VerticalAlignment="Center" />
-                    <Border Width="18" Height="18" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,4,0"
-                            Background="{Binding EffectiveNextButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}" />
-                    <TextBox Width="90" Text="{Binding NextButtonTextColor, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"
-                             controls:Placeholder.Text="{Binding EffectiveNextButtonTextColor}"
-                             AutomationProperties.LabeledBy="{Binding ElementName=NextButtonTextColorLabel}" />
-                    <Button Content="{loc:Loc ButtonPickColor}" Command="{Binding PickNextButtonTextColorCommand}"
-                            AutomationProperties.LabeledBy="{Binding ElementName=NextButtonTextColorLabel}" />
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock x:Name="NextButtonFontFamilyLabel" Text="{loc:Loc LabelButtonFontFamily}" Width="96" VerticalAlignment="Center" />
-                    <ComboBox Width="150" IsEditable="True" IsTextSearchEnabled="True"
-                              ItemsSource="{x:Static services:SystemFontCatalog.FontFamilyNames}"
-                              Text="{Binding NextButtonFontFamily, UpdateSourceTrigger=PropertyChanged}"
-                              controls:Placeholder.Text="{Binding EffectiveNextButtonFontFamily}"
-                              AutomationProperties.LabeledBy="{Binding ElementName=NextButtonFontFamilyLabel}" />
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock x:Name="NextButtonFontSizeLabel" Text="{loc:Loc LabelButtonFontSize}" Width="96" VerticalAlignment="Center" />
-                    <TextBox Width="70" Text="{Binding NextButtonFontSize, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,16,0"
-                             controls:Placeholder.Text="{Binding EffectiveNextButtonFontSize}"
-                             AutomationProperties.LabeledBy="{Binding ElementName=NextButtonFontSizeLabel}" />
-                    <CheckBox Content="{loc:Loc LabelButtonFontBold}" IsChecked="{Binding NextButtonFontBold}" IsThreeState="True" />
-                </StackPanel>
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="NextButtonCaptionBox" Grid.Column="0"
+                             Text="{Binding NextButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"
+                             Foreground="{Binding EffectiveNextButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
+                             controls:Placeholder.Text="{Binding EffectiveNextButtonCaption}" />
+                    <Button Grid.Column="1" Tag="Next" Click="ButtonProperties_Click"
+                            ToolTip="{loc:Loc ButtonOpenProperties}" AutomationProperties.Name="{loc:Loc ButtonOpenProperties}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=NextButtonCaptionBox}">
+                        <Path Data="{StaticResource Properties}" Fill="{DynamicResource Brush.TextPrimary}"
+                              Stretch="Uniform" Width="16" Height="16" />
+                    </Button>
+                </Grid>
 
-                <TextBlock x:Name="CancelButtonCaptionLabel" Text="{loc:Loc LabelCancelButtonSection}" Margin="0,12,0,4" />
-                <TextBox Text="{Binding CancelButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"
-                         controls:Placeholder.Text="{Binding EffectiveCancelButtonCaption}"
-                         AutomationProperties.LabeledBy="{Binding ElementName=CancelButtonCaptionLabel}" />
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                    <CheckBox Content="{loc:Loc LabelButtonEnabled}" IsChecked="{Binding CancelButtonEnabled}"
-                              IsThreeState="True" Margin="0,0,16,0" />
-                    <CheckBox Content="{loc:Loc LabelButtonVisible}" IsChecked="{Binding CancelButtonVisible}"
-                              IsThreeState="True" />
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock x:Name="CancelButtonTextColorLabel" Text="{loc:Loc LabelButtonTextColor}" Width="96" VerticalAlignment="Center" />
-                    <Border Width="18" Height="18" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,4,0"
-                            Background="{Binding EffectiveCancelButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}" />
-                    <TextBox Width="90" Text="{Binding CancelButtonTextColor, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"
-                             controls:Placeholder.Text="{Binding EffectiveCancelButtonTextColor}"
-                             AutomationProperties.LabeledBy="{Binding ElementName=CancelButtonTextColorLabel}" />
-                    <Button Content="{loc:Loc ButtonPickColor}" Command="{Binding PickCancelButtonTextColorCommand}"
-                            AutomationProperties.LabeledBy="{Binding ElementName=CancelButtonTextColorLabel}" />
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock x:Name="CancelButtonFontFamilyLabel" Text="{loc:Loc LabelButtonFontFamily}" Width="96" VerticalAlignment="Center" />
-                    <ComboBox Width="150" IsEditable="True" IsTextSearchEnabled="True"
-                              ItemsSource="{x:Static services:SystemFontCatalog.FontFamilyNames}"
-                              Text="{Binding CancelButtonFontFamily, UpdateSourceTrigger=PropertyChanged}"
-                              controls:Placeholder.Text="{Binding EffectiveCancelButtonFontFamily}"
-                              AutomationProperties.LabeledBy="{Binding ElementName=CancelButtonFontFamilyLabel}" />
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock x:Name="CancelButtonFontSizeLabel" Text="{loc:Loc LabelButtonFontSize}" Width="96" VerticalAlignment="Center" />
-                    <TextBox Width="70" Text="{Binding CancelButtonFontSize, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,16,0"
-                             controls:Placeholder.Text="{Binding EffectiveCancelButtonFontSize}"
-                             AutomationProperties.LabeledBy="{Binding ElementName=CancelButtonFontSizeLabel}" />
-                    <CheckBox Content="{loc:Loc LabelButtonFontBold}" IsChecked="{Binding CancelButtonFontBold}" IsThreeState="True" />
-                </StackPanel>
+                <Grid Margin="0,0,0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="CancelButtonCaptionBox" Grid.Column="0"
+                             Text="{Binding CancelButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"
+                             Foreground="{Binding EffectiveCancelButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
+                             controls:Placeholder.Text="{Binding EffectiveCancelButtonCaption}" />
+                    <Button Grid.Column="1" Tag="Cancel" Click="ButtonProperties_Click"
+                            ToolTip="{loc:Loc ButtonOpenProperties}" AutomationProperties.Name="{loc:Loc ButtonOpenProperties}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=CancelButtonCaptionBox}">
+                        <Path Data="{StaticResource Properties}" Fill="{DynamicResource Brush.TextPrimary}"
+                              Stretch="Uniform" Width="16" Height="16" />
+                    </Button>
+                </Grid>
 
                 <TextBlock Text="{Binding HintButtonCaptionEmptyText}" FontSize="11" TextWrapping="Wrap"
-                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,8,0,0" />
-                <TextBlock Text="{Binding HintButtonTriStateText}" FontSize="11" TextWrapping="Wrap"
-                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,4,0,0" />
-                <TextBlock Text="{loc:Loc HintButtonColorFormat}" FontSize="11" TextWrapping="Wrap"
                            Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,4,0,0" />
             </StackPanel>
         </DataTemplate>
@@ -232,38 +181,22 @@
                 <!-- Schermspecifieke "Bladeren"-knop (Inno Setup's WizardForm.DirBrowseButton,
                      zie BrowseButtonSettings): bewust een eigen sectie, los van
                      ButtonSettingsSectionTemplate hierboven (Terug/Volgende/Annuleren) — deze knop
-                     komt maar op dit scherm voor en heeft geen Caption. -->
-                <TextBlock Text="{loc:Loc SectionBrowseButton}" FontWeight="Bold" Margin="0,20,0,8" />
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                    <CheckBox Content="{loc:Loc LabelButtonEnabled}" IsChecked="{Binding BrowseButtonEnabled}"
-                              IsThreeState="True" Margin="0,0,16,0" />
-                    <CheckBox Content="{loc:Loc LabelButtonVisible}" IsChecked="{Binding BrowseButtonVisible}"
-                              IsThreeState="True" />
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock x:Name="BrowseButtonTextColorLabel" Text="{loc:Loc LabelButtonTextColor}" Width="96" VerticalAlignment="Center" />
-                    <Border Width="18" Height="18" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,4,0"
-                            Background="{Binding BrowseButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}" />
-                    <TextBox Width="90" Text="{Binding BrowseButtonTextColor, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"
-                             AutomationProperties.LabeledBy="{Binding ElementName=BrowseButtonTextColorLabel}" />
-                    <Button Content="{loc:Loc ButtonPickColor}" Command="{Binding PickBrowseButtonTextColorCommand}"
-                            AutomationProperties.LabeledBy="{Binding ElementName=BrowseButtonTextColorLabel}" />
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock x:Name="BrowseButtonFontFamilyLabel" Text="{loc:Loc LabelButtonFontFamily}" Width="96" VerticalAlignment="Center" />
-                    <ComboBox Width="150" IsEditable="True" IsTextSearchEnabled="True"
-                              ItemsSource="{x:Static services:SystemFontCatalog.FontFamilyNames}"
-                              Text="{Binding BrowseButtonFontFamily, UpdateSourceTrigger=PropertyChanged}"
-                              AutomationProperties.LabeledBy="{Binding ElementName=BrowseButtonFontFamilyLabel}" />
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock x:Name="BrowseButtonFontSizeLabel" Text="{loc:Loc LabelButtonFontSize}" Width="96" VerticalAlignment="Center" />
-                    <TextBox Width="70" Text="{Binding BrowseButtonFontSize, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,16,0"
-                             AutomationProperties.LabeledBy="{Binding ElementName=BrowseButtonFontSizeLabel}" />
-                    <CheckBox Content="{loc:Loc LabelButtonFontBold}" IsChecked="{Binding BrowseButtonFontBold}" IsThreeState="True" />
-                </StackPanel>
-                <TextBlock Text="{loc:Loc HintButtonColorFormat}" FontSize="11" TextWrapping="Wrap"
-                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,4,0,0" />
+                     komt maar op dit scherm voor en heeft geen Caption. Vereenvoudigd op dezelfde
+                     manier als die template (backlogitem 3, sectie 17): alleen een label en een
+                     eigenschappenknopje, want er is hier maar één knop (geen Tag nodig, zie
+                     BrowseButtonProperties_Click in WizardEditorWindow.xaml.cs). -->
+                <Grid Margin="0,20,0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{loc:Loc SectionBrowseButton}" FontWeight="Bold" VerticalAlignment="Center" />
+                    <Button Grid.Column="1" Click="BrowseButtonProperties_Click"
+                            ToolTip="{loc:Loc ButtonOpenProperties}" AutomationProperties.Name="{loc:Loc ButtonOpenProperties}">
+                        <Path Data="{StaticResource Properties}" Fill="{DynamicResource Brush.TextPrimary}"
+                              Stretch="Uniform" Width="16" Height="16" />
+                    </Button>
+                </Grid>
             </StackPanel>
         </DataTemplate>
 
@@ -425,6 +358,7 @@
                                  in Styles.xaml) - een eigen TextBlock met een expliciete
                                  AncestorType=Button-binding op Foreground sluit die twijfel uit. -->
                             <Button DockPanel.Dock="Left"
+                                    ToolTip="{Binding SelectedScreen.EffectiveCancelButtonTooltip}"
                                     IsEnabled="{Binding SelectedScreen.IsCancelButtonEnabled}"
                                     Visibility="{Binding SelectedScreen.IsCancelButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                     Foreground="{Binding SelectedScreen.EffectiveCancelButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
@@ -437,6 +371,7 @@
                             </Button>
                             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                                 <Button Command="{Binding BackCommand}"
+                                        ToolTip="{Binding SelectedScreen.EffectiveBackButtonTooltip}"
                                         Visibility="{Binding SelectedScreen.IsBackButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                         Opacity="{Binding SelectedScreen.IsBackButtonEnabled, Converter={StaticResource BooleanToOpacityConverter}}"
                                         Foreground="{Binding SelectedScreen.EffectiveBackButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
@@ -448,6 +383,7 @@
                                                Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                                 </Button>
                                 <Button Command="{Binding NextCommand}"
+                                        ToolTip="{Binding SelectedScreen.EffectiveNextButtonTooltip}"
                                         Visibility="{Binding SelectedScreen.IsNextButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                         Opacity="{Binding SelectedScreen.IsNextButtonEnabled, Converter={StaticResource BooleanToOpacityConverter}}"
                                         Foreground="{Binding SelectedScreen.EffectiveNextButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"

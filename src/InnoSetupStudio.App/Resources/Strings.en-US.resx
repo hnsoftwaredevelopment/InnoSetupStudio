@@ -276,4 +276,22 @@
   <data name="HintButtonCaptionEmptyDefaultScreen" xml:space="preserve">
     <value>Empty = Inno Setup's own text for this field.</value>
   </data>
+  <data name="LabelButtonCaption" xml:space="preserve">
+    <value>Caption</value>
+  </data>
+  <data name="LabelButtonTooltip" xml:space="preserve">
+    <value>Tooltip</value>
+  </data>
+  <data name="ButtonOpenProperties" xml:space="preserve">
+    <value>Edit button properties</value>
+  </data>
+  <data name="ButtonSelectColor" xml:space="preserve">
+    <value>Select the text color</value>
+  </data>
+  <data name="DialogButtonPropertiesTitleFormat" xml:space="preserve">
+    <value>{0} properties</value>
+  </data>
+  <data name="SectionPreview" xml:space="preserve">
+    <value>Preview</value>
+  </data>
 </root>

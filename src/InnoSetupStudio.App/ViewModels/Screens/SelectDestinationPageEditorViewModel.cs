@@ -28,6 +28,7 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
         _browseButtonFontFamily = browseButtonSettings.FontFamily;
         _browseButtonFontSize = browseButtonSettings.FontSize;
         _browseButtonFontBold = browseButtonSettings.FontBold;
+        _browseButtonTooltip = browseButtonSettings.Tooltip;
     }
 
     [ObservableProperty]
@@ -98,6 +99,9 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
     [ObservableProperty]
     private bool? _browseButtonFontBold;
 
+    [ObservableProperty]
+    private string _browseButtonTooltip;
+
     // Hergebruikt de kleurenkiezer van de basisklasse (WizardScreenEditorViewModel.PickColor,
     // protected static): geen eigen kopie nodig, deze klasse erft al van die basisklasse (anders
     // dan DefaultScreenEditorViewModel, die geen gedeelde basisklasse heeft).
@@ -114,5 +118,6 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
         FontFamily = BrowseButtonFontFamily,
         FontSize = BrowseButtonFontSize,
         FontBold = BrowseButtonFontBold,
+        Tooltip = BrowseButtonTooltip,
     };
 }

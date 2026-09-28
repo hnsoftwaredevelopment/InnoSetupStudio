@@ -10,10 +10,10 @@ namespace InnoSetupStudio.Core.Project;
 /// Effective*-eigenschappen): deze knop komt maar op één scherm voor, dus er is geen "ander
 /// scherm" waarvan een standaardwaarde zinvol zou zijn. Bewust ook geen Caption: Herbert heeft
 /// deze knop expliciet genoemd zonder Caption in de gewenste velden (2026-09-04) — alleen
-/// Enabled/Visible/TextColor/Font.
+/// Enabled/Visible/TextColor/Font(/Tooltip, backlogitem 3, sectie 17).
 ///
 /// Zelfde leeg/null-is-onveranderd-conventie als WizardScreenButtonSettings: een lege
-/// TextColor/FontFamily of null Enabled/Visible/FontSize/FontBold laat Inno Setup's eigen
+/// TextColor/FontFamily/Tooltip of null Enabled/Visible/FontSize/FontBold laat Inno Setup's eigen
 /// standaardgedrag/-uiterlijk voor deze knop intact.
 /// </summary>
 public sealed class BrowseButtonSettings
@@ -29,4 +29,6 @@ public sealed class BrowseButtonSettings
     public int? FontSize { get; set; }
 
     public bool? FontBold { get; set; }
+
+    public string Tooltip { get; set; } = string.Empty;
 }
