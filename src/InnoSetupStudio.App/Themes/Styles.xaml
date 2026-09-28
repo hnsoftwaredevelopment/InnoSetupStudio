@@ -1,5 +1,15 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="clr-namespace:InnoSetupStudio.App.Controls"
+                    xmlns:converters="clr-namespace:InnoSetupStudio.App.Converters">
+
+    <!-- Gebruikt door de Placeholder.Text-spooktekst hieronder (TextBox/ComboBox): een veld met
+         uitsluitend spaties telt ook als "leeg", net als ResolveCaption in
+         DefaultScreenEditorViewModel (CodeRabbit-opmerking op PR #16, 2026-09-28). Hier
+         gedeclareerd, vóór het eerste gebruik verderop in dit bestand: StaticResource kan niet
+         vooruitwijzen binnen één ResourceDictionary. -->
+    <converters:BlankStringToVisibilityConverter x:Key="BlankStringToVisibilityConverter" />
+    <converters:EditableBlankToVisibilityConverter x:Key="EditableBlankToVisibilityConverter" />
 
     <Style TargetType="{x:Type Button}">
         <Setter Property="Padding" Value="14,8" />
@@ -11,6 +21,27 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Button}">
+                    <!-- ControlTemplate.Resources hieronder: zonder deze override wint de globale
+                         TextBlock-stijl verderop in dit bestand (die elke TextBlock een vaste
+                         Brush.TextPrimary-kleur geeft) het van de Foreground die deze knop zelf
+                         zou moeten hebben. Content is hier meestal een kale string, WPF tekent die
+                         intern als TextBlock, en die TextBlock krijgt de globale stijl - een
+                         Style-Setter wint het namelijk van een via overerving doorgegeven waarde,
+                         ook al lijkt "gewoon Foreground zetten op de knop" dat te moeten
+                         overrulen. Was de oorzaak van Herberts melding (2026-09-28): de
+                         wizardknoppen-tekstkleur (EffectiveXxxButtonTextColor,
+                         WizardEditorWindow.xaml) kwam daardoor nooit in de voorvertoning terecht,
+                         terwijl het lettertype (waar geen vergelijkbare globale TextBlock-regel
+                         voor bestaat) wél altijd goed doorkwam. Geen BasedOn op de globale
+                         TextBlock-stijl hieronder: die stijl staat verderop in ditzelfde bestand
+                         en StaticResource kan niet vooruitwijzen binnen één ResourceDictionary; de
+                         globale stijl zet toch alleen Foreground, dus er is niets anders om over
+                         te nemen. -->
+                    <ControlTemplate.Resources>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}" />
+                        </Style>
+                    </ControlTemplate.Resources>
                     <Border x:Name="ButtonBorder" Background="{TemplateBinding Background}" CornerRadius="8"
                             Padding="{TemplateBinding Padding}">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -56,9 +87,43 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type TextBox}">
+                    <!-- Herbert meldde 2026-09-28 (met een vergelijkingsscreenshot: het begin van
+                         zijn eigen ingetikte tekst in het ene veld versus de spooktekst in een
+                         leeg veld ernaast) dat de spooktekst een paar posities te ver naar links
+                         stond t.o.v. waar de echte cursor/tekst landt. Oorzaak: ScrollViewer
+                         (PART_ContentHost, de echte tekst) zat genest ín de Border, PlaceholderText
+                         zat ernaast als sibling van diezelfde Border in een buitenste Grid - een
+                         andere plek in de boom, ook al leek de Margin identiek. Nu allebei
+                         rechtstreeks kind van dezelfde Grid, zelf weer het enige kind van Border:
+                         gegarandeerd dezelfde Margin vanaf hetzelfde punt, dus gegarandeerd
+                         dezelfde startpositie. -->
                     <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8">
-                        <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" />
+                        <Grid>
+                            <!-- PART_ContentHost krijgt hier bewust GEEN Margin="{TemplateBinding
+                                 Padding}": WPF's interne tekstweergave (TextBoxView) past de
+                                 TextBox's Padding-eigenschap zelf al toe op de echte tekst/cursor,
+                                 los van wat wij hier op de ScrollViewer zetten. Die twee opgeteld
+                                 gaf dubbele inspringing voor de echte tekst t.o.v. de spooktekst
+                                 hieronder (die maar één Margin krijgt) - exact de 2-posities-te-
+                                 ver-naar-links die Herbert meldde (2026-09-28, met vergelijkings-
+                                 screenshot: eigen tekst in het ene veld naast de spooktekst in het
+                                 andere). -->
+                            <ScrollViewer x:Name="PART_ContentHost" />
+                            <!-- Placeholder.Text (Herberts feedback 2026-09-28, zie dat bestand):
+                                 alleen zichtbaar zolang Text leeg is, dus nooit in de weg van wat de
+                                 gebruiker daadwerkelijk heeft ingevuld. Standaard leeg (zie
+                                 PropertyMetadata) dus onzichtbaar/onschadelijk voor elke TextBox die
+                                 deze eigenschap niet zet. Visibility rechtstreeks gebonden (i.p.v.
+                                 een Trigger op Text=""): BlankStringToVisibilityConverter behandelt
+                                 ook een tekst van enkel spaties als "leeg", een exacte
+                                 Trigger-match op "" kon dat niet. -->
+                            <TextBlock x:Name="PlaceholderText" Text="{TemplateBinding controls:Placeholder.Text}"
+                                       Foreground="{DynamicResource Brush.TextSecondary}"
+                                       Margin="{TemplateBinding Padding}" VerticalAlignment="Center"
+                                       IsHitTestVisible="False"
+                                       Visibility="{TemplateBinding Text, Converter={StaticResource BlankStringToVisibilityConverter}}" />
+                        </Grid>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
@@ -175,6 +240,29 @@
                                  Margin="10,8,26,8"
                                  VerticalAlignment="Center" HorizontalAlignment="Stretch"
                                  Visibility="Collapsed" />
+                        <!-- Zelfde Placeholder.Text-mechanisme als de gewone TextBox hierboven
+                             (zie InnoSetupStudio.App.Controls.Placeholder), hier los toegevoegd
+                             omdat PART_EditableTextBox met Style="{x:Null}" bewust geen enkele
+                             stijl - dus ook niet de TextBox-ControlTemplate met de placeholder
+                             erin - overneemt. Alleen zichtbaar bij IsEditable="True" (anders staat
+                             PART_EditableTextBox zelf ook al op Collapsed, zie de trigger
+                             hieronder) én een lege Text, dus nooit in de weg van een echte
+                             uitklaplijst-selectie. -->
+                        <TextBlock x:Name="PlaceholderText" Text="{TemplateBinding controls:Placeholder.Text}"
+                                   Foreground="{DynamicResource Brush.TextSecondary}"
+                                   Margin="10,8,26,8"
+                                   VerticalAlignment="Center" HorizontalAlignment="Left"
+                                   IsHitTestVisible="False">
+                            <!-- EditableBlankToVisibilityConverter i.p.v. de eerdere MultiTrigger
+                                 op Text="": behandelt ook een tekst van enkel spaties als "leeg",
+                                 net als de gewone TextBox hierboven. -->
+                            <TextBlock.Visibility>
+                                <MultiBinding Converter="{StaticResource EditableBlankToVisibilityConverter}">
+                                    <Binding Path="IsEditable" RelativeSource="{RelativeSource TemplatedParent}" />
+                                    <Binding Path="Text" RelativeSource="{RelativeSource TemplatedParent}" />
+                                </MultiBinding>
+                            </TextBlock.Visibility>
+                        </TextBlock>
                         <Path HorizontalAlignment="Right" Margin="0,0,10,0" VerticalAlignment="Center"
                               Data="M0,0 L6,6 L12,0" Stroke="{DynamicResource Brush.TextSecondary}"
                               StrokeThickness="1.5" IsHitTestVisible="False" />

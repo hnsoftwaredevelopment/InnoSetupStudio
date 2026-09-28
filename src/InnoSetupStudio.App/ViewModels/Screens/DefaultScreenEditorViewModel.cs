@@ -46,25 +46,31 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
         _assetService = assetService;
         _wizardImageFile = wizardImageFile;
         _wizardSmallImageFile = wizardSmallImageFile;
-        _backButtonCaption = settings.BackButtonCaption;
+        // NormalizeWhitespace op de negen tekstvelden (Caption/TextColor/FontFamily x 3): deze
+        // backingvelden worden hier rechtstreeks gezet, dus zonder deze aanroep zou een ouder,
+        // al opgeslagen project met een alleen-witruimte-waarde nooit door de OnXxxChanged-hooks
+        // verderop komen (CodeRabbit-opmerking op PR #16, 2026-09-28) - TextColor/FontFamily zijn
+        // hier extra belangrijk omdat de OVERIGE schermen deze via Defaults.BackButtonTextColor
+        // enz. als terugvalwaarde lezen (zie WizardScreenEditorViewModel.EffectiveBackButtonTextColor).
+        _backButtonCaption = NormalizeWhitespace(settings.BackButtonCaption);
         _backButtonEnabled = settings.BackButtonEnabled;
         _backButtonVisible = settings.BackButtonVisible;
-        _backButtonTextColor = settings.BackButtonTextColor;
-        _backButtonFontFamily = settings.BackButtonFontFamily;
+        _backButtonTextColor = NormalizeWhitespace(settings.BackButtonTextColor);
+        _backButtonFontFamily = NormalizeWhitespace(settings.BackButtonFontFamily);
         _backButtonFontSize = settings.BackButtonFontSize;
         _backButtonFontBold = settings.BackButtonFontBold;
-        _nextButtonCaption = settings.NextButtonCaption;
+        _nextButtonCaption = NormalizeWhitespace(settings.NextButtonCaption);
         _nextButtonEnabled = settings.NextButtonEnabled;
         _nextButtonVisible = settings.NextButtonVisible;
-        _nextButtonTextColor = settings.NextButtonTextColor;
-        _nextButtonFontFamily = settings.NextButtonFontFamily;
+        _nextButtonTextColor = NormalizeWhitespace(settings.NextButtonTextColor);
+        _nextButtonFontFamily = NormalizeWhitespace(settings.NextButtonFontFamily);
         _nextButtonFontSize = settings.NextButtonFontSize;
         _nextButtonFontBold = settings.NextButtonFontBold;
-        _cancelButtonCaption = settings.CancelButtonCaption;
+        _cancelButtonCaption = NormalizeWhitespace(settings.CancelButtonCaption);
         _cancelButtonEnabled = settings.CancelButtonEnabled;
         _cancelButtonVisible = settings.CancelButtonVisible;
-        _cancelButtonTextColor = settings.CancelButtonTextColor;
-        _cancelButtonFontFamily = settings.CancelButtonFontFamily;
+        _cancelButtonTextColor = NormalizeWhitespace(settings.CancelButtonTextColor);
+        _cancelButtonFontFamily = NormalizeWhitespace(settings.CancelButtonFontFamily);
         _cancelButtonFontSize = settings.CancelButtonFontSize;
         _cancelButtonFontBold = settings.CancelButtonFontBold;
     }
@@ -172,6 +178,103 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
     [ObservableProperty]
     private bool? _cancelButtonVisible;
 
+    // EffectiveXxxButtonCaption hieronder: zelfde naam als WizardScreenEditorViewModel's
+    // drielaags-resolutie (geen gedeelde basisklasse, zie de klassencommentaar hierboven), maar
+    // hier maar twee lagen - dit scherm ÍS de bron van de standaardwaarde, dus eigen tekst indien
+    // ingevuld, anders meteen Inno Setup's eigen ingebouwde tekst. Herberts feedback (2026-09-28):
+    // ButtonSettingsSectionTemplate (WizardEditorWindow.xaml) is dezelfde template voor dit scherm
+    // én de drie echte schermen, en gebruikt deze eigenschap als Placeholder.Text (zie dat
+    // bestand) zodat ook hier zichtbaar is wat er geldt zolang het eigen veld leeg is - dus ook op
+    // het Standaardscherm zelf, niet alleen in de schermen die ervan overerven.
+
+    /// <summary>Wat er geldt op de Terug-knop zolang <see cref="BackButtonCaption"/> leeg is.</summary>
+    public string EffectiveBackButtonCaption => ResolveCaption(BackButtonCaption, LocalizationManager.Instance["ButtonWizardBack"]);
+
+    /// <summary>Zie <see cref="EffectiveBackButtonCaption"/>, maar dan voor de Volgende-knop.</summary>
+    public string EffectiveNextButtonCaption => ResolveCaption(NextButtonCaption, LocalizationManager.Instance["ButtonWizardNext"]);
+
+    /// <summary>Zie <see cref="EffectiveBackButtonCaption"/>, maar dan voor de Annuleren-knop.</summary>
+    public string EffectiveCancelButtonCaption => ResolveCaption(CancelButtonCaption, LocalizationManager.Instance["ButtonWizardCancel"]);
+
+    private static string ResolveCaption(string own, string builtIn) => !string.IsNullOrWhiteSpace(own) ? own : builtIn;
+
+    // EffectiveXxxButtonTextColor/-FontFamily/-FontSize hieronder bestaan puur zodat
+    // ButtonSettingsSectionTemplate dezelfde Placeholder.Text-bindingen kan gebruiken als op de
+    // drie echte schermen (zie WizardScreenEditorViewModel), zonder WPF-bindingsfouten wanneer dit
+    // scherm de DataContext is. Anders dan Caption hierboven hebben deze géén zinvolle
+    // terugvalwaarde om te tonen: leeg hier betekent Inno Setup's eigen, niet als kleur/lettertype
+    // te benoemen standaarduiterlijk, dus altijd leeg/null - geen placeholder zichtbaar.
+
+    /// <summary>Altijd leeg: er is geen terugvaltekstkleur om te tonen op het Standaardscherm
+    /// zelf.</summary>
+    public string EffectiveBackButtonTextColor => string.Empty;
+
+    /// <summary>Zie <see cref="EffectiveBackButtonTextColor"/>, maar dan voor de Volgende-knop.</summary>
+    public string EffectiveNextButtonTextColor => string.Empty;
+
+    /// <summary>Zie <see cref="EffectiveBackButtonTextColor"/>, maar dan voor de Annuleren-knop.</summary>
+    public string EffectiveCancelButtonTextColor => string.Empty;
+
+    /// <summary>Altijd leeg: geen terugvallettertype om te tonen op het Standaardscherm zelf.</summary>
+    public string EffectiveBackButtonFontFamily => string.Empty;
+
+    /// <summary>Zie <see cref="EffectiveBackButtonFontFamily"/>, maar dan voor de Volgende-knop.</summary>
+    public string EffectiveNextButtonFontFamily => string.Empty;
+
+    /// <summary>Zie <see cref="EffectiveBackButtonFontFamily"/>, maar dan voor de Annuleren-knop.</summary>
+    public string EffectiveCancelButtonFontFamily => string.Empty;
+
+    /// <summary>Altijd null: geen terugvallettergrootte om te tonen op het Standaardscherm
+    /// zelf.</summary>
+    public int? EffectiveBackButtonFontSize => null;
+
+    /// <summary>Zie <see cref="EffectiveBackButtonFontSize"/>, maar dan voor de Volgende-knop.</summary>
+    public int? EffectiveNextButtonFontSize => null;
+
+    /// <summary>Zie <see cref="EffectiveBackButtonFontSize"/>, maar dan voor de Annuleren-knop.</summary>
+    public int? EffectiveCancelButtonFontSize => null;
+
+    // Alleen-witruimte-invoer terugbrengen naar leeg (Herberts melding, 2026-09-28): zonder dit
+    // bleven de echte spaties in de TextBox staan terwijl de spooktekst ("Volgende >" enz.) er
+    // toch al overheen werd getoond (ResolveCaption behandelt witruimte al als "niet ingevuld"),
+    // wat een verwarrende invoegcursor middenin de spooktekst gaf (bv. "Vo|lgende >" i.p.v. aan
+    // het begin) — die spaties waren immers nog altijd echte, klikbare tekst.
+    //
+    // NormalizeWhitespace (pure) wordt ook in de constructor gebruikt: die zet de backingvelden
+    // rechtstreeks vanuit de geladen WizardScreenButtonSettings, dus zonder deze aanroep zou een
+    // ouder project met een alleen-witruimte-waarde de OnXxxChanged-hook hieronder nooit passeren
+    // (CodeRabbit-opmerking op PR #16, 2026-09-28). NormalizeWhitespaceOnly (met setter) blijft
+    // voor de hooks zelf: roept de generated setter opnieuw aan (leeg voldoet niet meer aan de
+    // voorwaarde), dus geen oneindige lus.
+    private static string NormalizeWhitespace(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? string.Empty : value;
+
+    private static void NormalizeWhitespaceOnly(string? value, Action<string> setter)
+    {
+        if (!string.IsNullOrEmpty(value) && string.IsNullOrWhiteSpace(value))
+        {
+            setter(string.Empty);
+        }
+    }
+
+    partial void OnBackButtonCaptionChanged(string value)
+    {
+        NormalizeWhitespaceOnly(value, v => BackButtonCaption = v);
+        OnPropertyChanged(nameof(EffectiveBackButtonCaption));
+    }
+
+    partial void OnNextButtonCaptionChanged(string value)
+    {
+        NormalizeWhitespaceOnly(value, v => NextButtonCaption = v);
+        OnPropertyChanged(nameof(EffectiveNextButtonCaption));
+    }
+
+    partial void OnCancelButtonCaptionChanged(string value)
+    {
+        NormalizeWhitespaceOnly(value, v => CancelButtonCaption = v);
+        OnPropertyChanged(nameof(EffectiveCancelButtonCaption));
+    }
+
     // Zelfde tekstkleur-/lettertypevelden als WizardScreenEditorViewModel (backlogitem 3, sectie
     // 14), ook hier zonder Effective*-resolutie: dit scherm ÍS de bron van de standaardwaarde.
     // Achtergrondkleur en bitmap zijn bewust niet opgenomen (zie WizardScreenButtonSettings).
@@ -211,6 +314,25 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
 
     [ObservableProperty]
     private bool? _cancelButtonFontBold;
+
+    // Zelfde alleen-witruimte-normalisatie als bij de captions hierboven, nu voor TextColor/
+    // FontFamily: zonder dit zou ReadButtonSettings() (en dus het opgeslagen project) een
+    // alleen-witruimte-waarde doorgeven als "wel een eigen kleur/lettertype ingesteld" aan de
+    // OVERIGE schermen, die dit scherm als terugvalwaarde lezen via Defaults.BackButtonTextColor
+    // enz. (CodeRabbit-opmerking op PR #16, 2026-09-28). Geen Effective*-heropbouw nodig zoals bij
+    // Caption: dit scherm heeft zelf geen zichtbare terugvaltekst voor deze twee velden.
+
+    partial void OnBackButtonTextColorChanged(string value) => NormalizeWhitespaceOnly(value, v => BackButtonTextColor = v);
+
+    partial void OnNextButtonTextColorChanged(string value) => NormalizeWhitespaceOnly(value, v => NextButtonTextColor = v);
+
+    partial void OnCancelButtonTextColorChanged(string value) => NormalizeWhitespaceOnly(value, v => CancelButtonTextColor = v);
+
+    partial void OnBackButtonFontFamilyChanged(string value) => NormalizeWhitespaceOnly(value, v => BackButtonFontFamily = v);
+
+    partial void OnNextButtonFontFamilyChanged(string value) => NormalizeWhitespaceOnly(value, v => NextButtonFontFamily = v);
+
+    partial void OnCancelButtonFontFamilyChanged(string value) => NormalizeWhitespaceOnly(value, v => CancelButtonFontFamily = v);
 
     // Zelfde kleurenkiezer als WizardScreenEditorViewModel.PickColor (zie daar voor de reden:
     // Herberts feedback 2026-09-04 over foutgevoelige hex-invoer); geen gedeelde basisklasse (zie
