@@ -1381,3 +1381,60 @@ gebouwd wordt:
 **Status.** Backlogitem, vastgelegd op Herberts expliciete verzoek. Nog niet gepland, nog niet
 ontworpen — net als sectie 19 zelf al aangaf: dit vraagt om een eigen ontwerp voordat het gebouwd
 wordt, geen aanpassing om terloops mee te nemen bij een andere feature.
+
+## 21. IDE-schil herontwerp: van losse vensters naar één werkgebied — voorstel, nog niet besloten (2026-09-29)
+
+**Aanleiding.** Herbert, direct na het testen van de talenselectie: de huidige opzet van het
+hoofdscherm voelt niet meer ideaal aan, en wordt rommeliger zodra het scherm voor meertalige
+knopteksten (sectie 20) erbij komt. Concreet genoemd: de taal- en thema-keuze van de IDE zelf staan
+nu bovenaan naast de projectacties, terwijl dat eigenlijk instellingen zijn; en de knoppenrij in
+het midden van `MainWindow` groeit met elke feature (nu zes knoppen: Nieuw project, Project
+openen, Wizardschermen, Schermeditor, Talen, Installer bouwen — de laatste nog niet eens
+aangesloten).
+
+**Huidige structuur (ter referentie, voor dit voorstel).** Drie vensters diep: `MainWindow` opent
+`WizardScreensWindow` (welke schermen doen mee) en `WizardEditorWindow` (schermlijst 180px |
+voorvertoning ~497px | eigenschappenpaneel `*`, min 260px) als losse dialogen; binnen
+`WizardEditorWindow` opent een knopje per knop weer een derde venster, `ButtonPropertiesWindow`
+(kleur, lettertype, tooltip, enabled/zichtbaar). Nog een vierde laag (talen per knoptekst,
+sectie 20) bovenop dat derde venster zou dat nesten verder verdiepen.
+
+**Voorstel.** Eén blijvend zichtbaar werkgebied in `MainWindow` in plaats van losse dialogen:
+
+- **Bovenbalk (vast, over de volledige breedte).** Projecttitel/icoon links. Daarna de
+  projectacties die er nu ook al zijn: Nieuw project, Project openen, Installer bouwen. Nieuw
+  daarbij: een knop Projectinstellingen die alleen actief is bij een geopend project — dat bestaat
+  vandaag niet als losse actie, Projectinstellingen opent nu alleen automatisch direct na Nieuw/
+  Openen, er is geen weg terug erin zonder het project opnieuw te openen. Helemaal rechts een
+  tandwiel-knop voor Instellingen: taal en thema van de IDE zelf, weg van de projectacties.
+- **Linkerkolom (vast, zoals de huidige 180px-schermlijst).** De schermselectie: dezelfde lijst als
+  nu in `WizardEditorWindow` (Standaardscherm vast bovenaan, daaronder de echte installerschermen
+  in Inno Setup's volgorde), maar nu met een aan/uit-vinkje per rij — dat vervangt de aparte
+  `WizardScreensWindow`. Eronder een compacte voorvertoning (de "scherminhoud") van het
+  geselecteerde scherm, kleiner dan de huidige 497px-voorvertoning in `WizardEditorWindow`.
+- **Middendeel (de rest van de breedte).** Het eigenschappenpaneel dat nu rechts in
+  `WizardEditorWindow` staat (Caption/kleur/lettertype per knop, de twee wizardafbeeldingen bij het
+  Standaardscherm) verhuist hierheen en krijgt daarmee de meeste ruimte in het venster — precies de
+  ruimte die het scherm voor meertalige knopteksten (sectie 20) nodig heeft, zonder dat daar een
+  eigen venster of een zevende hoofdscherm-knop voor nodig is.
+
+**Wat dit oplost.** Geen twee aparte dialoogvensters meer (`WizardScreensWindow`,
+`WizardEditorWindow`) voor iets dat inhoudelijk bij elkaar hoort. Taal/thema van de IDE apart van
+de projectacties. Ruimte voor sectie 20 ontstaat vanzelf in het middenpaneel in plaats van er nog
+een laag bovenop te stapelen.
+
+**Nog open, Herbert beslist.**
+
+- **Talen (sectie 19).** Projecteigenschap, geen IDE-instelling, hoort dus niet achter het
+  tandwiel. Twee opties: een tweede tabblad boven de schermselectie-lijst links ("Schermen" /
+  "Talen"), of terug een sectie in Projectinstellingen.
+- **`ButtonPropertiesWindow`.** Blijft dat een eigen (derde) venster zoals nu, of gaan die velden
+  ook rechtstreeks in het middenpaneel nu daar toch meer ruimte is? Dat raakt sectie 20 direct: een
+  taal-tabblad zou dan in dit venster komen in plaats van in het middenpaneel.
+- **Installer bouwen.** In de bovenbalk zoals hierboven voorgesteld, of ergens anders?
+- **Projectinstellingen.** Blijft dat een eigen venster (zoals nu), of ook inline in het
+  hoofdscherm?
+
+**Volgorde.** Eerst deze schil bouwen, dan pas sectie 20 (meertalige knopteksten) — anders wordt
+dat scherm eerst in het oude patroon gebouwd en kort daarna overgedaan in het nieuwe. Nog geen
+besluit genomen om te starten; dit is vastlegging plus voorstel, net als sectie 14 destijds.
