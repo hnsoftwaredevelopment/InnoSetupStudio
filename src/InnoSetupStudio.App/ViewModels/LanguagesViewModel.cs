@@ -13,8 +13,19 @@ namespace InnoSetupStudio.App.ViewModels;
 /// </summary>
 public sealed partial class LanguagesViewModel : DirtyTrackingViewModel
 {
+    private readonly List<string> _unknownLanguageIds;
+
     public LanguagesViewModel(IReadOnlyList<string> supportedLanguageIds)
     {
+        // Bewaard om in ToSelection() terug te geven: een taal-id die niet (meer) in de catalogus
+        // staat (bijvoorbeeld een handmatig bewerkt projectbestand, of een toekomstige wijziging
+        // van InnoLanguageCatalog) krijgt hier geen rij en dus geen vinkje. Zonder deze lijst zou
+        // Opslaan zo'n onbekende id stilzwijgend laten vallen, ook als de gebruiker niets aan de
+        // talenselectie zelf wijzigde (CodeRabbit, PR #18).
+        _unknownLanguageIds = supportedLanguageIds
+            .Where(id => !InnoLanguageCatalog.Languages.Any(l => l.Id == id))
+            .ToList();
+
         Languages = InnoLanguageCatalog.Languages
             .Select(l => new LanguageRow(l.Id, l.DisplayName, l.IsBuiltIn, supportedLanguageIds.Contains(l.Id)))
             .ToList();
@@ -42,9 +53,13 @@ public sealed partial class LanguagesViewModel : DirtyTrackingViewModel
     private void Cancel() => RequestClose?.Invoke(this, false);
 
     /// <summary>Bouwt de nieuwe lijst taal-id's met de huidige vinkjes. Engels staat er altijd in,
-    /// ongeacht de staat van zijn (uitgeschakelde) vinkje in de UI.</summary>
+    /// ongeacht de staat van zijn (uitgeschakelde) vinkje in de UI. Taal-id's die al in het
+    /// project stonden maar niet in <see cref="InnoLanguageCatalog"/> voorkomen (dus geen eigen
+    /// rij/vinkje hebben) blijven ongewijzigd behouden — anders zou Opslaan zo'n onbekende id
+    /// stilzwijgend laten vallen.</summary>
     public List<string> ToSelection() => Languages
         .Where(l => l.IsLocked || l.IsSelected)
         .Select(l => l.Id)
+        .Concat(_unknownLanguageIds)
         .ToList();
 }
