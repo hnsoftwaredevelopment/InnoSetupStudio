@@ -3,12 +3,63 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:loc="clr-namespace:InnoSetupStudio.App.Localization"
         xmlns:converters="clr-namespace:InnoSetupStudio.App.Converters"
-        Title="{loc:Loc ProjectSettingsTitle}" Height="660" Width="600" Icon="/Resources/AppIcon.ico"
-        MinHeight="500" MinWidth="500"
+        Title="{loc:Loc ProjectSettingsTitle}" Height="660" Width="640" Icon="/Resources/AppIcon.ico"
+        MinHeight="500" MinWidth="520"
         WindowStartupLocation="CenterOwner" ResizeMode="CanResizeWithGrip" ShowInTaskbar="False"
         Background="{DynamicResource Brush.Background}">
     <Window.Resources>
         <converters:IconKeyToGeometryConverter x:Key="IconKeyToGeometryConverter" />
+
+        <!-- Schermen/Talen-tabblad (sectie 21): dezelfde rij-template als voorheen in de eigen
+             WizardScreensWindow/LanguagesWindow, nu hergebruikt als DataTemplate hier. Talen heeft
+             een extra IsLocked-trigger (Engels blijft aangevinkt en uitgeschakeld), Schermen niet. -->
+        <DataTemplate x:Key="CheckableRowTemplate">
+            <Border BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,0,0,1" Padding="0,10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{Binding DisplayName}" VerticalAlignment="Center" FontSize="14" />
+                    <CheckBox Grid.Column="1" IsChecked="{Binding IsSelected}" VerticalAlignment="Center"
+                              AutomationProperties.Name="{Binding DisplayName}">
+                        <CheckBox.Style>
+                            <Style TargetType="CheckBox">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsLocked}" Value="True">
+                                        <Setter Property="IsEnabled" Value="False" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </CheckBox.Style>
+                    </CheckBox>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <!-- Wizardschermen-rij heeft geen IsLocked (elk scherm mag uit), maar wél IsEnabled als
+             eigenschapsnaam voor het vinkje zelf (WizardScreenRow) in plaats van IsSelected
+             (LanguageRow) — vandaar een tweede, bijna identieke template in plaats van hergebruik. -->
+        <DataTemplate x:Key="ScreenRowTemplate">
+            <Border BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,0,0,1" Padding="0,10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Width="32" Height="32" CornerRadius="4"
+                            Background="{DynamicResource Brush.SurfaceAlt}" Margin="0,0,12,0">
+                        <Path Data="{Binding IconKey, Converter={StaticResource IconKeyToGeometryConverter}}"
+                              Fill="{DynamicResource Brush.TextSecondary}" Stretch="Uniform" Width="16" Height="16" />
+                    </Border>
+                    <TextBlock Grid.Column="2" Text="{Binding DisplayName}" VerticalAlignment="Center" FontSize="14" />
+                    <CheckBox Grid.Column="3" IsChecked="{Binding IsEnabled}" VerticalAlignment="Center"
+                              AutomationProperties.Name="{Binding DisplayName}" />
+                </Grid>
+            </Border>
+        </DataTemplate>
     </Window.Resources>
     <DockPanel Margin="20">
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
@@ -34,8 +85,13 @@
             </Button>
         </StackPanel>
 
-        <ScrollViewer VerticalScrollBarVisibility="Auto" IsEnabled="{Binding CanEdit}">
-            <StackPanel>
+        <!-- Sectie 21: Schermen (voorheen WizardScreensWindow) en Talen (voorheen LanguagesWindow,
+             sectie 19) zijn hier tabbladen geworden — Herbert: "dit zie ik allemaal als
+             projectinstellingen". De Algemeen-tab hieronder is verder ongewijzigd. -->
+        <TabControl IsEnabled="{Binding CanEdit}">
+        <TabItem Header="{loc:Loc SectionGeneral}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="0,12,0,0">
                 <TextBlock Text="{loc:Loc SectionGeneral}" FontSize="15" FontWeight="Bold" Margin="0,0,0,12" />
 
                 <Grid Margin="0,0,0,10">
@@ -164,10 +220,32 @@
 
                 <!-- Wizardafbeeldingen (WizardImageFile/WizardSmallImageFile) stonden hier tot
                      backlogitem 1 (sectie 14): ze worden nu op het Standaardscherm in de
-                     schermeditor bewerkt (WizardEditorWindow.xaml,
+                     schermeditor bewerkt (ScreenEditorControl.xaml,
                      DefaultScreenPropertyPanelTemplate), samen met de andere pagina-brede
                      standaardwaarden, in plaats van hier los van die editor. -->
             </StackPanel>
         </ScrollViewer>
+        </TabItem>
+
+        <TabItem Header="{loc:Loc TabScreens}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="0,12,0,0">
+                    <TextBlock Text="{loc:Loc WizardScreensIntro}" TextWrapping="Wrap"
+                               Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,12" />
+                    <ItemsControl ItemsSource="{Binding WizardScreens}" ItemTemplate="{StaticResource ScreenRowTemplate}" />
+                </StackPanel>
+            </ScrollViewer>
+        </TabItem>
+
+        <TabItem Header="{loc:Loc LanguagesTitle}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="0,12,0,0">
+                    <TextBlock Text="{loc:Loc LanguagesIntro}" TextWrapping="Wrap"
+                               Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,12" />
+                    <ItemsControl ItemsSource="{Binding Languages}" ItemTemplate="{StaticResource CheckableRowTemplate}" />
+                </StackPanel>
+            </ScrollViewer>
+        </TabItem>
+        </TabControl>
     </DockPanel>
 </Window>

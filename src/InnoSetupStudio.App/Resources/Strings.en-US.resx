@@ -60,6 +60,21 @@
   <data name="ButtonBuildInstaller" xml:space="preserve">
     <value>Build installer</value>
   </data>
+  <data name="ButtonProjectSettings" xml:space="preserve">
+    <value>Project settings</value>
+  </data>
+  <data name="ButtonSettings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="TabScreens" xml:space="preserve">
+    <value>Screens</value>
+  </data>
+  <data name="LabelUnsavedChanges" xml:space="preserve">
+    <value>Unsaved changes</value>
+  </data>
   <data name="ProjectSettingsTitle" xml:space="preserve">
     <value>Project settings</value>
   </data>
@@ -211,7 +226,7 @@
     <value>Next &gt;</value>
   </data>
   <data name="ScreenEditorNoScreens" xml:space="preserve">
-    <value>None of the screens the screen editor supports yet (Welcome, License agreement, Select destination folder) are enabled. Enable them under Wizard screens to edit them here.</value>
+    <value>None of the screens the screen editor supports yet (Welcome, License agreement, Select destination folder) are enabled. Enable them under Project settings (Screens tab) to edit them here.</value>
   </data>
   <data name="ButtonWizardCancel" xml:space="preserve">
     <value>Cancel</value>

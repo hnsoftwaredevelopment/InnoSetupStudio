@@ -1,37 +1,48 @@
 using System.Windows;
+using System.Windows.Controls;
 using InnoSetupStudio.App.Localization;
 using InnoSetupStudio.App.ViewModels;
 using InnoSetupStudio.App.ViewModels.Screens;
 
 namespace InnoSetupStudio.App.Views;
 
-public partial class WizardEditorWindow : Window
+/// <summary>
+/// Voormalig WizardEditorWindow (sectie 21, IDE-schil herontwerp): permanent onderdeel van
+/// MainWindow in plaats van een apart dialoogvenster dat via een knop werd geopend. MainWindow
+/// zet <see cref="ViewModel"/> zodra er een actief project is (nieuw, geopend, of na een
+/// gewijzigde schermselectie/talenselectie in Projectinstellingen) en luistert naar
+/// <see cref="SaveClicked"/> om de wijzigingen daadwerkelijk op te slaan — deze control kent het
+/// actieve project of de opslaglogica zelf niet, dat blijft MainWindow's verantwoordelijkheid
+/// (zelfde scheiding als voorheen: WizardEditorViewModel.ApplyTo(project) werd ook toen al van
+/// buitenaf aangeroepen).
+/// </summary>
+public partial class ScreenEditorControl : UserControl
 {
-    public WizardEditorViewModel ViewModel { get; }
-
-    public WizardEditorWindow(WizardEditorViewModel viewModel)
+    public ScreenEditorControl()
     {
         InitializeComponent();
-
-        ViewModel = viewModel;
-        DataContext = viewModel;
-        viewModel.RequestClose += OnRequestClose;
     }
 
-    private void OnRequestClose(object? sender, bool saved)
+    public WizardEditorViewModel? ViewModel
     {
-        DialogResult = saved;
-        Close();
+        get => DataContext as WizardEditorViewModel;
+        set => DataContext = value;
     }
 
-    // Knop-eigenschappenscherm (backlogitem 3, sectie 17): het properties-knopje achter elk van
-    // de drie tekstvelden (Terug/Volgende/Annuleren) in ButtonSettingsSectionTemplate roept dit
-    // aan met zijn Tag ("Back"/"Next"/"Cancel") en de DataContext van dat tekstveld-rijtje, die
-    // via de gedeelde template zowel een WizardScreenEditorViewModel (Welkom/Licentie/Bestemming,
-    // drielaagse Effective*-resolutie) als een DefaultScreenEditorViewModel (het Standaardscherm
-    // zelf, tweelaags-eigen) kan zijn - vandaar de pattern-match hieronder in plaats van één
-    // gedeelde basisklasse-aanroep (zie ButtonPropertiesViewModel voor waarom dat bewust niet is
-    // geherstructureerd).
+    /// <summary>Vuurt wanneer de gebruiker op de inline Opslaan-knop klikt. MainWindow past de
+    /// wijzigingen toe op het actieve project (ViewModel.ApplyTo), slaat op, en zet IsDirty pas
+    /// na een geslaagde save terug op false.</summary>
+    public event EventHandler? SaveClicked;
+
+    private void SaveButton_Click(object sender, RoutedEventArgs e) => SaveClicked?.Invoke(this, EventArgs.Empty);
+
+    // Knop-eigenschappenscherm (backlogitem 3, sectie 17; blijft een eigen venster, sectie 21):
+    // het properties-knopje achter elk van de drie tekstvelden (Terug/Volgende/Annuleren) in
+    // ButtonSettingsSectionTemplate roept dit aan met zijn Tag ("Back"/"Next"/"Cancel") en de
+    // DataContext van dat tekstveld-rijtje, die via de gedeelde template zowel een
+    // WizardScreenEditorViewModel (Welkom/Licentie/Bestemming, drielaagse Effective*-resolutie)
+    // als een DefaultScreenEditorViewModel (het Standaardscherm zelf, tweelaags-eigen) kan zijn -
+    // vandaar de pattern-match hieronder in plaats van één gedeelde basisklasse-aanroep.
     private void ButtonProperties_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not FrameworkElement { Tag: string kind } element)
@@ -56,7 +67,7 @@ public partial class WizardEditorWindow : Window
     // handler in plaats van de Tag-gebaseerde switch hierboven, want er is hier maar één knop.
     private void BrowseButtonProperties_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement { DataContext: SelectDestinationPageEditorViewModel browseVm } )
+        if (sender is FrameworkElement { DataContext: SelectDestinationPageEditorViewModel browseVm })
         {
             ShowButtonPropertiesDialog(BuildForBrowseButton(browseVm));
         }
@@ -64,7 +75,7 @@ public partial class WizardEditorWindow : Window
 
     private void ShowButtonPropertiesDialog(ButtonPropertiesViewModel viewModel)
     {
-        var window = new ButtonPropertiesWindow(viewModel) { Owner = this };
+        var window = new ButtonPropertiesWindow(viewModel) { Owner = Window.GetWindow(this) };
         window.ShowDialog();
     }
 
@@ -108,11 +119,7 @@ public partial class WizardEditorWindow : Window
     };
 
     // DefaultScreenEditorViewModel heeft geen EffectiveXxxButtonFontBold (geen cascade, dit
-    // scherm ÍS de bron van de standaardwaarde - zelfde reden als de string.Empty/null bij
-    // EffectiveXxxButtonFontFamily/-FontSize daar), dus hier steeds "null" als effectiveFontBold:
-    // de voorvertoning in dit dialoogvenster valt dan simpelweg terug op de knop zijn eigen,
-    // mogelijk onbepaalde FontBold, precies zoals de echte voorvertoning in
-    // WizardEditorWindow.xaml voor het Standaardscherm dat ook doet.
+    // scherm ÍS de bron van de standaardwaarde), dus hier steeds "null" als effectiveFontBold.
     private static ButtonPropertiesViewModel BuildForDefaultScreenButton(DefaultScreenEditorViewModel vm, string kind) => kind switch
     {
         "Back" => new ButtonPropertiesViewModel(
@@ -148,13 +155,6 @@ public partial class WizardEditorWindow : Window
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Onbekende knop-Tag op het properties-knopje."),
     };
 
-    // Bladerknop (BrowseButtonSettings): geen Caption en geen enkele Effective*-cascade (zie
-    // SelectDestinationPageEditorViewModel - dit is de knop zijn eigen, hoogste niveau, net als de
-    // Terug/Volgende/Annuleren-velden op het Standaardscherm zelf), dus lege/null terugvalwaarden
-    // voor de Effective*-parameters (geen grijze hint-tekst te tonen) en de
-    // HintButtonTriStateDefaultScreen-bewoording rechtstreeks (zelfde reden als het
-    // Standaardscherm: "onbepaald" betekent hier rechtstreeks Inno Setup's eigen standaardgedrag,
-    // niet "neemt de waarde van het Standaardscherm over").
     private static ButtonPropertiesViewModel BuildForBrowseButton(SelectDestinationPageEditorViewModel vm) => new(
         BuildDialogTitle("SectionBrowseButton"), hasCaption: false,
         LocalizationManager.Instance["HintButtonTriStateDefaultScreen"],

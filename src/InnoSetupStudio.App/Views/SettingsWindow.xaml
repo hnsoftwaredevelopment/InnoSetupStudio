@@ -1,0 +1,22 @@
+<Window x:Class="InnoSetupStudio.App.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="clr-namespace:InnoSetupStudio.App.Localization"
+        Title="{loc:Loc SettingsTitle}" Height="220" Width="360" Icon="/Resources/AppIcon.ico"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize" ShowInTaskbar="False"
+        Background="{DynamicResource Brush.Background}">
+    <!-- Losgetrokken uit MainWindow.xaml (sectie 21, IDE-schil herontwerp): taal en thema van de
+         IDE zelf zijn geen projectinstelling en hoorden dus niet tussen de projectacties in de
+         bovenbalk. App.xaml.cs past de opgeslagen taal/thema al toe vóórdat MainWindow ooit
+         verschijnt, dus dit venster hoeft bij het openen niets opnieuw toe te passen — het toont
+         alleen de huidige keuze en reageert op een wijziging, exact zoals de twee ComboBoxen dat
+         voorheen rechtstreeks in MainWindow deden. -->
+    <StackPanel Margin="20">
+        <TextBlock Text="{loc:Loc MenuLanguage}" Margin="0,0,0,4" />
+        <ComboBox x:Name="LanguageComboBox" Margin="0,0,0,16"
+                  SelectionChanged="LanguageComboBox_SelectionChanged" />
+
+        <TextBlock Text="{loc:Loc MenuTheme}" Margin="0,0,0,4" />
+        <ComboBox x:Name="ThemeComboBox" SelectionChanged="ThemeComboBox_SelectionChanged" />
+    </StackPanel>
+</Window>

@@ -1479,3 +1479,42 @@ beantwoord:
 5. `ButtonPropertiesWindow` blijft bestaan; wordt de plek voor sectie 20 (talen per knoptekst).
 
 Nog geen besluit genomen om hiermee te starten — Herbert bepaalt wanneer.
+
+**Gebouwd (2026-09-29), op `feature/ide-shell-redesign`.** Het ontwerp hierboven is één-op-één
+geïmplementeerd:
+
+- `SettingsWindow` (nieuw): taal/thema van de IDE, letterlijk verhuisd uit MainWindow.xaml.cs. Er
+  hoeft bij het openen niets opnieuw toegepast te worden — App.xaml.cs past de opgeslagen taal/
+  thema al toe vóórdat MainWindow ooit verschijnt, dit venster toont alleen de huidige keuze.
+- `ScreenEditorControl` (nieuw, UserControl): de volledige inhoud van het voormalige
+  `WizardEditorWindow` (schermlijst, voorvertoning, instellingenpaneel, alle resources/templates),
+  nu permanent zichtbaar in MainWindow in plaats van een dialoogvenster. De Opslaan/Annuleren-
+  dialoogbalk is vervangen door een inline Opslaan-knop (actief zolang `IsDirty`) met een "niet-
+  opgeslagen wijzigingen"-label ernaast — bewust géén automatisch opslaan bij elke toetsaanslag,
+  zie de toelichting in ScreenEditorControl.xaml. `ButtonPropertiesWindow` blijft ongewijzigd een
+  eigen venster (optie A, Herberts beslissing hierboven).
+- `ProjectSettingsWindow`: drie tabbladen (Algemeen/Schermen/Talen) in plaats van één lange
+  ScrollViewer. Schermen en Talen hergebruiken `WizardScreensViewModel`/`LanguagesViewModel` als
+  sub-viewmodel in `ProjectSettingsViewModel` — hun eigen Save/Cancel/RequestClose blijven
+  ongebruikt, dit venster stuurt zijn eigen Opslaan/Annuleren aan.
+- **Bugfix, gevonden tijdens het bouwen:** `ProjectSettingsViewModel.SaveAsync` bouwde altijd een
+  volledig nieuw `InstallerProject`-object en gaf `SupportedLanguageIds` daarbij nooit door. Elke
+  keer dat iemand Projectinstellingen opsloeg, viel de talenselectie stilzwijgend terug op alleen
+  Engels (de eigen standaardwaarde van dat veld) — dezelfde soort bug als de knopinstellingen-bug
+  uit sectie 16, nu voor Talen. Opgelost als onderdeel van dezelfde wijziging die Talen sowieso al
+  bewerkbaar moest maken in dit scherm.
+- `MainWindow`: bovenbalk (Nieuw project, Project openen, Projectinstellingen — nieuw: nu ook
+  bruikbaar bij een al actief project, niet alleen automatisch na Nieuw/Openen —, Installer
+  bouwen, en het instellingen-tandwiel rechts) plus `ScreenEditorControl` als hoofdinhoud zodra er
+  een actief project is, anders de welkomsttekst. `WizardScreensWindow`/`LanguagesWindow`/
+  `WizardEditorWindow` zijn verwijderd.
+- `WizardScreensViewModel`/`LanguagesViewModel`/`WizardEditorViewModel` zelf zijn ongewijzigd
+  gebleven (alleen hun vensters zijn vervangen); geen van de bestaande 21 tests raakte hierdoor.
+
+**Build- en testresultaat.** `dotnet build`: 0 waarschuwingen, 0 fouten. `dotnet test`: 21/21
+geslaagd (ongewijzigd — deze wijziging raakt alleen WPF-vensters/viewmodel-bekabeling in
+`InnoSetupStudio.App`, niet de geteste logica in `InnoSetupStudio.Core`). De gebouwde
+`InnoSetupStudio.exe` start zonder crash. Een volledige interactieve doorloop van de nieuwe
+indeling (bovenbalk, schermeditor inline, Projectinstellingen-tabbladen) kon in deze sessie niet
+automatisch getest worden (geen UI-automatiseringstool voor dit bureaubladvenster beschikbaar) —
+Herbert wordt gevraagd dit handmatig te controleren voordat de PR wordt samengevoegd.
