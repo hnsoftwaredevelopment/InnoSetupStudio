@@ -1438,3 +1438,22 @@ een laag bovenop te stapelen.
 **Volgorde.** Eerst deze schil bouwen, dan pas sectie 20 (meertalige knopteksten) — anders wordt
 dat scherm eerst in het oude patroon gebouwd en kort daarna overgedaan in het nieuwe. Nog geen
 besluit genomen om te starten; dit is vastlegging plus voorstel, net als sectie 14 destijds.
+
+**Beslissingen van Herbert (2026-09-29), na het voorstel hierboven.**
+
+- **Installer bouwen** — bevestigd in de bovenbalk, zoals voorgesteld.
+- **Talen (sectie 19) én Wizardschermen (welke schermen meedoen)** — beide naar
+  Projectinstellingen, niet als aparte laag in de linkerkolom. Herberts eigen woorden: "Dit zie ik
+  allemaal als projectinstellingen." Dat wijzigt de linkerkolom uit het voorstel hierboven: die
+  wordt puur een navigatielijst van de al ingeschakelde schermen (Standaardscherm vast bovenaan),
+  zonder aan/uit-vinkjes — welk scherm meedoet, wordt voortaan in Projectinstellingen bepaald,
+  samen met de talenselectie. De compacte voorvertoning ("scherminhoud") onder die lijst blijft
+  zoals voorgesteld. Projectinstellingen wordt zo de plek voor alles wat maar zelden verandert
+  (algemene projectgegevens, welke schermen, welke talen); de linkerkolom en het middenpaneel in
+  het hoofdscherm blijven voor het daadwerkelijke, veelvuldige bewerken van een scherm dat al aan
+  staat.
+
+**Nog open.** `ButtonPropertiesWindow` (kleur/lettertype/tooltip/enabled/zichtbaar per knop) —
+blijft dat een eigen venster zoals nu, of gaan die velden rechtstreeks in het middenpaneel nu daar
+meer ruimte is? Dit bepaalt waar sectie 20 (talen per knoptekst) landt: in dat venster, of in het
+middenpaneel zelf.
