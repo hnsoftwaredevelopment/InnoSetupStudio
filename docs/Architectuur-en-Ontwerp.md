@@ -1324,3 +1324,60 @@ UI-automatiseringstool voor dit bureaubladvenster beschikbaar) — Herbert wordt
 handmatig te controleren (Nieuw project → Talen: Engels vast aangevinkt, een paar talen aan/uit
 zetten, Opslaan, project opnieuw openen en controleren dat de keuze bewaard is gebleven) voordat
 de PR wordt samengevoegd.
+
+## 20. Meertalige knopteksten (Caption/Tooltip) per taal — backlogitem, nog niet ontworpen (2026-09-29)
+
+**Aanleiding.** Herbert testte de talenselectie uit sectie 19 en bevestigde dat deze correct
+opslaat. Daarbij het eerste vervolgpunt dat sectie 19 zelf al noemde als bewust uitgesteld: de
+knoppen (`WizardScreenButtonSettings.BackButtonCaption`/`NextButtonCaption`/`CancelButtonCaption`
+en de bijbehorende Tooltip-velden) ondersteunen nu eigen tekst, maar die tekst is nog altijd één
+vaste string — niet per taal.
+
+**Antwoord op Herberts vraag: ondersteunt Inno Setup dit?** Ja, via `[CustomMessages]`, niet via
+`[Messages]`. `[Messages]` is voor Inno Setup's eigen ingebouwde teksten (de standaard Terug/
+Volgende/Annuleren-knoppen, foutmeldingen) en wordt automatisch gevuld vanuit de `.isl`-bestanden
+van de gekozen taal; daar heeft een projectmaker geen invloed op. `[CustomMessages]` is bedoeld
+voor eigen teksten en ondersteunt een `.taalid`-suffix per regel:
+
+```
+[CustomMessages]
+MyCancelCaption.english=Cancel
+MyCancelCaption.dutch=Annuleren
+MyCancelCaption.german=Abbrechen
+```
+
+In Pascal Script haal je de juiste waarde op met `CustomMessage('MyCancelCaption')`; Inno Setup
+kiest automatisch de regel die hoort bij de taal die de eindgebruiker bij het starten van de
+installer koos. Ontbreekt een taal-suffix, dan valt Inno Setup terug op de eerst genoemde taal in
+`[Languages]` — bij ons dus Engels, wat aansluit bij hoe Engels al vast eerste/verplichte taal is
+in `SupportedLanguageIds` (sectie 19).
+
+**Scope, zoals Herbert vandaag heeft aangegeven.** Alleen relevant wanneer een knop al eigen tekst
+heeft (niet de Inno Setup-standaardtekst) én het project meertalig is (meer dan alleen Engels in
+`SupportedLanguageIds`). In dat geval een scherm waarin per taal de tekst van die knop kan worden
+ingevoerd. Twee niveaus, zoals de bestaande drielaags-resolutie dat al kent:
+
+- **Voor alle schermen** — de Caption/Tooltip op het Standaardscherm, per taal.
+- **Voor één individueel scherm** — een eigen Caption/Tooltip die alleen op dat scherm geldt, per
+  taal, met voorrang op de Standaardscherm-waarde (zelfde principe als de bestaande drielaags-
+  resolutie: eigen waarde → Standaardscherm → Inno Setup's ingebouwde tekst — straks dus per taal
+  in plaats van één string per laag).
+
+**Wat dit raakt aan het datamodel (nog niet ontworpen, alleen de impact benoemd).** Caption/
+Tooltip op `WizardScreenButtonSettings` zijn nu `string?`. Zodra een project meertalig is, wordt
+dat in principe een waarde per taal-id (vergelijkbaar met hoe `[CustomMessages]` zelf werkt) in
+plaats van één vaste string. Vragen die dat oproept en die een eigen ontwerp vragen voordat dit
+gebouwd wordt:
+
+- Wat gebeurt er met een al ingevulde, eentalige Caption zodra een project van eentalig naar
+  meertalig gaat — blijft die de Engelse waarde, of moet Herbert die bevestigen/overzetten?
+- Hoe blijft het invoerscherm overzichtelijk bij veel geselecteerde talen (tot 33 mogelijk) —
+  waarschijnlijk een tabel/lijst per taal in plaats van 33 losse tekstvelden naast elkaar, maar de
+  precieze vorm is nog niet uitgewerkt.
+- Generatorwerk (fase 5/6): naast het al genoemde `[Languages]`-sectiewerk uit sectie 19 moet de
+  generator nu ook `[CustomMessages]`-regels schrijven én de Pascal Script-aanroepen voor de
+  drie/vier knoppen omzetten van een vaste string naar `CustomMessage('...')`.
+
+**Status.** Backlogitem, vastgelegd op Herberts expliciete verzoek. Nog niet gepland, nog niet
+ontworpen — net als sectie 19 zelf al aangaf: dit vraagt om een eigen ontwerp voordat het gebouwd
+wordt, geen aanpassing om terloops mee te nemen bij een andere feature.
