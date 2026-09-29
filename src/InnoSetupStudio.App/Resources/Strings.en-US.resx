@@ -288,6 +288,15 @@
   <data name="ButtonSelectColor" xml:space="preserve">
     <value>Select the text color</value>
   </data>
+  <data name="ButtonLanguages" xml:space="preserve">
+    <value>Languages</value>
+  </data>
+  <data name="LanguagesTitle" xml:space="preserve">
+    <value>Languages</value>
+  </data>
+  <data name="LanguagesIntro" xml:space="preserve">
+    <value>Choose which languages this installer offers during installation. English is always included: Inno Setup uses it even without a language list of its own.</value>
+  </data>
   <data name="DialogButtonPropertiesTitleFormat" xml:space="preserve">
     <value>{0} properties</value>
   </data>

@@ -288,6 +288,15 @@
   <data name="ButtonSelectColor" xml:space="preserve">
     <value>Selecteer de tekstkleur</value>
   </data>
+  <data name="ButtonLanguages" xml:space="preserve">
+    <value>Talen</value>
+  </data>
+  <data name="LanguagesTitle" xml:space="preserve">
+    <value>Talen</value>
+  </data>
+  <data name="LanguagesIntro" xml:space="preserve">
+    <value>Kies welke talen deze installer aanbiedt tijdens de installatie. Engels staat er altijd in: Inno Setup gebruikt die taal ook zonder eigen talenlijst.</value>
+  </data>
   <data name="DialogButtonPropertiesTitleFormat" xml:space="preserve">
     <value>{0} eigenschappen</value>
   </data>

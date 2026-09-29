@@ -111,6 +111,20 @@ public sealed class InstallerProject
     /// </summary>
     public WizardScreenButtonSettings DefaultScreenButtons { get; set; } = new();
 
+    /// <summary>
+    /// Welke talen deze installer aanbiedt tijdens de installatie, als taal-id's uit
+    /// <see cref="InnoLanguageCatalog"/>. Bevat altijd minstens <see cref="InnoLanguageCatalog.EnglishId"/>:
+    /// Inno Setup toont die taal ook zonder eigen [Languages]-sectie, dus een installer die verder
+    /// niets kiest is impliciet Engelstalig. Meer dan één taal betekent dat de installer meertalig
+    /// is — bewust geen apart vlaggetje daarvoor, dat zou een tegenstrijdige status met deze lijst
+    /// kunnen opleveren. Zie backlogitem 4, sectie 14 van de architectuurdoc: bewust vóór een
+    /// mogelijke tekst-per-taal-uitbreiding op de knop-Captions gebouwd, zodat dat werk niet twee
+    /// keer gedaan hoeft te worden. Alleen "welke talen" (fase 4-scope); hóe teksten per taal
+    /// worden ingevoerd, en het schrijven van de [Languages]-sectie zelf (generator, fase 5/6),
+    /// volgen later.
+    /// </summary>
+    public List<string> SupportedLanguageIds { get; set; } = new() { InnoLanguageCatalog.EnglishId };
+
     /// <summary>Maakt een nieuw, leeg project met een vers gegenereerd AppId.</summary>
     public static InstallerProject CreateNew() => new()
     {

@@ -142,6 +142,46 @@ public partial class MainWindow : Window
         }
     }
 
+    private async void LanguagesButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_activeProject is null)
+        {
+            return;
+        }
+
+        var viewModel = new LanguagesViewModel(_activeProject.SupportedLanguageIds);
+        var window = new LanguagesWindow(viewModel) { Owner = this };
+
+        if (window.ShowDialog() != true)
+        {
+            return;
+        }
+
+        _activeProject.SupportedLanguageIds = viewModel.ToSelection();
+
+        if (string.IsNullOrWhiteSpace(_activeProjectFilePath))
+        {
+            return;
+        }
+
+        // Zelfde guard als WizardScreensButton/ScreenEditorButton hierboven: knop uit tijdens het
+        // opslaan, zodat een tweede klik tijdens de lopende await niet hetzelfde .tmp-tijdelijke
+        // bestand als de eerste gebruikt.
+        LanguagesButton.IsEnabled = false;
+        try
+        {
+            await _projectService.SaveAsync(_activeProjectFilePath, _activeProject);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Inno Setup Studio", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            LanguagesButton.IsEnabled = true;
+        }
+    }
+
     private async void ScreenEditorButton_Click(object sender, RoutedEventArgs e)
     {
         if (_activeProject is null)
@@ -243,5 +283,6 @@ public partial class MainWindow : Window
         _activeProjectFilePath = projectFilePath;
         WizardScreensButton.IsEnabled = _activeProject is not null;
         ScreenEditorButton.IsEnabled = _activeProject is not null;
+        LanguagesButton.IsEnabled = _activeProject is not null;
     }
 }

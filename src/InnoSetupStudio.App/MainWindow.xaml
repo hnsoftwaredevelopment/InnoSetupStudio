@@ -66,6 +66,18 @@
                         <TextBlock Text="{loc:Loc ButtonScreenEditor}" />
                     </StackPanel>
                 </Button>
+                <!-- Hergebruikt het Document-icoon (geen eigen "talen"-icoon getekend voor deze
+                     feature, zie backlogitem 4 sectie 14/19): dat icoon staat elders al voor
+                     meerdere, verschillende schermtypes, dus hergebruik hiervoor past bij hoe de
+                     rest van de iconenset al wordt ingezet. -->
+                <Button x:Name="LanguagesButton" Margin="0,0,12,0" IsEnabled="False"
+                        Click="LanguagesButton_Click" ToolTip="{loc:Loc ButtonLanguages}">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource Document}" Fill="{DynamicResource Brush.TextPrimary}"
+                              Stretch="Uniform" Width="16" Height="16" Margin="0,0,8,0" />
+                        <TextBlock Text="{loc:Loc ButtonLanguages}" />
+                    </StackPanel>
+                </Button>
                 <Button ToolTip="{loc:Loc ButtonBuildInstaller}">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource BuildInstaller}" Fill="{DynamicResource Brush.TextPrimary}"
