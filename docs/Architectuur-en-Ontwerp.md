@@ -1457,3 +1457,25 @@ besluit genomen om te starten; dit is vastlegging plus voorstel, net als sectie 
 blijft dat een eigen venster zoals nu, of gaan die velden rechtstreeks in het middenpaneel nu daar
 meer ruimte is? Dit bepaalt waar sectie 20 (talen per knoptekst) landt: in dat venster, of in het
 middenpaneel zelf.
+
+**Laatste beslissing (2026-09-29): optie A.** `ButtonPropertiesWindow` blijft een eigen venster.
+De talen-tabbladen voor sectie 20 komen daar terecht, niet in het middenpaneel — dat blijft zo
+rustig als het nu is (één tekstregel per knop met een eigenschappenknopje ernaast). Reden: de
+knoppenrij in het hoofdscherm is net opgeruimd door Talen en Wizardschermen naar
+Projectinstellingen te verplaatsen; alle knopdetails in het middenpaneel zetten zou diezelfde
+rommeligheid één laag dieper terugbrengen.
+
+**Ontwerp compleet, nog niet gebouwd.** Alle openstaande vragen uit dit voorstel zijn nu
+beantwoord:
+
+1. Bovenbalk: Nieuw project, Project openen, Projectinstellingen (alleen actief bij open project),
+   Installer bouwen, en rechts een tandwiel voor Instellingen (taal/thema van de IDE).
+2. Projectinstellingen: bestaande projectgegevens, plus Talen (sectie 19) en Wizardschermen (welke
+   schermen meedoen) — beide overgeheveld vanuit hun huidige losse knop/venster.
+3. Linkerkolom hoofdscherm: navigatielijst van de ingeschakelde schermen (Standaardscherm vast
+   bovenaan), zonder aan/uit-vinkjes, met een compacte voorvertoning eronder.
+4. Middenpaneel: het huidige eigenschappenpaneel uit `WizardEditorWindow` (Caption per knop,
+   wizardafbeeldingen bij het Standaardscherm), ongewijzigd qua inhoud.
+5. `ButtonPropertiesWindow` blijft bestaan; wordt de plek voor sectie 20 (talen per knoptekst).
+
+Nog geen besluit genomen om hiermee te starten — Herbert bepaalt wanneer.
