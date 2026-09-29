@@ -61,10 +61,11 @@
 
                 <Grid Margin="0,0,0,8">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="224" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBox x:Name="BackButtonCaptionBox" Grid.Column="0"
+                    <TextBox x:Name="BackButtonCaptionBox" Grid.Column="0" Width="220" HorizontalAlignment="Left"
+                             MaxLength="30"
                              Text="{Binding BackButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"
                              Foreground="{Binding EffectiveBackButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
                              controls:Placeholder.Text="{Binding EffectiveBackButtonCaption}" />
@@ -78,10 +79,11 @@
 
                 <Grid Margin="0,0,0,8">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="224" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBox x:Name="NextButtonCaptionBox" Grid.Column="0"
+                    <TextBox x:Name="NextButtonCaptionBox" Grid.Column="0" Width="220" HorizontalAlignment="Left"
+                             MaxLength="30"
                              Text="{Binding NextButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"
                              Foreground="{Binding EffectiveNextButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
                              controls:Placeholder.Text="{Binding EffectiveNextButtonCaption}" />
@@ -95,10 +97,11 @@
 
                 <Grid Margin="0,0,0,4">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="224" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBox x:Name="CancelButtonCaptionBox" Grid.Column="0"
+                    <TextBox x:Name="CancelButtonCaptionBox" Grid.Column="0" Width="220" HorizontalAlignment="Left"
+                             MaxLength="30"
                              Text="{Binding CancelButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"
                              Foreground="{Binding EffectiveCancelButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
                              controls:Placeholder.Text="{Binding EffectiveCancelButtonCaption}" />
@@ -188,7 +191,7 @@
                      komt maar op dit scherm voor en heeft geen Caption. -->
                 <Grid Margin="0,20,0,4">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="224" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" Text="{loc:Loc SectionBrowseButton}" FontWeight="Bold" VerticalAlignment="Center" />
@@ -314,7 +317,7 @@
             <!-- Voorvertoning: een nabootsing van Inno Setup's eigen wizardvenster, met vaste
                  afmetingen en vaste (niet-thema-afhankelijke) kleuren, los van het scherm-VM-type
                  boven in UserControl.Resources. Terug/Volgende navigeert door Screens. -->
-            <Border Grid.Column="2" Width="497" Height="400" BorderBrush="#FF888888" BorderThickness="1"
+            <Border Grid.Column="2" Width="497" Height="400" VerticalAlignment="Top" BorderBrush="#FF888888" BorderThickness="1"
                     Background="#FFF0F0F0"
                     Visibility="{Binding IsRealScreenSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <DockPanel>
@@ -366,7 +369,7 @@
             </Border>
 
             <!-- Vervangt de voorvertoning hierboven zodra het Standaardscherm geselecteerd is. -->
-            <Border Grid.Column="2" Width="497" Height="400" BorderBrush="#FF888888" BorderThickness="1"
+            <Border Grid.Column="2" Width="497" Height="400" VerticalAlignment="Top" BorderBrush="#FF888888" BorderThickness="1"
                     Background="#FFF0F0F0"
                     Visibility="{Binding IsDefaultScreenSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <TextBlock Text="{loc:Loc ScreenEditorDefaultScreenInfo}" TextWrapping="Wrap"

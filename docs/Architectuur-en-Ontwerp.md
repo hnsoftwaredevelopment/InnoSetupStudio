@@ -1518,3 +1518,57 @@ geslaagd (ongewijzigd — deze wijziging raakt alleen WPF-vensters/viewmodel-bek
 indeling (bovenbalk, schermeditor inline, Projectinstellingen-tabbladen) kon in deze sessie niet
 automatisch getest worden (geen UI-automatiseringstool voor dit bureaubladvenster beschikbaar) —
 Herbert wordt gevraagd dit handmatig te controleren voordat de PR wordt samengevoegd.
+
+
+**Polish na Herberts eerste doorloop (2026-09-29), zelfde branch `feature/ide-shell-redesign`.**
+Herbert heeft de gebouwde schil in fullscreen bekeken en vier concrete verbeterpunten gegeven, in
+`ScreenEditorControl.xaml`:
+
+1. *Voorvertoning naar boven.* De preview-`Border` (Grid.Column="2", zowel de variant voor een
+   echt scherm als de Standaardscherm-infovariant) had geen expliciete `VerticalAlignment`, dus
+   centreerde WPF hem verticaal in zijn kolom zodra het venster hoger was dan de vaste
+   preview-hoogte (400px) — dezelfde WPF-regel als bij de knoppenbalk uit sectie 16: een element
+   met een expliciete `Height` en de standaard `VerticalAlignment="Stretch"` wordt gecentreerd
+   binnen de beschikbare ruimte in plaats van bovenaan te blijven. Fix: `VerticalAlignment="Top"`
+   toegevoegd aan beide `Border`-instanties, zodat de preview altijd bovenaan naast het
+   eigenschappenpaneel staat.
+2. *Lengtelimiet knopomschrijvingen.* De drie tekstvelden in `ButtonSettingsSectionTemplate`
+   (Terug/Volgende/Annuleren) hadden geen `MaxLength`. Herbert: "de gebruiker mag toch geen
+   onbeperkte tekst invullen als buttontekst" — circa 30 tekens. `MaxLength="30"` toegevoegd aan
+   alle drie.
+3. *Standaard installatiemap ongewijzigd.* Op Herberts expliciete verzoek is het `DefaultDirName`-
+   veld niet aangepast: geen lengtelimiet, en een breder veld dan de knopvelden is daar niet
+   hinderlijk.
+4. *Eigenschappenknopjes dichter bij de velden.* Alle vier de knoprijen (Terug/Volgende/Annuleren
+   + de losse Bladeren-knoprij) gebruikten een Grid met `ColumnDefinition Width="*"` gevolgd door
+   `Width="Auto"` voor het eigenschappenknopje — de `*`-kolom vult altijd de volledige resterende
+   breedte van het middendeel, dus het knopje stond bij een breed venster steeds helemaal rechts,
+   los van hoe lang de tekst in het veld was. Om dat knopje daadwerkelijk mee naar links te laten
+   komen, moest de kolombreedte zelf vast worden gemaakt, niet alleen het tekstveld: de eerste
+   kolom van alle vier de rijen is nu `Width="224"` (tekstveld 220px + 4px marge) in plaats van
+   `Width="*"`, en de drie tekstvelden hebben zelf ook `Width="220"` + `HorizontalAlignment="Left"`
+   gekregen. Zo staan alle vier eigenschappenknopjes nu consequent op dezelfde, vaste positie
+   direct naast hun veld, ook op een breed scherm — precies wat Herbert bedoelde met "dat ziet er
+   wel strak uit".
+
+**Feitencheck: Bladeren-knop tekst wél aanpasbaar via Pascal Script.** Herbert vroeg of de tekst
+op de Bladeren-knop (Select Destination-pagina) net als Terug/Volgende/Annuleren met Pascal Script
+kan worden aangepast, of dat zijn vermoeden klopte dat dit niet zomaar kan. Geverifieerd via
+webzoekopdracht (niet uit geheugen beantwoord): in Inno Setup's `TWizardForm`-objectmodel is
+`DirBrowseButton` net als `BackButton`/`NextButton`/`CancelButton` gedeclareerd als `TNewButton`,
+en `TNewButton` heeft een `Caption`-property. De tekst is dus wél instelbaar, bijvoorbeeld met
+`WizardForm.DirBrowseButton.Caption := '...';` in een `CurPageChanged`-event. Herberts vermoeden
+klopte dus niet.
+
+Dit is een bewuste afwijking tussen wat Inno Setup toestaat en wat de app op dit moment
+modelleert: `BrowseButtonSettings` heeft opzettelijk geen `Caption`-veld (zie het codecommentaar
+bij de Bladeren-knoprij in `ScreenEditorControl.xaml`, dat er nu ten onrechte van uitgaat dat deze
+knop geen Caption heeft). Dit wordt hier vastgelegd als nieuw, nog niet ontworpen backlogitem —
+een `Caption`/placeholder-veld toevoegen aan `BrowseButtonSettings` net als bij de andere drie
+knoppen — en pas opgepakt als Herbert daarvoor kiest, conform het "eerst ontwerpen, dan bouwen"-
+principe.
+
+**Build- en testresultaat (polish).** `dotnet build`: 0 waarschuwingen, 0 fouten. `dotnet test`:
+21/21 geslaagd (ongewijzigd). Smoke-test: `InnoSetupStudio.exe` gestart en reageerde (`Responding:
+True`), daarna weer afgesloten. Interactieve controle van de vier verbeterpunten blijft aan
+Herbert.
