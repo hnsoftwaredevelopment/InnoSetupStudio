@@ -43,6 +43,14 @@ public partial class MainWindow : Window
     private InstallerProject? _activeProject;
     private string? _activeProjectFilePath;
 
+    // Eén gedeelde vergrendeling voor SaveActiveProjectAsync: WizardScreensButton_Click,
+    // ScreenEditorButton_Click en LanguagesButton_Click roepen elk _projectService.SaveAsync aan
+    // voor hetzelfde _activeProjectFilePath. Elke knop schakelde voorheen alleen zichzelf uit
+    // tijdens het opslaan, dus een klik op een andere knop tijdens die lopende await kon
+    // gelijktijdig naar hetzelfde .tmp-tijdelijke bestand schrijven (CodeRabbit, PR #18). Deze
+    // SemaphoreSlim serialiseert alle drie de opslagpaden.
+    private readonly SemaphoreSlim _saveLock = new(1, 1);
+
     public MainWindow()
     {
         InitializeComponent();
@@ -119,27 +127,27 @@ public partial class MainWindow : Window
 
         _activeProject.WizardScreens = viewModel.ToSelection();
 
-        if (string.IsNullOrWhiteSpace(_activeProjectFilePath))
+        await SaveActiveProjectAsync();
+    }
+
+    private async void LanguagesButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_activeProject is null)
         {
             return;
         }
 
-        // Knop uitschakelen tijdens het opslaan: zonder deze guard kan een tweede klik tijdens de
-        // lopende await hetzelfde .tmp-tijdelijke bestand gebruiken als de eerste, wat tot een
-        // conflict tussen beide schrijfacties kan leiden.
-        WizardScreensButton.IsEnabled = false;
-        try
+        var viewModel = new LanguagesViewModel(_activeProject.SupportedLanguageIds);
+        var window = new LanguagesWindow(viewModel) { Owner = this };
+
+        if (window.ShowDialog() != true)
         {
-            await _projectService.SaveAsync(_activeProjectFilePath, _activeProject);
+            return;
         }
-        catch (Exception ex)
-        {
-            MessageBox.Show(ex.Message, "Inno Setup Studio", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-        finally
-        {
-            WizardScreensButton.IsEnabled = true;
-        }
+
+        _activeProject.SupportedLanguageIds = viewModel.ToSelection();
+
+        await SaveActiveProjectAsync();
     }
 
     private async void ScreenEditorButton_Click(object sender, RoutedEventArgs e)
@@ -159,17 +167,29 @@ public partial class MainWindow : Window
 
         viewModel.ApplyTo(_activeProject);
 
-        if (string.IsNullOrWhiteSpace(_activeProjectFilePath))
+        await SaveActiveProjectAsync();
+    }
+
+    /// <summary>
+    /// Slaat <see cref="_activeProject"/> op naar <see cref="_activeProjectFilePath"/>, als er een
+    /// bestandspad is (bij een nog niet opgeslagen nieuw project is er niets te doen). Gedeeld
+    /// door WizardScreensButton_Click, LanguagesButton_Click en ScreenEditorButton_Click: die drie
+    /// schakelden voorheen elk alleen hun eigen knop uit tijdens het opslaan, waardoor een klik op
+    /// een andere knop tijdens de lopende await gelijktijdig naar hetzelfde .tmp-tijdelijke
+    /// bestand kon schrijven (CodeRabbit, PR #18). <see cref="_saveLock"/> serialiseert dat, en
+    /// alle drie de knoppen gaan tijdens elke save uit, niet alleen de knop die hem startte.
+    /// </summary>
+    private async Task SaveActiveProjectAsync()
+    {
+        if (_activeProject is null || string.IsNullOrWhiteSpace(_activeProjectFilePath))
         {
             return;
         }
 
-        // Zelfde guard als WizardScreensButton hierboven: knop uit tijdens het opslaan, zodat een
-        // tweede klik tijdens de lopende await niet hetzelfde .tmp-tijdelijke bestand als de
-        // eerste gebruikt.
-        ScreenEditorButton.IsEnabled = false;
+        await _saveLock.WaitAsync();
         try
         {
+            SetProjectActionButtonsEnabled(false);
             await _projectService.SaveAsync(_activeProjectFilePath, _activeProject);
         }
         catch (Exception ex)
@@ -178,7 +198,8 @@ public partial class MainWindow : Window
         }
         finally
         {
-            ScreenEditorButton.IsEnabled = true;
+            SetProjectActionButtonsEnabled(_activeProject is not null);
+            _saveLock.Release();
         }
     }
 
@@ -241,7 +262,13 @@ public partial class MainWindow : Window
     {
         _activeProject = project;
         _activeProjectFilePath = projectFilePath;
-        WizardScreensButton.IsEnabled = _activeProject is not null;
-        ScreenEditorButton.IsEnabled = _activeProject is not null;
+        SetProjectActionButtonsEnabled(_activeProject is not null);
+    }
+
+    private void SetProjectActionButtonsEnabled(bool enabled)
+    {
+        WizardScreensButton.IsEnabled = enabled;
+        ScreenEditorButton.IsEnabled = enabled;
+        LanguagesButton.IsEnabled = enabled;
     }
 }

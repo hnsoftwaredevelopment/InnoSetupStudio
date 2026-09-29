@@ -41,6 +41,18 @@ public sealed class JsonInstallerProjectService : IInstallerProjectService
             loaded.SelectDestinationScreenButtons ??= new();
             loaded.DefaultScreenButtons ??= new();
 
+            // Zelfde verhaal voor SupportedLanguageIds (backlogitem 4, sectie 14): een expliciete
+            // JSON-null geeft anders een NullReferenceException zodra het talenoverzicht wordt
+            // geopend. Bevat een handmatig bewerkt bestand een lijst zonder Engels, dan wordt dat
+            // hier hersteld: Engels is altijd aanwezig (zie InnoLanguageCatalog.EnglishId), zowel
+            // een lege lijst als een lijst zonder "english" zou anders stilzwijgend een installer
+            // opleveren die Inno Setup's eigen standaardtaal niet aanbiedt.
+            loaded.SupportedLanguageIds ??= [];
+            if (!loaded.SupportedLanguageIds.Contains(InnoLanguageCatalog.EnglishId))
+            {
+                loaded.SupportedLanguageIds.Insert(0, InnoLanguageCatalog.EnglishId);
+            }
+
             return loaded;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)

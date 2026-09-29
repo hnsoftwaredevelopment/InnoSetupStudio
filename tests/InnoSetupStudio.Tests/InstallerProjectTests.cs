@@ -25,6 +25,17 @@ public class InstallerProjectTests
     }
 
     [Fact]
+    public void CreateNewDefaultsToEnglishOnlySupportedLanguages()
+    {
+        // Zonder eigen [Languages]-sectie toont Inno Setup sowieso Engels (compiler:Default.isl);
+        // een nieuw project moet dat impliciete, eentalige gedrag weerspiegelen (backlogitem 4,
+        // sectie 14).
+        var project = InstallerProject.CreateNew();
+
+        Assert.Equal([InnoLanguageCatalog.EnglishId], project.SupportedLanguageIds);
+    }
+
+    [Fact]
     public async Task JsonInstallerProjectServiceRoundTripsAllFields()
     {
         var project = InstallerProject.CreateNew();
@@ -99,6 +110,7 @@ public class InstallerProjectTests
             CancelButtonEnabled = null,
             CancelButtonVisible = false,
         };
+        project.SupportedLanguageIds = [InnoLanguageCatalog.EnglishId, "german", "dutch"];
 
         var service = new JsonInstallerProjectService();
         var tempPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.issproj");
@@ -165,6 +177,7 @@ public class InstallerProjectTests
             Assert.Equal(project.DefaultScreenButtons.CancelButtonCaption, loaded.DefaultScreenButtons.CancelButtonCaption);
             Assert.Null(loaded.DefaultScreenButtons.CancelButtonEnabled);
             Assert.Equal(project.DefaultScreenButtons.CancelButtonVisible, loaded.DefaultScreenButtons.CancelButtonVisible);
+            Assert.Equal(project.SupportedLanguageIds, loaded.SupportedLanguageIds);
         }
         finally
         {
@@ -281,6 +294,60 @@ public class InstallerProjectTests
             Assert.Equal(string.Empty, loaded.LicenseScreenButtons.NextButtonCaption);
             Assert.Equal(string.Empty, loaded.SelectDestinationScreenButtons.NextButtonCaption);
             Assert.Equal(string.Empty, loaded.DefaultScreenButtons.NextButtonCaption);
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task LoadAsyncNormalizesExplicitJsonNullSupportedLanguageIdsToEnglishOnly()
+    {
+        // Zelfde risico als WizardScreens/ButtonSettings hierboven, maar dan voor
+        // SupportedLanguageIds (backlogitem 4, sectie 14): een handmatig bewerkt of ouder
+        // projectbestand kan expliciet "SupportedLanguageIds": null bevatten. Zonder normalisatie
+        // geeft dat een NullReferenceException zodra het talenoverzicht wordt geopend
+        // (LanguagesViewModel roept Contains() aan op deze lijst).
+        var service = new JsonInstallerProjectService();
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.issproj");
+        await File.WriteAllTextAsync(path, "{\"AppName\":\"Zonder talen\",\"SupportedLanguageIds\":null}");
+
+        try
+        {
+            var loaded = await service.LoadAsync(path);
+
+            Assert.Equal([InnoLanguageCatalog.EnglishId], loaded.SupportedLanguageIds);
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task LoadAsyncInsertsEnglishWhenSupportedLanguageIdsOmitsIt()
+    {
+        // Een handmatig bewerkt projectbestand kan een talenlijst bevatten die Engels mist
+        // (bijvoorbeeld per ongeluk verwijderd). Engels moet altijd aanwezig blijven: dat is de
+        // taal die Inno Setup toont zonder eigen [Languages]-sectie, dus een lijst zonder Engels
+        // zou stilzwijgend een installer opleveren die Inno Setup's eigen standaardtaal niet
+        // aanbiedt.
+        var service = new JsonInstallerProjectService();
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.issproj");
+        await File.WriteAllTextAsync(path, "{\"AppName\":\"Talen zonder Engels\",\"SupportedLanguageIds\":[\"german\",\"dutch\"]}");
+
+        try
+        {
+            var loaded = await service.LoadAsync(path);
+
+            Assert.Equal([InnoLanguageCatalog.EnglishId, "german", "dutch"], loaded.SupportedLanguageIds);
         }
         finally
         {

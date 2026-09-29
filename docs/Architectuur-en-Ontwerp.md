@@ -1255,3 +1255,72 @@ in `crash-log.txt`); een volledige interactieve doorloop van de nieuwe dialoogve
 in deze sessie niet automatisch worden getest (geen UI-automatiseringstool voor dit
 bureaubladvenster beschikbaar) - Herbert wordt gevraagd dit handmatig te controleren voordat de
 PR wordt samengevoegd.
+
+## 19. Meertaligheid: talenselectie per project (backlogitem 4, sectie 14) (2026-09-29)
+
+Eerste stap van backlogitem 4 uit sectie 14: "welke talen ondersteunt dit project" — bewust niet
+de volledige vertaal-UX (hóe teksten per taal worden ingevoerd), dat blijft voor later. Doel van
+deze stap was uitsluitend de volgorde-vraag uit sectie 14 beantwoorden: een toekomstige
+tekst-per-taal-uitbreiding op de knop-Captions (sectie 17/18) hoeft nu niet twee keer gebouwd te
+worden.
+
+**Model.** Eén nieuw veld op `InstallerProject`: `SupportedLanguageIds` (`List<string>`),
+standaard `["english"]`. Bewust géén apart `IsMultilingual`-vlaggetje: dat zou een tegenstrijdige
+status met de lijst kunnen opleveren (vlag aan, lijst leeg — of andersom). Meer dan één taal in de
+lijst betekent gewoon dat de installer meertalig is.
+
+**Talencatalogus (`InnoLanguageCatalog`, `InnoSetupStudio.Core`).** Een statische lijst van 33
+talen (Engels plus de 32 .isl-bestanden uit Herberts kopie van de Languages-map), in plaats van die
+map zelf op schijf in te lezen. Twee redenen: (1) de app weet nog niet waar Inno Setup
+geïnstalleerd staat — dat is pas vanaf de build-integratie (fase 7) relevant — en aannames over een
+vast pad (`C:\Program Files\Inno Setup 7\Languages\`) zouden op een andere machine (of een andere
+Inno Setup-versie) kunnen breken; (2) de niet-Latijnse .isl-bestanden (Arabisch, Chinees, Thai,
+Hebreeuws, enzovoort) hebben elk hun eigen `LanguageCodePage`, en die inlezen zonder mojibake is
+extra werk voor iets dat de statische lijst net zo goed oplevert. De leesbare naam per taal is de
+Engelse naam (bijvoorbeeld "Brazilian Portuguese"), niet de vertaling in de taal zelf
+(`LanguageName=` in het .isl-bestand): dat blijft leesbaar ongeacht welke UI-taal (nl/en/de)
+actief is, zonder 32 extra vertaalregels per resx-bestand voor iets dat een eigennaam is. Elke
+taal-id is de exacte kleine-letters spelling die Inno Setup zelf in het `Name:`-veld van
+`[Languages]` verwacht (bijvoorbeeld `german`, `brazilianportuguese`) — dezelfde spelling als de
+bestandsnaam van het .isl-bestand, zodat een latere generator (fase 5/6) deze id's zonder mapping
+kan hergebruiken.
+
+**Engels: ingebouwd en altijd aan.** Inno Setup toont Engels ook zonder eigen
+`[Languages]`-sectie (via `compiler:Default.isl`, geen los bestand nodig), dus
+`SupportedLanguageIds` bevat na elke wijziging altijd minstens "english" — in de UI als
+aangevinkt-en-uitgeschakeld vinkje, en in `JsonInstallerProjectService.LoadAsync` als
+normalisatie (zelfde soort null-vangnet als `WizardScreens`/de knopinstellingen: een expliciete
+JSON-null of een handmatig bewerkte lijst zonder "english" wordt hersteld in plaats van een
+NullReferenceException te geven of stilzwijgend een installer zonder Inno Setup's eigen
+standaardtaal op te leveren).
+
+**UI.** Een nieuw venster `LanguagesWindow`/`LanguagesViewModel`, één-op-één gebouwd naar het
+patroon van `WizardScreensWindow`/`WizardScreensViewModel` (losse rij-objecten met een vinkje,
+geabonneerd op `PropertyChanged` naar `MarkDirty`, `Opslaan`/`Annuleren` via `RequestClose`) — maar
+zonder icoon per rij (talen hebben geen herkenningspictogram zoals wizardschermen dat wel hebben)
+en met het Engels-rijtje vast aangevinkt via een `DataTrigger` op `IsLocked`. Geopend via een
+nieuwe knop "Talen" op het hoofdscherm, naast Wizardschermen/Schermen bewerken — bewust een eigen
+venster op hoofdschermniveau in plaats van een sectie in het Projectinstellingen-scherm (dat zou
+dat scherm met 33 aan/uit-vinkjes flink laten groeien) of in het Standaardscherm (de andere optie
+die sectie 14 noemde; het Standaardscherm gaat over knopinstellingen, een talenlijst hoort daar
+inhoudelijk niet bij). Hergebruikt het bestaande "Document"-icoon voor de knop: geen eigen
+"talen"-icoon getekend voor deze stap, en dat icoon staat elders al voor meerdere verschillende
+schermtypes, dus hergebruik hiervoor past bij hoe de rest van de iconenset al wordt ingezet.
+
+**Nog niet gebouwd, bewust uitgesteld.** Hóe teksten per taal worden ingevoerd (Caption-per-taal
+op de knoppen, en breder), en het schrijven van de `[Languages]`-sectie zelf in de generator
+(fase 5/6) — dat laatste kan de taal-id's uit `SupportedLanguageIds` rechtstreeks hergebruiken
+als `Name:`-waarden, met `compiler:Default.isl` voor Engels en `compiler:Languages\<Bestand>.isl`
+voor de rest.
+
+**Bouw- en testresultaat.** `dotnet build` slaagt zonder waarschuwingen of fouten. Alle 21 tests
+slagen (17 bestaande plus 4 nieuwe: standaardwaarde bij een nieuw project, round-trip van
+`SupportedLanguageIds`, en de twee null-/ontbrekend-Engels-normalisaties in
+`JsonInstallerProjectService`, plus 4 losse tests voor `InnoLanguageCatalog` zelf: Engels eerst en
+ingebouwd, 33 entries, unieke kleine-letters id's, alleen Engels `IsBuiltIn`). De gebouwde
+`InnoSetupStudio.exe` start zonder crash. Een volledige interactieve doorloop van het nieuwe
+Talen-venster zelf kon in deze sessie niet automatisch worden getest (geen
+UI-automatiseringstool voor dit bureaubladvenster beschikbaar) — Herbert wordt gevraagd dit
+handmatig te controleren (Nieuw project → Talen: Engels vast aangevinkt, een paar talen aan/uit
+zetten, Opslaan, project opnieuw openen en controleren dat de keuze bewaard is gebleven) voordat
+de PR wordt samengevoegd.

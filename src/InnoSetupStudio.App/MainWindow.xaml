@@ -34,7 +34,11 @@
 
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
             <TextBlock Text="{loc:Loc WelcomeMessage}" FontSize="18" HorizontalAlignment="Center" Margin="0,0,0,24" />
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <!-- WrapPanel in plaats van een niet-wrappende horizontale StackPanel (CodeRabbit,
+                 PR #18): met de Duitse vertalingen en nu zes knoppen op een rij kan deze rij
+                 breder worden dan een versmald venster, waardoor knoppen buiten beeld zouden
+                 vallen in plaats van naar een tweede regel door te lopen. -->
+            <WrapPanel HorizontalAlignment="Center">
                 <Button Style="{StaticResource AccentButtonStyle}" Margin="0,0,12,0"
                         Click="NewProjectButton_Click" ToolTip="{loc:Loc ButtonNewProject}">
                     <StackPanel Orientation="Horizontal">
@@ -66,6 +70,18 @@
                         <TextBlock Text="{loc:Loc ButtonScreenEditor}" />
                     </StackPanel>
                 </Button>
+                <!-- Hergebruikt het Document-icoon (geen eigen "talen"-icoon getekend voor deze
+                     feature, zie backlogitem 4 sectie 14/19): dat icoon staat elders al voor
+                     meerdere, verschillende schermtypes, dus hergebruik hiervoor past bij hoe de
+                     rest van de iconenset al wordt ingezet. -->
+                <Button x:Name="LanguagesButton" Margin="0,0,12,0" IsEnabled="False"
+                        Click="LanguagesButton_Click" ToolTip="{loc:Loc ButtonLanguages}">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource Document}" Fill="{DynamicResource Brush.TextPrimary}"
+                              Stretch="Uniform" Width="16" Height="16" Margin="0,0,8,0" />
+                        <TextBlock Text="{loc:Loc ButtonLanguages}" />
+                    </StackPanel>
+                </Button>
                 <Button ToolTip="{loc:Loc ButtonBuildInstaller}">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource BuildInstaller}" Fill="{DynamicResource Brush.TextPrimary}"
@@ -73,7 +89,7 @@
                         <TextBlock Text="{loc:Loc ButtonBuildInstaller}" />
                     </StackPanel>
                 </Button>
-            </StackPanel>
+            </WrapPanel>
         </StackPanel>
     </DockPanel>
 </Window>
