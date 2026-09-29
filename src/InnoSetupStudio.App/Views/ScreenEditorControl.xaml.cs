@@ -63,8 +63,8 @@ public partial class ScreenEditorControl : UserControl
         }
     }
 
-    // Bladerknop (SelectDestinationPageEditorViewModel, geen Caption): eigen, kleinere Click-
-    // handler in plaats van de Tag-gebaseerde switch hierboven, want er is hier maar één knop.
+    // Bladerknop (SelectDestinationPageEditorViewModel): eigen, kleinere Click-handler in plaats
+    // van de Tag-gebaseerde switch hierboven, want er is hier maar één knop.
     private void BrowseButtonProperties_Click(object sender, RoutedEventArgs e)
     {
         if (sender is FrameworkElement { DataContext: SelectDestinationPageEditorViewModel browseVm })
@@ -156,9 +156,9 @@ public partial class ScreenEditorControl : UserControl
     };
 
     private static ButtonPropertiesViewModel BuildForBrowseButton(SelectDestinationPageEditorViewModel vm) => new(
-        BuildDialogTitle("SectionBrowseButton"), hasCaption: false,
+        BuildDialogTitle("SectionBrowseButton"), hasCaption: true,
         LocalizationManager.Instance["HintButtonTriStateDefaultScreen"],
-        () => string.Empty, _ => { }, string.Empty,
+        () => vm.BrowseButtonCaption, v => vm.BrowseButtonCaption = v, vm.EffectiveBrowseButtonCaption,
         () => vm.BrowseButtonEnabled, v => vm.BrowseButtonEnabled = v,
         () => vm.BrowseButtonVisible, v => vm.BrowseButtonVisible = v,
         () => vm.BrowseButtonTextColor, v => vm.BrowseButtonTextColor = v, string.Empty,

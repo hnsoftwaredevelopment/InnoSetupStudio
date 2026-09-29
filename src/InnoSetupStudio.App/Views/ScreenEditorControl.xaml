@@ -188,15 +188,24 @@
                 <!-- Schermspecifieke "Bladeren"-knop (Inno Setup's WizardForm.DirBrowseButton,
                      zie BrowseButtonSettings): bewust een eigen sectie, los van
                      ButtonSettingsSectionTemplate hierboven (Terug/Volgende/Annuleren) — deze knop
-                     komt maar op dit scherm voor en heeft geen Caption. -->
-                <Grid Margin="0,20,0,4">
+                     komt maar op dit scherm voor. Sinds 2026-09-29 wél een eigen tekstveld, net als
+                     de drie knoppen hierboven (zelfde MaxLength/breedte, na een geverifieerde
+                     webzoekopdracht: DirBrowseButton is net als de andere drie een TNewButton met
+                     Caption). -->
+                <TextBlock Text="{loc:Loc SectionBrowseButton}" FontWeight="Bold" Margin="0,20,0,8" />
+                <Grid Margin="0,0,0,4">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="224" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="{loc:Loc SectionBrowseButton}" FontWeight="Bold" VerticalAlignment="Center" />
+                    <TextBox x:Name="BrowseButtonCaptionBox" Grid.Column="0" Width="220" HorizontalAlignment="Left"
+                             MaxLength="30"
+                             Text="{Binding BrowseButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"
+                             Foreground="{Binding BrowseButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
+                             controls:Placeholder.Text="{Binding EffectiveBrowseButtonCaption}" />
                     <Button Grid.Column="1" Click="BrowseButtonProperties_Click"
-                            ToolTip="{loc:Loc ButtonOpenProperties}" AutomationProperties.Name="{loc:Loc ButtonOpenProperties}">
+                            ToolTip="{loc:Loc ButtonOpenProperties}" AutomationProperties.Name="{loc:Loc ButtonOpenProperties}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=BrowseButtonCaptionBox}">
                         <Path Data="{StaticResource Properties}" Fill="{DynamicResource Brush.TextPrimary}"
                               Stretch="Uniform" Width="16" Height="16" />
                     </Button>
@@ -216,36 +225,51 @@
                 <TextBlock Text="{loc:Loc SectionWizardImages}" FontWeight="Bold" Margin="0,20,0,8" />
 
                 <TextBlock x:Name="WizardImageFileLabel" Text="{loc:Loc LabelWizardImageFile}" Margin="0,0,0,4" />
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                    <Border Width="26" Height="50" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,8,0" Background="White">
+                <!-- Grid in plaats van de vaste-breedte StackPanel van vóór 2026-09-29: net als
+                     DefaultDirName hierboven hoeft dit padveld niet ingekort te worden (Herberts
+                     feedback) — de TextBox vult nu de resterende breedte (Width="*") in plaats van
+                     een vaste Width="180". -->
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Width="26" Height="50" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,8,0" Background="White">
                         <Image Source="{Binding WizardImage}" Stretch="UniformToFill" />
                     </Border>
-                    <TextBox Width="180" VerticalAlignment="Center" Margin="0,0,4,0"
+                    <TextBox Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0"
                              Text="{Binding WizardImageFile, UpdateSourceTrigger=PropertyChanged}"
                              AutomationProperties.LabeledBy="{Binding ElementName=WizardImageFileLabel}" />
-                    <Button VerticalAlignment="Center" Command="{Binding BrowseWizardImageCommand}" ToolTip="{loc:Loc ButtonBrowse}"
+                    <Button Grid.Column="2" VerticalAlignment="Center" Command="{Binding BrowseWizardImageCommand}" ToolTip="{loc:Loc ButtonBrowse}"
                             AutomationProperties.Name="{loc:Loc ButtonBrowse}"
                             AutomationProperties.LabeledBy="{Binding ElementName=WizardImageFileLabel}">
                         <Path Data="{StaticResource Folder}" Fill="{DynamicResource Brush.TextPrimary}"
                               Stretch="Uniform" Width="16" Height="16" />
                     </Button>
-                </StackPanel>
+                </Grid>
 
                 <TextBlock x:Name="WizardSmallImageFileLabel" Text="{loc:Loc LabelWizardSmallImageFile}" Margin="0,0,0,4" />
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                    <Border Width="30" Height="30" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,8,0" Background="White">
+                <!-- Zelfde Grid-ombouw als bij WizardImageFile hierboven, zelfde reden. -->
+                <Grid Margin="0,0,0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Width="30" Height="30" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,8,0" Background="White">
                         <Image Source="{Binding WizardSmallImage}" Stretch="UniformToFill" />
                     </Border>
-                    <TextBox Width="180" VerticalAlignment="Center" Margin="0,0,4,0"
+                    <TextBox Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0"
                              Text="{Binding WizardSmallImageFile, UpdateSourceTrigger=PropertyChanged}"
                              AutomationProperties.LabeledBy="{Binding ElementName=WizardSmallImageFileLabel}" />
-                    <Button VerticalAlignment="Center" Command="{Binding BrowseWizardSmallImageCommand}" ToolTip="{loc:Loc ButtonBrowse}"
+                    <Button Grid.Column="2" VerticalAlignment="Center" Command="{Binding BrowseWizardSmallImageCommand}" ToolTip="{loc:Loc ButtonBrowse}"
                             AutomationProperties.Name="{loc:Loc ButtonBrowse}"
                             AutomationProperties.LabeledBy="{Binding ElementName=WizardSmallImageFileLabel}">
                         <Path Data="{StaticResource Folder}" Fill="{DynamicResource Brush.TextPrimary}"
                               Stretch="Uniform" Width="16" Height="16" />
                     </Button>
-                </StackPanel>
+                </Grid>
 
                 <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" />
             </StackPanel>

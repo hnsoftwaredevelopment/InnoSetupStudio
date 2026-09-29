@@ -231,6 +231,9 @@
   <data name="ButtonWizardCancel" xml:space="preserve">
     <value>Abbrechen</value>
   </data>
+  <data name="ButtonWizardBrowse" xml:space="preserve">
+    <value>Durchsuchen…</value>
+  </data>
   <data name="SectionWizardButtons" xml:space="preserve">
     <value>Schaltflächen</value>
   </data>

@@ -22,6 +22,7 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
         _appName = appName;
         _defaultDirName = defaultDirName;
         _allowUserToChangeDir = allowUserToChangeDir;
+        _browseButtonCaption = browseButtonSettings.Caption;
         _browseButtonEnabled = browseButtonSettings.Enabled;
         _browseButtonVisible = browseButtonSettings.Visible;
         _browseButtonTextColor = browseButtonSettings.TextColor;
@@ -79,7 +80,12 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
     // knop is in Inno Setup Studio's EIGEN UI om een map te kiezen voor DefaultDirName. Zie
     // BrowseButtonSettings voor waarom dit los staat van de drie gedeelde Terug-/Volgende-/
     // Annuleren-knoppen: deze knop komt maar op dit ene scherm voor, dus geen Effective*-resolutie
-    // via het Standaardscherm, en bewust geen Caption (Herbert heeft dat veld niet gevraagd).
+    // via het Standaardscherm. Caption is sinds 2026-09-29 wél een veld (zie BrowseButtonSettings)
+    // — tweelaags net als hieronder, alleen met Inno Setup's eigen ingebouwde knoptekst als
+    // terugvalwaarde in plaats van een derde, Standaardscherm-laag.
+
+    [ObservableProperty]
+    private string _browseButtonCaption;
 
     [ObservableProperty]
     private bool? _browseButtonEnabled;
@@ -108,10 +114,35 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
     [RelayCommand]
     private void PickBrowseButtonTextColor() => BrowseButtonTextColor = PickColor(BrowseButtonTextColor);
 
+    /// <summary>Inno Setup's eigen standaardtekst voor de Bladeren-knop, gebruikt zolang
+    /// <see cref="BrowseButtonCaption"/> leeg is. Zelfde "toon de studio's eigen UI-taal, niet
+    /// Inno Setup's vaste Engelse tekst"-aanpak als DefaultBackButtonCaption e.a. in
+    /// WizardScreenEditorViewModel.</summary>
+    private static string DefaultBrowseButtonCaption => LocalizationManager.Instance["ButtonWizardBrowse"];
+
+    /// <summary>Wat de voorvertoning daadwerkelijk op de Bladeren-knop toont: eigen tekst, anders
+    /// <see cref="DefaultBrowseButtonCaption"/>. Tweelaags (geen Standaardscherm-laag, zie
+    /// BrowseButtonSettings): dezelfde ResolveCaption-aanpak als de basisklasse, maar die methode
+    /// is daar private, dus hier een eigen, verder identieke regel.</summary>
+    public string EffectiveBrowseButtonCaption =>
+        !string.IsNullOrWhiteSpace(BrowseButtonCaption) ? BrowseButtonCaption : DefaultBrowseButtonCaption;
+
+    partial void OnBrowseButtonCaptionChanged(string value)
+    {
+        if (!string.IsNullOrEmpty(value) && string.IsNullOrWhiteSpace(value))
+        {
+            BrowseButtonCaption = string.Empty;
+            return;
+        }
+
+        OnPropertyChanged(nameof(EffectiveBrowseButtonCaption));
+    }
+
     /// <summary>Tegenhanger van de Bladerknop-velden in de constructor, gebruikt door
     /// WizardEditorViewModel.ApplyTo.</summary>
     public BrowseButtonSettings ReadBrowseButtonSettings() => new()
     {
+        Caption = BrowseButtonCaption,
         Enabled = BrowseButtonEnabled,
         Visible = BrowseButtonVisible,
         TextColor = BrowseButtonTextColor,

@@ -1614,3 +1614,43 @@ XML-docstrings zou een stijlwijziging zijn, geen bugfix, en is niet opgepakt.
 `dotnet test`: 21/21 geslaagd (ongewijzigd). Smoke-test: `InnoSetupStudio.exe` gestart en
 reageerde (`Responding: True`), daarna afgesloten. PR #19 blijft open in afwachting van Herberts
 handmatige doorloop; niet gemerged.
+
+
+**Nog twee velden verbreed, en Bladeren-knop krijgt een Caption (2026-09-29), zelfde branch.**
+Herbert ging akkoord met de schermopbouw, met twee aanvullende punten:
+
+1. *Wizardafbeelding (groot)/(klein) niet inkorten.* Dezelfde regel als bij "Standaard
+   installatiemap" (§21-polish hierboven): deze twee padvelden onder het Standaardscherm mogen
+   ook niet ingekort worden. Ze hadden een vaste `Width="180"` staan (ouder dan sectie 21, uit
+   backlogitem 1/sectie 14) — omgebouwd van een `StackPanel` naar een `Grid` met een sterretjes-
+   kolom voor het tekstveld, zelfde patroon als het installatiemap-veld: de tekst vult nu de
+   resterende breedte.
+2. *Bladeren-knop krijgt een eigen tekstveld, net als de andere drie.* Direct gevolg van de
+   feitencheck hierboven: omdat `WizardForm.DirBrowseButton` net als Terug/Volgende/Annuleren een
+   `TNewButton` met `Caption` is, kan dat nu ook in de studio. Doorgevoerd door de hele keten:
+   - `BrowseButtonSettings` (Core): nieuwe `Caption`-property, zelfde leeg-is-onveranderd-conventie
+     als de rest van dat model. Bestaande opgeslagen projecten blijven werken (JSON-deserialisatie
+     vult een ontbrekend veld gewoon met de lege standaardwaarde).
+   - `SelectDestinationPageEditorViewModel`: nieuwe `BrowseButtonCaption`-eigenschap plus
+     `EffectiveBrowseButtonCaption` (tweelaags: eigen tekst, anders Inno Setup's eigen
+     standaardtekst via de nieuwe taalsleutel `ButtonWizardBrowse` — geen derde,
+     Standaardscherm-laag, want die bestond al niet voor deze knop, zie `BrowseButtonSettings`).
+   - `ScreenEditorControl.xaml`: de Bladeren-knoprij is niet langer een label-met-eigenschappen-
+     knopje, maar een echt tekstveld (zelfde `MaxLength="30"`/breedte-aanpak als de polish
+     hierboven), met een kleine sectiekop erboven.
+   - `ButtonPropertiesViewModel`/`ButtonPropertiesWindow`: `HasCaption` stond al generiek in de
+     dialoog (verbergt het Knoptekst-veld als een knop er geen heeft) — voor de Bladerknop nu
+     gewoon op `true` gezet in plaats van een lege no-op-delegate.
+   - `SelectDestinationPagePreview.xaml` (InnoSetupStudio.Wizard): de gesimuleerde Bladeren-knop
+     in de voorvertoning toonde altijd het vaste "Browse..." — nu gebonden aan
+     `EffectiveBrowseButtonCaption`, zodat getypte tekst daadwerkelijk zichtbaar wordt, net als bij
+     Terug/Volgende/Annuleren.
+   - Niet meegenomen: TextColor/lettertype van de Bladeren-knop worden in deze voorvertoningspagina
+     nog niet toegepast (alleen Content/tekst) — dat was al zo vóór deze wijziging (een bestaande,
+     kleinere hiaat, niet iets wat deze wijziging heeft veroorzaakt) en is niet aangepakt, want niet
+     gevraagd.
+
+**Build- en testresultaat.** `dotnet build`: 0 waarschuwingen, 0 fouten. `dotnet test`: 21/21
+geslaagd (ongewijzigd — geen bestaande test verwijst naar `BrowseButtonSettings`/
+`SelectDestinationBrowseButton`). Smoke-test: `InnoSetupStudio.exe` gestart en reageerde
+(`Responding: True`), daarna afgesloten.

@@ -85,9 +85,11 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
 
     public string DialogTitle { get; }
 
-    /// <summary>False voor de Bladerknop (SelectDestinationPageEditorViewModel): die heeft geen
-    /// Caption-eigenschap (Herbert heeft dat veld destijds bewust niet gevraagd, zie
-    /// BrowseButtonSettings), dus de View verbergt het Knoptekst-veld dan volledig.</summary>
+    /// <summary>Sinds 2026-09-29 altijd true: elke knop die dit scherm gebruikt (Terug/Volgende/
+    /// Annuleren op elk schermtype, en de Bladerknop op het Bestemmingsscherm) heeft een eigen
+    /// Caption. Blijft een los veld (in plaats van de View-binding te verwijderen) mocht een
+    /// toekomstige knop ooit wél zonder Caption nodig zijn — zie BrowseButtonSettings voor de
+    /// eerdere aanname dat de Bladerknop er geen zou hebben.</summary>
     public bool HasCaption { get; }
 
     /// <summary>Toelichting onder de Ingeschakeld/Zichtbaar-checkboxes, exact overgenomen van de
@@ -119,15 +121,14 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
 
     /// <summary>Wat de voorvertoning onderaan daadwerkelijk als knoptekst toont: eigen tekst,
     /// anders de meegegeven terugvaltekst (Inno Setup's standaardtekst voor Terug/Volgende/
-    /// Annuleren, of leeg bij de Bladerknop, die geen Caption heeft). Zelfde ResolveCaption-patroon
-    /// als WizardScreenEditorViewModel/DefaultScreenEditorViewModel.</summary>
+    /// Annuleren/Bladeren). Zelfde ResolveCaption-patroon als
+    /// WizardScreenEditorViewModel/DefaultScreenEditorViewModel.</summary>
     public string PreviewCaption => ResolveEffective(Caption, EffectiveCaption);
 
-    /// <summary>Wat de voorvertoning onderaan als knoptekst toont wanneer <see cref="HasCaption"/>
-    /// false is (de Bladerknop): dezelfde letterlijke, niet-vertaalde tekst ("Browse...") als de
-    /// echte voorvertoning in InnoSetupStudio.Wizard/Screens/SelectDestinationPagePreview.xaml -
-    /// dat is Inno Setup's eigen knoptekst, geen tekst van deze app zelf, dus bewust niet via
-    /// LocalizationManager.</summary>
+    /// <summary>Wat de voorvertoning onderaan als knoptekst toont. Losstaand van
+    /// <see cref="PreviewCaption"/> gehouden (in plaats van rechtstreeks daaraan te binden) voor
+    /// het geval <see cref="HasCaption"/> ooit weer false wordt voor een toekomstige knop zonder
+    /// Caption — zie <see cref="HasCaption"/>.</summary>
     public string PreviewButtonText => HasCaption ? PreviewCaption : "Browse...";
 
     /// <summary>Zie <see cref="PreviewCaption"/>, maar dan voor de tekstkleur van de
