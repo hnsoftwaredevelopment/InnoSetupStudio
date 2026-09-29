@@ -133,10 +133,15 @@ public partial class MainWindow : Window
         WelcomeText.Visibility = Visibility.Collapsed;
     }
 
+    // BuildInstallerButton blijft hier bewust buiten beschouwing (CodeRabbit, PR #19): "Installer
+    // bouwen" is nog niet geïmplementeerd — alleen de plek in de bovenbalk was in scope bij sectie
+    // 21, niet de bouwlogica zelf (zie docs/Architectuur-en-Ontwerp.md). Zonder deze aanpassing
+    // werd de knop bij een actief project wel klikbaar, maar deed hij niets: er is geen
+    // Click-handler aan gekoppeld. Blijft IsEnabled="False" (zie MainWindow.xaml) totdat die
+    // functionaliteit er daadwerkelijk is.
     private void SetProjectActionButtonsEnabled(bool enabled)
     {
         ProjectSettingsButton.IsEnabled = enabled;
-        BuildInstallerButton.IsEnabled = enabled;
     }
 
     // Inline Opslaan-knop van ScreenEditorControl (sectie 21, vervangt WizardEditorWindow's
@@ -150,9 +155,19 @@ public partial class MainWindow : Window
             return;
         }
 
+        // Volgorde is hier van belang (CodeRabbit, PR #19): IsDirty gaat al vóór de await naar
+        // false, zodat een wijziging die de gebruiker tijdens het opslaan zelf nog typt via de
+        // normale MarkDirty-route opnieuw IsDirty=true zet — die staat dan niet stilletjes als
+        // "opgeslagen" terwijl hij niet in dit ApplyTo-moment is meegenomen. Mislukt het opslaan
+        // zelf, dan wordt het scherm hieronder alsnog expliciet weer vuil gemaakt: een mislukte
+        // save mag nooit als "opgeslagen" ogen.
         viewModel.ApplyTo(_activeProject);
-        await SaveActiveProjectAsync();
         viewModel.IsDirty = false;
+
+        if (!await SaveActiveProjectAsync())
+        {
+            viewModel.IsDirty = true;
+        }
     }
 
     /// <summary>
@@ -164,11 +179,17 @@ public partial class MainWindow : Window
     /// .tmp-tijdelijke bestand kon schrijven (CodeRabbit, PR #18). <see cref="_saveLock"/>
     /// serialiseert dat.
     /// </summary>
-    private async Task SaveActiveProjectAsync()
+    /// <returns>
+    /// True als het opslaan gelukt is (of als er niets op te slaan was); false als
+    /// <see cref="_projectService"/>.SaveAsync een fout gooide (die dan al als MessageBox is
+    /// getoond) — de aanroeper gebruikt dit om IsDirty niet ten onrechte op false te zetten na een
+    /// mislukte save (CodeRabbit, PR #19).
+    /// </returns>
+    private async Task<bool> SaveActiveProjectAsync()
     {
         if (_activeProject is null || string.IsNullOrWhiteSpace(_activeProjectFilePath))
         {
-            return;
+            return true;
         }
 
         await _saveLock.WaitAsync();
@@ -176,10 +197,12 @@ public partial class MainWindow : Window
         {
             SetProjectActionButtonsEnabled(false);
             await _projectService.SaveAsync(_activeProjectFilePath, _activeProject);
+            return true;
         }
         catch (Exception ex)
         {
             MessageBox.Show(ex.Message, "Inno Setup Studio", MessageBoxButton.OK, MessageBoxImage.Error);
+            return false;
         }
         finally
         {

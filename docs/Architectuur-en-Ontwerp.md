@@ -1572,3 +1572,45 @@ principe.
 21/21 geslaagd (ongewijzigd). Smoke-test: `InnoSetupStudio.exe` gestart en reageerde (`Responding:
 True`), daarna weer afgesloten. Interactieve controle van de vier verbeterpunten blijft aan
 Herbert.
+
+
+**CodeRabbit-bevindingen PR #19, geverifieerd en verwerkt (2026-09-29).** Vier "actionable
+comments" op commit `3d48a13` (de eerste implementatiecommit van sectie 21), elk tegen de code
+zelf gecontroleerd vóór toepassing:
+
+1. *Genuine, opgelost.* `ScreenEditor_SaveClicked` zette `viewModel.IsDirty = false` pas ná de
+   `await SaveActiveProjectAsync()`, onvoorwaardelijk. Getypte wijzigingen die tijdens die lopende
+   opslag binnenkwamen, werden zo als "opgeslagen" getoond terwijl ze niet in de zojuist gestarte
+   `ApplyTo`-snapshot zaten. Fix: `IsDirty = false` verplaatst naar vóór de `await`, direct na
+   `ApplyTo` — een latere wijziging zet via de normale `MarkDirty`-route zelf `IsDirty` weer op
+   `true`.
+2. *Genuine, opgelost.* Diezelfde regel zette `IsDirty` ook op `false` als het opslaan zelf
+   mislukte (bijvoorbeeld bestand in gebruik, schijf vol): de foutmelding verscheen wel, maar het
+   scherm oogde daarna toch als "opgeslagen". Fix: `SaveActiveProjectAsync` geeft nu een `bool`
+   terug (`true` bij succes of niets-te-doen, `false` bij een fout); bij `false` zet
+   `ScreenEditor_SaveClicked` `IsDirty` expliciet weer op `true`.
+3. *Genuine, maar bewust NIET automatisch opgelost.* `SetActiveProject` bouwt bij elke aanroep
+   (ook bij het heropenen van Projectinstellingen voor hetzelfde, al actieve project) een
+   compleet nieuwe `WizardEditorViewModel`, zonder te controleren of de vorige nog
+   niet-opgeslagen wijzigingen had (`IsDirty == true`). Voorbeeld: een knopomschrijving typen in
+   de schermeditor zonder op Opslaan te klikken, dan via de bovenbalk Projectinstellingen openen
+   en daar opslaan — de getypte knopomschrijving verdwijnt dan stilletjes. Dit is een echt,
+   bevestigd dataverlies-risico, maar de juiste oplossing (negeren, vragen om op te slaan/te
+   verwerpen, of automatisch samenvoegen) is een ontwerpkeuze die bij Herbert hoort te liggen —
+   dezelfde afweging als steeds bij dit project. Vastgelegd als nieuw, nog niet ontworpen
+   backlogitem; niet aangepast in deze sessie.
+4. *Genuine, opgelost.* `BuildInstallerButton` werd via `SetProjectActionButtonsEnabled`
+   ingeschakeld zodra er een actief project was, maar heeft geen `Click`-handler — "Installer
+   bouwen" bestaat nog niet (bewust buiten scope van sectie 21). Een schijnbaar werkende knop die
+   niets deed. Fix: `SetProjectActionButtonsEnabled` schakelt deze knop niet meer in; blijft
+   `IsEnabled="False"` totdat de bouwfunctionaliteit er daadwerkelijk is.
+
+Niet overgenomen: de "Docstring Coverage"-check (30% vs. vereiste 80%) — deze repo documenteert
+bewust in doorlopende Nederlandse commentaarblokken in plaats van XML-`///`-docstrings per functie
+(zie de rest van dit document en alle voorgaande secties); dat consequent omzetten naar
+XML-docstrings zou een stijlwijziging zijn, geen bugfix, en is niet opgepakt.
+
+**Build- en testresultaat (CodeRabbit-fixes).** `dotnet build`: 0 waarschuwingen, 0 fouten.
+`dotnet test`: 21/21 geslaagd (ongewijzigd). Smoke-test: `InnoSetupStudio.exe` gestart en
+reageerde (`Responding: True`), daarna afgesloten. PR #19 blijft open in afwachting van Herberts
+handmatige doorloop; niet gemerged.
