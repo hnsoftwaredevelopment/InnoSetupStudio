@@ -20,16 +20,29 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
     // Bewaard vanuit het project waarmee dit venster is geopend, zodat SaveAsync deze waarden kan
     // meenemen in het opgeslagen project: dit scherm toont en wijzigt alleen de algemene
     // instellingen, dus zonder deze velden zou een simpele naam- of paden-wijziging de elders (in
-    // de schermeditor) gekozen wizardschermen-selectie, licentiebestand, installatiemap,
-    // wizardafbeeldingen en knopinstellingen per scherm stilzwijgend terugzetten naar de
-    // standaardwaarden. WizardImageFile/WizardSmallImageFile staan hier sinds backlogitem 1
-    // (sectie 14) om dezelfde reden als de eerste vier: ze worden voortaan op het Standaardscherm
-    // in de schermeditor bewerkt, niet meer hier, dus dit scherm mag ze alleen ongewijzigd
-    // doorgeven. De vijf knopinstellingen-velden (WelcomeScreenButtons t/m DefaultScreenButtons)
-    // ontbraken hier tot nu toe — zie sectie 16 van de architectuurdoc: zonder pass-through zette
-    // Opslaan vanuit dit scherm elke in de schermeditor gekozen tekstkleur/lettertype/Enabled/
-    // Visible per scherm stilzwijgend terug naar leeg/onbepaald.
-    private readonly WizardScreenSelection _wizardScreens;
+    // de schermeditor) gekozen licentiebestand, installatiemap, wizardafbeeldingen en
+    // knopinstellingen per scherm stilzwijgend terugzetten naar de standaardwaarden.
+    // WizardImageFile/WizardSmallImageFile staan hier sinds backlogitem 1 (sectie 14) om dezelfde
+    // reden als de eerste drie: ze worden voortaan op het Standaardscherm in de schermeditor
+    // bewerkt, niet meer hier, dus dit scherm mag ze alleen ongewijzigd doorgeven. De vijf
+    // knopinstellingen-velden (WelcomeScreenButtons t/m DefaultScreenButtons) ontbraken hier tot
+    // sectie 16 van de architectuurdoc: zonder pass-through zette Opslaan vanuit dit scherm elke
+    // in de schermeditor gekozen tekstkleur/lettertype/Enabled/Visible per scherm stilzwijgend
+    // terug naar leeg/onbepaald.
+    //
+    // WizardScreens (welke schermen meedoen) en SupportedLanguageIds (welke talen) staan sinds
+    // sectie 21 niet meer in deze pass-through lijst, maar zijn hier juist wél bewerkbaar
+    // geworden: Herbert wilde ze allebei in Projectinstellingen ("dit zie ik allemaal als
+    // projectinstellingen"), niet als eigen knop/venster op het hoofdscherm. Reuse van de
+    // bestaande WizardScreensViewModel/LanguagesViewModel als sub-viewmodel in plaats van hier
+    // een tweede implementatie van dezelfde rijenlijst te schrijven — hun eigen Save/Cancel/
+    // RequestClose blijven ongebruikt, dit venster stuurt zijn eigen Opslaan/Annuleren aan. Dit
+    // repareert meteen een bug: SupportedLanguageIds ontbrak hier volledig, dus Opslaan vanuit dit
+    // scherm zette een via het (inmiddels verwijderde) Talen-venster gekozen meertalige selectie
+    // stilzwijgend terug naar alleen Engels (InstallerProject.SupportedLanguageIds' eigen
+    // standaardwaarde), op precies dezelfde manier als de knopinstellingen-bug uit sectie 16.
+    private readonly WizardScreensViewModel _wizardScreensSubViewModel;
+    private readonly LanguagesViewModel _languagesSubViewModel;
     private readonly string _licenseFilePath;
     private readonly string _defaultDirName;
     private readonly bool _allowUserToChangeDir;
@@ -46,7 +59,12 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
         _projectService = projectService;
         BeginInit();
         _projectFilePath = projectFilePath;
-        _wizardScreens = project.WizardScreens;
+
+        _wizardScreensSubViewModel = new WizardScreensViewModel(project.WizardScreens);
+        _languagesSubViewModel = new LanguagesViewModel(project.SupportedLanguageIds);
+        _wizardScreensSubViewModel.PropertyChanged += (_, _) => MarkDirty();
+        _languagesSubViewModel.PropertyChanged += (_, _) => MarkDirty();
+
         _licenseFilePath = project.LicenseFilePath;
         _defaultDirName = project.DefaultDirName;
         _allowUserToChangeDir = project.AllowUserToChangeDir;
@@ -85,6 +103,15 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
     /// voor een nieuw project. Bepaalt welk label/icoon de knop naast Opslaan toont (zie
     /// <see cref="CancelButtonText"/>/<see cref="CancelButtonIconKey"/>).</summary>
     public bool IsExistingProject { get; }
+
+    /// <summary>De elf standaard wizardschermen met hun aan/uit-vinkje (tabblad Schermen, sectie
+    /// 21) — voorheen het eigen WizardScreensWindow.</summary>
+    public IReadOnlyList<WizardScreenRow> WizardScreens => _wizardScreensSubViewModel.Screens;
+
+    /// <summary>De 33 ondersteunde talen met hun aan/uit-vinkje (tabblad Talen, sectie 19/21) —
+    /// voorheen het eigen LanguagesWindow. Engels blijft aangevinkt en uitgeschakeld
+    /// (<see cref="LanguageRow.IsLocked"/>).</summary>
+    public IReadOnlyList<LanguageRow> Languages => _languagesSubViewModel.Languages;
 
     /// <inheritdoc/>
     public override string CancelButtonText => IsExistingProject
@@ -257,7 +284,8 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
             SetupIconFile = SetupIconFile,
             WizardImageFile = _wizardImageFile,
             WizardSmallImageFile = _wizardSmallImageFile,
-            WizardScreens = _wizardScreens,
+            WizardScreens = _wizardScreensSubViewModel.ToSelection(),
+            SupportedLanguageIds = _languagesSubViewModel.ToSelection(),
             LicenseFilePath = _licenseFilePath,
             DefaultDirName = _defaultDirName,
             AllowUserToChangeDir = _allowUserToChangeDir,

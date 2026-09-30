@@ -3,7 +3,15 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:converters="clr-namespace:InnoSetupStudio.Wizard.Converters"
              mc:Ignorable="d" d:DesignWidth="455" d:DesignHeight="290">
+    <UserControl.Resources>
+        <converters:HexColorToBrushConverter x:Key="HexColorToBrushConverter" />
+        <converters:FontFamilyOrUnsetConverter x:Key="FontFamilyOrUnsetConverter" />
+        <converters:FontSizeOrUnsetConverter x:Key="FontSizeOrUnsetConverter" />
+        <converters:NullableBoolToFontWeightConverter x:Key="NullableBoolToFontWeightConverter" />
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </UserControl.Resources>
     <!-- Zelfde vaste wit/zwart-kleurstelling als WelcomePagePreview, zie de toelichting daar. -->
     <DockPanel Background="White" Margin="20,16,20,20">
         <!-- Kop met titel/omschrijving links en Inno Setup's kleine wizardafbeelding (55x55,
@@ -37,8 +45,37 @@
             <Border Grid.Column="0" BorderBrush="#FFACA899" BorderThickness="1" Background="#FFF0F0F0" Margin="0,0,8,0">
                 <TextBlock Text="{Binding DisplayDirName}" Foreground="Black" Margin="6,4" TextTrimming="CharacterEllipsis" />
             </Border>
-            <Button Grid.Column="1" Content="Browse..." IsEnabled="{Binding AllowUserToChangeDir}"
-                    IsHitTestVisible="False" Focusable="False" IsTabStop="False" Padding="10,3" />
+            <!-- Content sinds 2026-09-29 gebonden aan EffectiveBrowseButtonCaption in plaats van
+                 een vast "Browse...": de knoptekst is aanpasbaar geworden (SelectDestinationPage
+                 EditorViewModel), dus deze voorvertoning moet daadwerkelijk getypte tekst tonen,
+                 net als de Terug/Volgende/Annuleren-knoppen elders in de voorvertoning al deden.
+                 IsEnabled/Visibility/Foreground/FontFamily/FontSize/FontWeight/ToolTip sinds
+                 2026-09-30 om dezelfde reden (Herbert: dezelfde bewerkingsfunctionaliteiten als
+                 Terug/Volgende/Annuleren) — IsEnabled combineert Inno Setup's eigen ingebouwde
+                 gedrag (AllowUserToChangeDir) met de knop-eigen Enabled-instelling, zie
+                 IsBrowseButtonEnabledInPreview. -->
+            <Button Grid.Column="1"
+                    IsEnabled="{Binding IsBrowseButtonEnabledInPreview}"
+                    Visibility="{Binding IsBrowseButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    Foreground="{Binding BrowseButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
+                    FontFamily="{Binding BrowseButtonFontFamily, Converter={StaticResource FontFamilyOrUnsetConverter}}"
+                    FontSize="{Binding BrowseButtonFontSize, Converter={StaticResource FontSizeOrUnsetConverter}}"
+                    FontWeight="{Binding BrowseButtonFontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"
+                    ToolTip="{Binding BrowseButtonTooltip}"
+                    IsHitTestVisible="False" Focusable="False" IsTabStop="False" Padding="10,3">
+                <!-- Content hierboven vervangen door een expliciete TextBlock met een eigen
+                     Foreground-binding (2026-09-30, Herberts melding: TextColor kwam niet aan in
+                     deze voorvertoning) - zie de toelichting in ButtonPropertiesWindow.xaml bij
+                     exact dezelfde fix: de app-brede Button-stijl (die ook hier geldt, want
+                     Application.Resources werkt proces-breed, ook voor dit Wizard-project) kan de
+                     Foreground van deze knop niet via TemplatedParent doorgeven aan Content dat
+                     van buiten de ControlTemplate komt. Een gewoon Content="..." (impliciete
+                     string-naar-TextBlock) heeft dat probleem ook, dus nu een expliciete
+                     TextBlock met RelativeSource AncestorType=Button, net als
+                     ScreenEditorControl.xaml al langer doet voor Terug/Volgende/Annuleren. -->
+                <TextBlock Text="{Binding EffectiveBrowseButtonCaption}"
+                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+            </Button>
         </Grid>
 
         <TextBlock DockPanel.Dock="Bottom" Margin="0,16,0,0" Foreground="#FF666666" FontSize="11"

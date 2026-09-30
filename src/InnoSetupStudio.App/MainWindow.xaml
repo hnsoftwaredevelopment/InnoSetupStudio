@@ -2,44 +2,29 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:loc="clr-namespace:InnoSetupStudio.App.Localization"
-        Title="{loc:Loc AppTitle}" Height="560" Width="900" Icon="/Resources/AppIcon.ico"
+        xmlns:views="clr-namespace:InnoSetupStudio.App.Views"
+        Title="{loc:Loc AppTitle}" Height="720" Width="1120" Icon="/Resources/AppIcon.ico"
+        MinHeight="560" MinWidth="1020" ResizeMode="CanResizeWithGrip"
         Background="{DynamicResource Brush.Background}">
+    <!-- Sectie 21 (IDE-schil herontwerp): bovenbalk met projectacties en een instellingen-tandwiel
+         rechts, in plaats van de vroegere groeiende knoppenrij + taal/thema-ComboBoxen tussen de
+         projectacties in. De schermeditor (voorheen WizardEditorWindow, een apart dialoogvenster)
+         is nu permanent zichtbaar via ScreenEditorControl hieronder; Wizardschermen en Talen
+         verhuisden naar Projectinstellingen (tabbladen Schermen/Talen). -->
     <DockPanel Margin="16">
         <Grid DockPanel.Dock="Top" Margin="0,0,0,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
             <TextBlock Grid.Column="0" Text="{loc:Loc AppTitle}" FontSize="20" FontWeight="Bold"
-                       VerticalAlignment="Center" />
+                       VerticalAlignment="Center" Margin="0,0,24,0" />
 
-            <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,12,0">
-                <TextBlock Text="{loc:Loc MenuLanguage}" VerticalAlignment="Center" Margin="0,0,8,0" />
-                <ComboBox x:Name="LanguageComboBox" Width="140" SelectionChanged="LanguageComboBox_SelectionChanged" />
-            </StackPanel>
-
-            <StackPanel Grid.Column="3" Orientation="Horizontal">
-                <TextBlock Text="{loc:Loc MenuTheme}" VerticalAlignment="Center" Margin="0,0,8,0" />
-                <ComboBox x:Name="ThemeComboBox" Width="140" SelectionChanged="ThemeComboBox_SelectionChanged" />
-            </StackPanel>
-        </Grid>
-
-        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">
-            <TextBlock x:Name="VersionText" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="12"
-                       VerticalAlignment="Center" />
-        </StackPanel>
-
-        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-            <TextBlock Text="{loc:Loc WelcomeMessage}" FontSize="18" HorizontalAlignment="Center" Margin="0,0,0,24" />
-            <!-- WrapPanel in plaats van een niet-wrappende horizontale StackPanel (CodeRabbit,
-                 PR #18): met de Duitse vertalingen en nu zes knoppen op een rij kan deze rij
-                 breder worden dan een versmald venster, waardoor knoppen buiten beeld zouden
-                 vallen in plaats van naar een tweede regel door te lopen. -->
-            <WrapPanel HorizontalAlignment="Center">
-                <Button Style="{StaticResource AccentButtonStyle}" Margin="0,0,12,0"
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Style="{StaticResource AccentButtonStyle}" Margin="0,0,8,0"
                         Click="NewProjectButton_Click" ToolTip="{loc:Loc ButtonNewProject}">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource BuildInstaller}" Fill="White" Stretch="Uniform"
@@ -47,49 +32,52 @@
                         <TextBlock Text="{loc:Loc ButtonNewProject}" />
                     </StackPanel>
                 </Button>
-                <Button Margin="0,0,12,0" Click="OpenProjectButton_Click" ToolTip="{loc:Loc ButtonOpenProject}">
+                <Button Margin="0,0,8,0" Click="OpenProjectButton_Click" ToolTip="{loc:Loc ButtonOpenProject}">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource Folder}" Fill="{DynamicResource Brush.TextPrimary}"
                               Stretch="Uniform" Width="16" Height="16" Margin="0,0,8,0" />
                         <TextBlock Text="{loc:Loc ButtonOpenProject}" />
                     </StackPanel>
                 </Button>
-                <Button x:Name="WizardScreensButton" Margin="0,0,12,0" IsEnabled="False"
-                        Click="WizardScreensButton_Click" ToolTip="{loc:Loc ButtonWizardScreens}">
-                    <StackPanel Orientation="Horizontal">
-                        <Path Data="{StaticResource List}" Fill="{DynamicResource Brush.TextPrimary}"
-                              Stretch="Uniform" Width="16" Height="16" Margin="0,0,8,0" />
-                        <TextBlock Text="{loc:Loc ButtonWizardScreens}" />
-                    </StackPanel>
-                </Button>
-                <Button x:Name="ScreenEditorButton" Margin="0,0,12,0" IsEnabled="False"
-                        Click="ScreenEditorButton_Click" ToolTip="{loc:Loc ButtonScreenEditor}">
+                <!-- Nieuw sinds sectie 21: voorheen was er geen weg terug in Projectinstellingen
+                     zonder het project opnieuw te openen (het scherm opende alleen automatisch
+                     direct na Nieuw/Openen). -->
+                <Button x:Name="ProjectSettingsButton" Margin="0,0,8,0" IsEnabled="False"
+                        Click="ProjectSettingsButton_Click" ToolTip="{loc:Loc ButtonProjectSettings}">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource Edit}" Fill="{DynamicResource Brush.TextPrimary}"
                               Stretch="Uniform" Width="16" Height="16" Margin="0,0,8,0" />
-                        <TextBlock Text="{loc:Loc ButtonScreenEditor}" />
+                        <TextBlock Text="{loc:Loc ButtonProjectSettings}" />
                     </StackPanel>
                 </Button>
-                <!-- Hergebruikt het Document-icoon (geen eigen "talen"-icoon getekend voor deze
-                     feature, zie backlogitem 4 sectie 14/19): dat icoon staat elders al voor
-                     meerdere, verschillende schermtypes, dus hergebruik hiervoor past bij hoe de
-                     rest van de iconenset al wordt ingezet. -->
-                <Button x:Name="LanguagesButton" Margin="0,0,12,0" IsEnabled="False"
-                        Click="LanguagesButton_Click" ToolTip="{loc:Loc ButtonLanguages}">
-                    <StackPanel Orientation="Horizontal">
-                        <Path Data="{StaticResource Document}" Fill="{DynamicResource Brush.TextPrimary}"
-                              Stretch="Uniform" Width="16" Height="16" Margin="0,0,8,0" />
-                        <TextBlock Text="{loc:Loc ButtonLanguages}" />
-                    </StackPanel>
-                </Button>
-                <Button ToolTip="{loc:Loc ButtonBuildInstaller}">
+                <Button x:Name="BuildInstallerButton" IsEnabled="False" ToolTip="{loc:Loc ButtonBuildInstaller}">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource BuildInstaller}" Fill="{DynamicResource Brush.TextPrimary}"
                               Stretch="Uniform" Width="16" Height="16" Margin="0,0,8,0" />
                         <TextBlock Text="{loc:Loc ButtonBuildInstaller}" />
                     </StackPanel>
                 </Button>
-            </WrapPanel>
+            </StackPanel>
+
+            <!-- Instellingen-tandwiel: taal/thema van de IDE zelf, losgetrokken van de
+                 projectacties (SettingsWindow). Hergebruikt het Properties-icoon (geen eigen
+                 tandwiel getekend voor deze feature) — dat icoon staat al voor "eigenschappen
+                 bewerken" bij de knop-eigenschappen, en past qua betekenis net zo goed hier. -->
+            <Button Grid.Column="3" Click="SettingsButton_Click" ToolTip="{loc:Loc ButtonSettings}">
+                <Path Data="{StaticResource Properties}" Fill="{DynamicResource Brush.TextPrimary}"
+                      Stretch="Uniform" Width="16" Height="16" />
+            </Button>
+        </Grid>
+
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">
+            <TextBlock x:Name="VersionText" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="12"
+                       VerticalAlignment="Center" />
         </StackPanel>
+
+        <Grid>
+            <TextBlock x:Name="WelcomeText" Text="{loc:Loc WelcomeMessage}" FontSize="18"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <views:ScreenEditorControl x:Name="ScreenEditor" Visibility="Collapsed" SaveClicked="ScreenEditor_SaveClicked" />
+        </Grid>
     </DockPanel>
 </Window>

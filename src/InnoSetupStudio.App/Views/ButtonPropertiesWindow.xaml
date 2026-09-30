@@ -131,7 +131,18 @@
                             FontSize="{Binding PreviewFontSize, Converter={StaticResource FontSizeOrUnsetConverter}}"
                             FontWeight="{Binding PreviewFontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"
                             ToolTip="{Binding PreviewTooltip}">
-                        <TextBlock Text="{Binding PreviewButtonText}" />
+                        <!-- Foreground hier herhaald i.p.v. op het vertrouwen dat de knop zijn
+                             tekst automatisch doorgeeft (2026-09-30, Herberts melding: gekozen
+                             Tekstkleur kwam hier niet aan, tekst bleef zwart): de globale
+                             Button-stijl (Themes/Styles.xaml) probeert dat via een
+                             ControlTemplate.Resources-stijl met TemplatedParent, maar
+                             TemplatedParent lost niet op voor Content dat van buiten de template
+                             komt (zoals deze TextBlock) - alleen voor elementen die letterlijk in
+                             de ControlTemplate zelf staan. RelativeSource AncestorType=Button is
+                             hetzelfde, al langer werkende patroon als de echte Terug/Volgende/
+                             Annuleren-knoppen in de installervoorvertoning (ScreenEditorControl.xaml). -->
+                        <TextBlock Text="{Binding PreviewButtonText}"
+                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                     </Button>
                 </Border>
             </StackPanel>

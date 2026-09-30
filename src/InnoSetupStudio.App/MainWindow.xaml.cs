@@ -1,10 +1,8 @@
 using System.Reflection;
 using System.Windows;
-using System.Windows.Controls;
-using InnoSetupStudio.App.Localization;
-using InnoSetupStudio.App.Themes;
 using InnoSetupStudio.App.ViewModels;
 using InnoSetupStudio.App.Views;
+using InnoSetupStudio.App.Localization;
 using InnoSetupStudio.Core.Project;
 using Microsoft.Win32;
 
@@ -15,40 +13,17 @@ public partial class MainWindow : Window
     private readonly IInstallerProjectService _projectService = new JsonInstallerProjectService();
     private readonly IProjectAssetService _assetService = new ProjectAssetService();
 
-    private static readonly (string CultureName, string DisplayName)[] Languages =
-    [
-        ("nl-NL", "Nederlands"),
-        ("en-US", "English"),
-        ("de-DE", "Deutsch")
-    ];
-
-    private static readonly (string ThemeKey, string ResourceKey)[] ThemeLabels =
-    [
-        ("Light", "ThemeLight"),
-        ("Dark", "ThemeDark"),
-        ("LightBlue", "ThemeLightBlue"),
-        ("DarkBlue", "ThemeDarkBlue"),
-        ("Red", "ThemeRed"),
-        ("DarkRed", "ThemeDarkRed"),
-        ("Green", "ThemeGreen"),
-        ("DarkGreen", "ThemeDarkGreen"),
-        ("Sepia", "ThemeSepia")
-    ];
-
-    private bool _isInitializing = true;
-
     // Bijgehouden zodra een project succesvol is opgeslagen via ProjectSettingsWindow, zodat
     // toekomstige functionaliteit (zoals "Installer bouwen") weet welk project actief is zonder
     // het bestand opnieuw van schijf te hoeven laden.
     private InstallerProject? _activeProject;
     private string? _activeProjectFilePath;
 
-    // Eén gedeelde vergrendeling voor SaveActiveProjectAsync: WizardScreensButton_Click,
-    // ScreenEditorButton_Click en LanguagesButton_Click roepen elk _projectService.SaveAsync aan
-    // voor hetzelfde _activeProjectFilePath. Elke knop schakelde voorheen alleen zichzelf uit
-    // tijdens het opslaan, dus een klik op een andere knop tijdens die lopende await kon
-    // gelijktijdig naar hetzelfde .tmp-tijdelijke bestand schrijven (CodeRabbit, PR #18). Deze
-    // SemaphoreSlim serialiseert alle drie de opslagpaden.
+    // Eén gedeelde vergrendeling voor SaveActiveProjectAsync: ScreenEditor_SaveClicked en
+    // OpenProjectSettings (via ProjectSettingsButton/Nieuw/Openen) roepen elk _projectService.
+    // SaveAsync aan voor hetzelfde _activeProjectFilePath. Zie de oorspronkelijke bug (CodeRabbit,
+    // PR #18): zonder gedeelde lock kon een save tijdens een lopende andere save gelijktijdig naar
+    // hetzelfde .tmp-tijdelijke bestand schrijven.
     private readonly SemaphoreSlim _saveLock = new(1, 1);
 
     public MainWindow()
@@ -58,150 +33,10 @@ public partial class MainWindow : Window
         var informationalVersion = Assembly.GetExecutingAssembly()
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
         VersionText.Text = string.IsNullOrWhiteSpace(informationalVersion) ? string.Empty : $"v{informationalVersion}";
-
-        foreach (var (cultureName, displayName) in Languages)
-        {
-            LanguageComboBox.Items.Add(new ComboBoxItem { Content = displayName, Tag = cultureName });
-        }
-
-        foreach (var (themeKey, resourceKey) in ThemeLabels)
-        {
-            ThemeComboBox.Items.Add(new ComboBoxItem { Content = LocalizationManager.Instance[resourceKey], Tag = themeKey });
-        }
-
-        LanguageComboBox.SelectedItem = LanguageComboBox.Items.Cast<ComboBoxItem>()
-            .FirstOrDefault(i => (string)i.Tag == App.Settings.Current.Language) ?? LanguageComboBox.Items[0];
-        ThemeComboBox.SelectedItem = ThemeComboBox.Items.Cast<ComboBoxItem>()
-            .FirstOrDefault(i => (string)i.Tag == App.Settings.Current.Theme) ?? ThemeComboBox.Items[0];
-
-        _isInitializing = false;
-    }
-
-    private async void LanguageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (_isInitializing || LanguageComboBox.SelectedItem is not ComboBoxItem { Tag: string cultureName })
-        {
-            return;
-        }
-
-        LocalizationManager.Instance.SetLanguage(cultureName);
-        App.Settings.Current.Language = cultureName;
-        await App.Settings.SaveAsync();
-
-        // Labels van het themadropdown zijn vertaald tekst, dus die na een taalwissel verversen.
-        for (var i = 0; i < ThemeComboBox.Items.Count; i++)
-        {
-            ((ComboBoxItem)ThemeComboBox.Items[i]).Content = LocalizationManager.Instance[ThemeLabels[i].ResourceKey];
-        }
-    }
-
-    private async void ThemeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (_isInitializing || ThemeComboBox.SelectedItem is not ComboBoxItem { Tag: string themeKey })
-        {
-            return;
-        }
-
-        ThemeManager.ApplyTheme(themeKey);
-        App.Settings.Current.Theme = themeKey;
-        await App.Settings.SaveAsync();
     }
 
     private void NewProjectButton_Click(object sender, RoutedEventArgs e) =>
         OpenProjectSettings(InstallerProject.CreateNew(), projectFilePath: null);
-
-    private async void WizardScreensButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (_activeProject is null)
-        {
-            return;
-        }
-
-        var viewModel = new WizardScreensViewModel(_activeProject.WizardScreens);
-        var window = new WizardScreensWindow(viewModel) { Owner = this };
-
-        if (window.ShowDialog() != true)
-        {
-            return;
-        }
-
-        _activeProject.WizardScreens = viewModel.ToSelection();
-
-        await SaveActiveProjectAsync();
-    }
-
-    private async void LanguagesButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (_activeProject is null)
-        {
-            return;
-        }
-
-        var viewModel = new LanguagesViewModel(_activeProject.SupportedLanguageIds);
-        var window = new LanguagesWindow(viewModel) { Owner = this };
-
-        if (window.ShowDialog() != true)
-        {
-            return;
-        }
-
-        _activeProject.SupportedLanguageIds = viewModel.ToSelection();
-
-        await SaveActiveProjectAsync();
-    }
-
-    private async void ScreenEditorButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (_activeProject is null)
-        {
-            return;
-        }
-
-        var viewModel = new WizardEditorViewModel(_activeProject, _activeProjectFilePath, _assetService);
-        var window = new WizardEditorWindow(viewModel) { Owner = this };
-
-        if (window.ShowDialog() != true)
-        {
-            return;
-        }
-
-        viewModel.ApplyTo(_activeProject);
-
-        await SaveActiveProjectAsync();
-    }
-
-    /// <summary>
-    /// Slaat <see cref="_activeProject"/> op naar <see cref="_activeProjectFilePath"/>, als er een
-    /// bestandspad is (bij een nog niet opgeslagen nieuw project is er niets te doen). Gedeeld
-    /// door WizardScreensButton_Click, LanguagesButton_Click en ScreenEditorButton_Click: die drie
-    /// schakelden voorheen elk alleen hun eigen knop uit tijdens het opslaan, waardoor een klik op
-    /// een andere knop tijdens de lopende await gelijktijdig naar hetzelfde .tmp-tijdelijke
-    /// bestand kon schrijven (CodeRabbit, PR #18). <see cref="_saveLock"/> serialiseert dat, en
-    /// alle drie de knoppen gaan tijdens elke save uit, niet alleen de knop die hem startte.
-    /// </summary>
-    private async Task SaveActiveProjectAsync()
-    {
-        if (_activeProject is null || string.IsNullOrWhiteSpace(_activeProjectFilePath))
-        {
-            return;
-        }
-
-        await _saveLock.WaitAsync();
-        try
-        {
-            SetProjectActionButtonsEnabled(false);
-            await _projectService.SaveAsync(_activeProjectFilePath, _activeProject);
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(ex.Message, "Inno Setup Studio", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-        finally
-        {
-            SetProjectActionButtonsEnabled(_activeProject is not null);
-            _saveLock.Release();
-        }
-    }
 
     private async void OpenProjectButton_Click(object sender, RoutedEventArgs e)
     {
@@ -235,6 +70,20 @@ public partial class MainWindow : Window
         OpenProjectSettings(project, dialog.FileName);
     }
 
+    // Nieuw sinds sectie 21: voorheen was er geen weg terug in Projectinstellingen voor een al
+    // actief project zonder het opnieuw te openen — dit scherm opende alleen automatisch direct
+    // na Nieuw/Openen.
+    private void ProjectSettingsButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_activeProject is not null)
+        {
+            OpenProjectSettings(_activeProject, _activeProjectFilePath);
+        }
+    }
+
+    private void SettingsButton_Click(object sender, RoutedEventArgs e) =>
+        new SettingsWindow { Owner = this }.ShowDialog();
+
     private void OpenProjectSettings(InstallerProject project, string? projectFilePath)
     {
         var viewModel = new ProjectSettingsViewModel(project, _projectService, projectFilePath);
@@ -243,7 +92,9 @@ public partial class MainWindow : Window
         if (window.ShowDialog() == true)
         {
             // Alleen bij een succesvolle Opslaan (DialogResult true) zijn SavedProject en
-            // SavedProjectFilePath gevuld.
+            // SavedProjectFilePath gevuld. SavedProject bevat nu ook de eventueel gewijzigde
+            // schermselectie/talenselectie (sectie 21, tabbladen Schermen/Talen), dus de
+            // schermeditor hieronder moet zich daarop verversen.
             SetActiveProject(viewModel.SavedProject, viewModel.SavedProjectFilePath);
         }
         else if (!string.IsNullOrWhiteSpace(projectFilePath))
@@ -258,17 +109,105 @@ public partial class MainWindow : Window
         }
     }
 
+    // Sectie 21: de schermeditor (voorheen WizardEditorWindow) is nu permanent zichtbaar in
+    // plaats van een venster dat bij elke klik opnieuw werd geconstrueerd. Een nieuwe
+    // WizardEditorViewModel wordt daarom alleen op deze grenzen gebouwd — nieuw/geopend project,
+    // of na een Opslaan in Projectinstellingen die de schermselectie kan hebben gewijzigd — niet
+    // bij elke bewerking binnen de schermeditor zelf (dat zou halverwege typen de selectie en
+    // invoer resetten).
     private void SetActiveProject(InstallerProject? project, string? projectFilePath)
     {
         _activeProject = project;
         _activeProjectFilePath = projectFilePath;
         SetProjectActionButtonsEnabled(_activeProject is not null);
+
+        if (_activeProject is null)
+        {
+            ScreenEditor.Visibility = Visibility.Collapsed;
+            WelcomeText.Visibility = Visibility.Visible;
+            return;
+        }
+
+        ScreenEditor.ViewModel = new WizardEditorViewModel(_activeProject, _activeProjectFilePath, _assetService);
+        ScreenEditor.Visibility = Visibility.Visible;
+        WelcomeText.Visibility = Visibility.Collapsed;
     }
 
+    // BuildInstallerButton blijft hier bewust buiten beschouwing (CodeRabbit, PR #19): "Installer
+    // bouwen" is nog niet geïmplementeerd — alleen de plek in de bovenbalk was in scope bij sectie
+    // 21, niet de bouwlogica zelf (zie docs/Architectuur-en-Ontwerp.md). Zonder deze aanpassing
+    // werd de knop bij een actief project wel klikbaar, maar deed hij niets: er is geen
+    // Click-handler aan gekoppeld. Blijft IsEnabled="False" (zie MainWindow.xaml) totdat die
+    // functionaliteit er daadwerkelijk is.
     private void SetProjectActionButtonsEnabled(bool enabled)
     {
-        WizardScreensButton.IsEnabled = enabled;
-        ScreenEditorButton.IsEnabled = enabled;
-        LanguagesButton.IsEnabled = enabled;
+        ProjectSettingsButton.IsEnabled = enabled;
+    }
+
+    // Inline Opslaan-knop van ScreenEditorControl (sectie 21, vervangt WizardEditorWindow's
+    // Save/Cancel-dialoogbalk): schrijft de bewerkte velden terug naar _activeProject en slaat
+    // op, precies zoals ScreenEditorButton_Click dat voorheen deed ná een geslaagde ShowDialog.
+    // Bouwt hier bewust GEEN nieuwe WizardEditorViewModel — zie SetActiveProject hierboven.
+    private async void ScreenEditor_SaveClicked(object? sender, EventArgs e)
+    {
+        if (_activeProject is null || ScreenEditor.ViewModel is not { } viewModel)
+        {
+            return;
+        }
+
+        // Volgorde is hier van belang (CodeRabbit, PR #19): IsDirty gaat al vóór de await naar
+        // false, zodat een wijziging die de gebruiker tijdens het opslaan zelf nog typt via de
+        // normale MarkDirty-route opnieuw IsDirty=true zet — die staat dan niet stilletjes als
+        // "opgeslagen" terwijl hij niet in dit ApplyTo-moment is meegenomen. Mislukt het opslaan
+        // zelf, dan wordt het scherm hieronder alsnog expliciet weer vuil gemaakt: een mislukte
+        // save mag nooit als "opgeslagen" ogen.
+        viewModel.ApplyTo(_activeProject);
+        viewModel.IsDirty = false;
+
+        if (!await SaveActiveProjectAsync())
+        {
+            viewModel.IsDirty = true;
+        }
+    }
+
+    /// <summary>
+    /// Slaat <see cref="_activeProject"/> op naar <see cref="_activeProjectFilePath"/>, als er een
+    /// bestandspad is (bij een nog niet opgeslagen nieuw project is er niets te doen). Gedeeld
+    /// door ScreenEditor_SaveClicked en OpenProjectSettings: die twee schakelden voorheen (vóór
+    /// sectie 21, als losse dialoogvensters) elk alleen hun eigen knop uit tijdens het opslaan,
+    /// waardoor een klik op een andere actie tijdens de lopende await gelijktijdig naar hetzelfde
+    /// .tmp-tijdelijke bestand kon schrijven (CodeRabbit, PR #18). <see cref="_saveLock"/>
+    /// serialiseert dat.
+    /// </summary>
+    /// <returns>
+    /// True als het opslaan gelukt is (of als er niets op te slaan was); false als
+    /// <see cref="_projectService"/>.SaveAsync een fout gooide (die dan al als MessageBox is
+    /// getoond) — de aanroeper gebruikt dit om IsDirty niet ten onrechte op false te zetten na een
+    /// mislukte save (CodeRabbit, PR #19).
+    /// </returns>
+    private async Task<bool> SaveActiveProjectAsync()
+    {
+        if (_activeProject is null || string.IsNullOrWhiteSpace(_activeProjectFilePath))
+        {
+            return true;
+        }
+
+        await _saveLock.WaitAsync();
+        try
+        {
+            SetProjectActionButtonsEnabled(false);
+            await _projectService.SaveAsync(_activeProjectFilePath, _activeProject);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Inno Setup Studio", MessageBoxButton.OK, MessageBoxImage.Error);
+            return false;
+        }
+        finally
+        {
+            SetProjectActionButtonsEnabled(_activeProject is not null);
+            _saveLock.Release();
+        }
     }
 }

@@ -22,6 +22,7 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
         _appName = appName;
         _defaultDirName = defaultDirName;
         _allowUserToChangeDir = allowUserToChangeDir;
+        _browseButtonCaption = browseButtonSettings.Caption;
         _browseButtonEnabled = browseButtonSettings.Enabled;
         _browseButtonVisible = browseButtonSettings.Visible;
         _browseButtonTextColor = browseButtonSettings.TextColor;
@@ -53,7 +54,11 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
 
     partial void OnDefaultDirNameChanged(string value) => OnPropertyChanged(nameof(DisplayDirName));
 
-    partial void OnAllowUserToChangeDirChanged(bool value) => OnPropertyChanged(nameof(ChangeDirHintVisibility));
+    partial void OnAllowUserToChangeDirChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ChangeDirHintVisibility));
+        OnPropertyChanged(nameof(IsBrowseButtonEnabledInPreview));
+    }
 
     [RelayCommand]
     private void Browse()
@@ -79,7 +84,12 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
     // knop is in Inno Setup Studio's EIGEN UI om een map te kiezen voor DefaultDirName. Zie
     // BrowseButtonSettings voor waarom dit los staat van de drie gedeelde Terug-/Volgende-/
     // Annuleren-knoppen: deze knop komt maar op dit ene scherm voor, dus geen Effective*-resolutie
-    // via het Standaardscherm, en bewust geen Caption (Herbert heeft dat veld niet gevraagd).
+    // via het Standaardscherm. Caption is sinds 2026-09-29 wél een veld (zie BrowseButtonSettings)
+    // — tweelaags net als hieronder, alleen met Inno Setup's eigen ingebouwde knoptekst als
+    // terugvalwaarde in plaats van een derde, Standaardscherm-laag.
+
+    [ObservableProperty]
+    private string _browseButtonCaption;
 
     [ObservableProperty]
     private bool? _browseButtonEnabled;
@@ -108,10 +118,67 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
     [RelayCommand]
     private void PickBrowseButtonTextColor() => BrowseButtonTextColor = PickColor(BrowseButtonTextColor);
 
+    /// <summary>Inno Setup's eigen standaardtekst voor de Bladeren-knop, gebruikt zolang
+    /// <see cref="BrowseButtonCaption"/> leeg is. Zelfde "toon de studio's eigen UI-taal, niet
+    /// Inno Setup's vaste Engelse tekst"-aanpak als DefaultBackButtonCaption e.a. in
+    /// WizardScreenEditorViewModel.</summary>
+    private static string DefaultBrowseButtonCaption => LocalizationManager.Instance["ButtonWizardBrowse"];
+
+    /// <summary>Wat de voorvertoning daadwerkelijk op de Bladeren-knop toont: eigen tekst, anders
+    /// <see cref="DefaultBrowseButtonCaption"/>. Tweelaags (geen Standaardscherm-laag, zie
+    /// BrowseButtonSettings): dezelfde ResolveCaption-aanpak als de basisklasse, maar die methode
+    /// is daar private, dus hier een eigen, verder identieke regel.</summary>
+    public string EffectiveBrowseButtonCaption =>
+        !string.IsNullOrWhiteSpace(BrowseButtonCaption) ? BrowseButtonCaption : DefaultBrowseButtonCaption;
+
+    partial void OnBrowseButtonCaptionChanged(string value)
+    {
+        if (!string.IsNullOrEmpty(value) && string.IsNullOrWhiteSpace(value))
+        {
+            BrowseButtonCaption = string.Empty;
+            return;
+        }
+
+        OnPropertyChanged(nameof(EffectiveBrowseButtonCaption));
+    }
+
+    // Herbert (2026-09-30): alle knoppen moeten dezelfde bewerkingsfunctionaliteiten krijgen als
+    // Terug/Volgende/Annuleren, tenzij Inno Setup dat niet ondersteunt. Enabled/Visible stonden
+    // hier al als velden (zie hierboven, ButtonPropertiesWindow kon ze al instellen), maar zonder
+    // de leeg-is-true-terugvalwaarde die Terug/Volgende/Annuleren wél hebben (IsXxxButtonVisible/
+    // IsXxxButtonEnabled in WizardScreenEditorViewModel) — en de voorvertoning hieronder gebruikte
+    // ze zelfs helemaal niet: alleen AllowUserToChangeDir bepaalde IsEnabled, dus een expliciete
+    // "Bladeren-knop uitschakelen"-instelling had zichtbaar geen enkel effect. Tweelaags, geen
+    // Standaardscherm-cascade — zelfde reden als bij Caption hierboven (deze knop komt maar op één
+    // scherm voor).
+
+    /// <summary>True tenzij de Bladeren-knop expliciet op onzichtbaar gezet is.</summary>
+    public bool IsBrowseButtonVisible => BrowseButtonVisible ?? true;
+
+    /// <summary>True tenzij de Bladeren-knop expliciet op uitgeschakeld gezet is. Gebruikt de
+    /// voorvertoning niet rechtstreeks — zie <see cref="IsBrowseButtonEnabledInPreview"/>, die dit
+    /// combineert met Inno Setup's eigen ingebouwde gedrag.</summary>
+    public bool IsBrowseButtonEnabled => BrowseButtonEnabled ?? true;
+
+    /// <summary>Wat de voorvertoning daadwerkelijk als IsEnabled van de Bladeren-knop gebruikt:
+    /// zowel Inno Setup's eigen ingebouwde gedrag (de knop gaat sowieso uit zodra de gebruiker de
+    /// map niet mag wijzigen, zie AllowUserToChangeDir/ChangeDirHintVisibility) als de knop-eigen
+    /// Enabled-instelling moeten allebei "aan" staan.</summary>
+    public bool IsBrowseButtonEnabledInPreview => AllowUserToChangeDir && IsBrowseButtonEnabled;
+
+    partial void OnBrowseButtonVisibleChanged(bool? value) => OnPropertyChanged(nameof(IsBrowseButtonVisible));
+
+    partial void OnBrowseButtonEnabledChanged(bool? value)
+    {
+        OnPropertyChanged(nameof(IsBrowseButtonEnabled));
+        OnPropertyChanged(nameof(IsBrowseButtonEnabledInPreview));
+    }
+
     /// <summary>Tegenhanger van de Bladerknop-velden in de constructor, gebruikt door
     /// WizardEditorViewModel.ApplyTo.</summary>
     public BrowseButtonSettings ReadBrowseButtonSettings() => new()
     {
+        Caption = BrowseButtonCaption,
         Enabled = BrowseButtonEnabled,
         Visible = BrowseButtonVisible,
         TextColor = BrowseButtonTextColor,
