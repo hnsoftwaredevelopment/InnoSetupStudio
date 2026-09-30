@@ -1742,3 +1742,48 @@ geslaagd. Smoke-test: `InnoSetupStudio.exe` gestart en reageerde (`Responding: T
 afgesloten. Navigatie tussen Standaardscherm en de echte schermen kon niet door mij handmatig in
 de UI doorgeklikt worden (dat blijft aan Herbert) — de fix is beoordeeld op basis van code-analyse
 van het exacte WPF-mechanisme, niet op basis van visuele bevestiging.
+
+
+**Tekstkleur van knoppen kwam nergens in een voorvertoning terecht (2026-09-30), zelfde branch.**
+Herbert testte de Tekstkleur van de Bladeren-knop (screenshot: #008000 groen gekozen, zwatch en
+hex-veld tonen correct groen) maar de knoptekst bleef zwart, zowel in de "Voorvertoning" onderaan
+het Knop-eigenschappenscherm als in de echte voorvertoning van het Bestemmingsscherm.
+
+Oorzaak gevonden: de gedeelde Button-stijl (`Themes/Styles.xaml`) heeft sinds 2026-09-28 een
+`ControlTemplate.Resources`-stijl die knoptekst-TextBlocks via
+`{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}` de Foreground van de knop
+probeert te geven — bedoeld om te voorkomen dat de app-brede TextBlock-stijl (die overal
+`Brush.TextPrimary` afdwingt) knoptekst overschrijft. Dat werkt alleen voor elementen die
+letterlijk in de ControlTemplate zelf staan; `TemplatedParent` lost niet op voor Content dat van
+buiten de template komt (een eigen `<TextBlock>` als knopinhoud, of een kale string die WPF impliciet
+in een TextBlock verpakt) — precies wat de "Voorvertoning"-knop in `ButtonPropertiesWindow.xaml` en
+de Bladeren-knop in `SelectDestinationPagePreview.xaml` allebei doen. Bij een niet-oplossende
+binding valt de tekstkleur terug op zwart in plaats van de bedoelde kleur.
+
+Interessant genoeg trof dit niet de "echte" Terug/Volgende/Annuleren-knoppen in de installer-
+voorvertoning in `ScreenEditorControl.xaml`: die gebruiken al langer een ander, wél werkend patroon
+(`RelativeSource AncestorType=Button` rechtstreeks op de content-TextBlock, in plaats van de
+TemplatedParent-truc in de gedeelde stijl) — dat patroon nu ook toegepast op de twee kapotte
+plekken:
+
+- `ButtonPropertiesWindow.xaml`: de "Voorvertoning"-knop (gebruikt voor alle vier de knoppen:
+  Terug/Volgende/Annuleren/Bladeren, want het is één herbruikbaar dialoogvenster) krijgt nu een
+  expliciete `Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"`
+  op zijn interne TextBlock.
+- `SelectDestinationPagePreview.xaml`: `Content="{Binding EffectiveBrowseButtonCaption}"`
+  (impliciete string-naar-TextBlock, dus hetzelfde probleem) vervangen door een expliciete
+  TextBlock met dezelfde Foreground-binding. Bewust ook dit project geraakt: `Application.Resources`
+  werkt proces-breed, dus de gedeelde Button-stijl uit InnoSetupStudio.App geldt ook voor knoppen in
+  InnoSetupStudio.Wizard, ook al verwijst dat project niet naar App.
+
+De onderliggende `ControlTemplate.Resources`-stijl in `Themes/Styles.xaml` zelf is NIET aangepast —
+die blijft voor nu ongebruikt/inert liggen. Ik heb bewust niet geprobeerd die te herstellen of te
+verwijderen: dat raakt de Button-stijl voor de hele applicatie (inclusief donkere thema's die ik
+niet zelf kan zien renderen), en het risico van een brede, moeilijk te overziene regressie weegt
+niet op tegen het gerichte, al bewezen werkende patroon dat de twee daadwerkelijk gemelde plekken
+nu gebruiken.
+
+**Build- en testresultaat.** `dotnet build`: 0 waarschuwingen, 0 fouten. `dotnet test`: 21/21
+geslaagd. Smoke-test: `InnoSetupStudio.exe` gestart en reageerde (`Responding: True`), daarna
+afgesloten. De daadwerkelijke tekstkleur kon ik niet zelf visueel controleren (geen UI-doorklik) —
+gevraagd aan Herbert om opnieuw te testen.

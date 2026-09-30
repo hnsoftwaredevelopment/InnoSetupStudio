@@ -54,7 +54,7 @@
                  Terug/Volgende/Annuleren) — IsEnabled combineert Inno Setup's eigen ingebouwde
                  gedrag (AllowUserToChangeDir) met de knop-eigen Enabled-instelling, zie
                  IsBrowseButtonEnabledInPreview. -->
-            <Button Grid.Column="1" Content="{Binding EffectiveBrowseButtonCaption}"
+            <Button Grid.Column="1"
                     IsEnabled="{Binding IsBrowseButtonEnabledInPreview}"
                     Visibility="{Binding IsBrowseButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                     Foreground="{Binding BrowseButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
@@ -62,7 +62,20 @@
                     FontSize="{Binding BrowseButtonFontSize, Converter={StaticResource FontSizeOrUnsetConverter}}"
                     FontWeight="{Binding BrowseButtonFontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"
                     ToolTip="{Binding BrowseButtonTooltip}"
-                    IsHitTestVisible="False" Focusable="False" IsTabStop="False" Padding="10,3" />
+                    IsHitTestVisible="False" Focusable="False" IsTabStop="False" Padding="10,3">
+                <!-- Content hierboven vervangen door een expliciete TextBlock met een eigen
+                     Foreground-binding (2026-09-30, Herberts melding: TextColor kwam niet aan in
+                     deze voorvertoning) - zie de toelichting in ButtonPropertiesWindow.xaml bij
+                     exact dezelfde fix: de app-brede Button-stijl (die ook hier geldt, want
+                     Application.Resources werkt proces-breed, ook voor dit Wizard-project) kan de
+                     Foreground van deze knop niet via TemplatedParent doorgeven aan Content dat
+                     van buiten de ControlTemplate komt. Een gewoon Content="..." (impliciete
+                     string-naar-TextBlock) heeft dat probleem ook, dus nu een expliciete
+                     TextBlock met RelativeSource AncestorType=Button, net als
+                     ScreenEditorControl.xaml al langer doet voor Terug/Volgende/Annuleren. -->
+                <TextBlock Text="{Binding EffectiveBrowseButtonCaption}"
+                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+            </Button>
         </Grid>
 
         <TextBlock DockPanel.Dock="Bottom" Margin="0,16,0,0" Foreground="#FF666666" FontSize="11"
