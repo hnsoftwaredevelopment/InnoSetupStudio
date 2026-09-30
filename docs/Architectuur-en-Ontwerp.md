@@ -1787,3 +1787,8 @@ nu gebruiken.
 geslaagd. Smoke-test: `InnoSetupStudio.exe` gestart en reageerde (`Responding: True`), daarna
 afgesloten. De daadwerkelijke tekstkleur kon ik niet zelf visueel controleren (geen UI-doorklik) —
 gevraagd aan Herbert om opnieuw te testen.
+
+**Herbert bevestigd (2026-09-30):** tekstkleur wordt nu correct toegepast, ook voor de knoppen
+(Terug/Volgende/Annuleren) waar dit al langer "werkte" — bevestigt dat de root-cause-analyse
+hierboven klopte: de zwarte tekst was een sluimerende bug die ook die knoppen al raakte, niet iets
+dat alleen de Bladeren-knop trof.
