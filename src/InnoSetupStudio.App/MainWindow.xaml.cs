@@ -35,11 +35,23 @@ public partial class MainWindow : Window
         VersionText.Text = string.IsNullOrWhiteSpace(informationalVersion) ? string.Empty : $"v{informationalVersion}";
     }
 
-    private void NewProjectButton_Click(object sender, RoutedEventArgs e) =>
+    private async void NewProjectButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (!await ConfirmDiscardUnsavedScreenChangesAsync())
+        {
+            return;
+        }
+
         OpenProjectSettings(InstallerProject.CreateNew(), projectFilePath: null);
+    }
 
     private async void OpenProjectButton_Click(object sender, RoutedEventArgs e)
     {
+        if (!await ConfirmDiscardUnsavedScreenChangesAsync())
+        {
+            return;
+        }
+
         var dialog = new OpenFileDialog
         {
             Filter = LocalizationManager.Instance["DialogFilterProjectFiles"],
@@ -73,12 +85,24 @@ public partial class MainWindow : Window
     // Nieuw sinds sectie 21: voorheen was er geen weg terug in Projectinstellingen voor een al
     // actief project zonder het opnieuw te openen — dit scherm opende alleen automatisch direct
     // na Nieuw/Openen.
-    private void ProjectSettingsButton_Click(object sender, RoutedEventArgs e)
+    private async void ProjectSettingsButton_Click(object sender, RoutedEventArgs e)
     {
-        if (_activeProject is not null)
+        if (_activeProject is null)
         {
-            OpenProjectSettings(_activeProject, _activeProjectFilePath);
+            return;
         }
+
+        // Dit is exact het CodeRabbit-scenario (PR #19, bevinding #3, zie
+        // ConfirmDiscardUnsavedScreenChangesAsync hieronder): Projectinstellingen heropenen voor
+        // hetzelfde, al actieve project bouwt via OpenProjectSettings -> SetActiveProject een
+        // gehele nieuwe WizardEditorViewModel, ongeacht of de huidige nog niet-opgeslagen
+        // schermwijzigingen had.
+        if (!await ConfirmDiscardUnsavedScreenChangesAsync())
+        {
+            return;
+        }
+
+        OpenProjectSettings(_activeProject, _activeProjectFilePath);
     }
 
     private void SettingsButton_Click(object sender, RoutedEventArgs e) =>
@@ -131,6 +155,65 @@ public partial class MainWindow : Window
         ScreenEditor.ViewModel = new WizardEditorViewModel(_activeProject, _activeProjectFilePath, _assetService);
         ScreenEditor.Visibility = Visibility.Visible;
         WelcomeText.Visibility = Visibility.Collapsed;
+    }
+
+    /// <summary>
+    /// Vraagt de gebruiker om niet-opgeslagen wijzigingen in de schermeditor op te slaan of te
+    /// verwerpen, vlak vóórdat een aanroep die op <see cref="SetActiveProject"/> uitkomt (Nieuw,
+    /// Openen, of Projectinstellingen heropenen) de huidige — mogelijk gewijzigde — schermeditor
+    /// zonder waarschuwing zou vervangen door een gehele nieuwe <see cref="WizardEditorViewModel"/>.
+    /// Zie CodeRabbit-bevinding #3, PR #19 (docs/Architectuur-en-Ontwerp.md): dat gebeurde
+    /// voorheen onvoorwaardelijk, ongeacht IsDirty. Bewust hier, per aanroeppad
+    /// (NewProjectButton_Click, OpenProjectButton_Click, ProjectSettingsButton_Click) vóór
+    /// SetActiveProject afgevangen, in plaats van binnen SetActiveProject zelf:
+    /// ProjectSettingsWindow is modaal, dus tussen zo'n aanroep en de daaropvolgende
+    /// SetActiveProject-aanroepen in OpenProjectSettings kan de schermeditor niet alsnog dirty
+    /// worden — één controlepunt per gebruikersactie volstaat.
+    /// </summary>
+    /// <returns>
+    /// True als de aanroeper door mag gaan: er was niets te verliezen (geen actief project, of de
+    /// schermeditor was niet dirty), de wijzigingen zijn succesvol opgeslagen, of de gebruiker
+    /// koos expliciet voor verwerpen. False als de gebruiker annuleerde, of het opslaan zelf
+    /// mislukte (dan is de foutmelding al getoond) — de aanroeper moet de actie dan afbreken en
+    /// het actieve project/de schermeditor ongewijzigd laten.
+    /// </returns>
+    private async Task<bool> ConfirmDiscardUnsavedScreenChangesAsync()
+    {
+        if (_activeProject is null || ScreenEditor.ViewModel is not { IsDirty: true } viewModel)
+        {
+            return true;
+        }
+
+        var result = MessageBox.Show(
+            this,
+            LocalizationManager.Instance["UnsavedScreenChangesMessage"],
+            LocalizationManager.Instance["UnsavedScreenChangesTitle"],
+            MessageBoxButton.YesNoCancel,
+            MessageBoxImage.Warning);
+
+        if (result == MessageBoxResult.Cancel)
+        {
+            return false;
+        }
+
+        if (result == MessageBoxResult.No)
+        {
+            return true;
+        }
+
+        // MessageBoxResult.Yes: zelfde volgorde als ScreenEditor_SaveClicked hieronder — IsDirty
+        // pas na een geslaagde save op false, anders zet een mislukte save (bestand in gebruik,
+        // schijf vol) het scherm alsnog ten onrechte op "opgeslagen".
+        viewModel.ApplyTo(_activeProject);
+        viewModel.IsDirty = false;
+
+        if (await SaveActiveProjectAsync())
+        {
+            return true;
+        }
+
+        viewModel.IsDirty = true;
+        return false;
     }
 
     // BuildInstallerButton blijft hier bewust buiten beschouwing (CodeRabbit, PR #19): "Installer

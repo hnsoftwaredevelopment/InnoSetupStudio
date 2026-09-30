@@ -135,6 +135,12 @@
   <data name="ButtonClose" xml:space="preserve">
     <value>Close</value>
   </data>
+  <data name="UnsavedScreenChangesTitle" xml:space="preserve">
+    <value>Unsaved changes</value>
+  </data>
+  <data name="UnsavedScreenChangesMessage" xml:space="preserve">
+    <value>There are unsaved changes in the screen editor. Do you want to save them before continuing?</value>
+  </data>
   <data name="DialogFilterProjectFiles" xml:space="preserve">
     <value>Inno Setup Studio project (*.issproj)|*.issproj</value>
   </data>

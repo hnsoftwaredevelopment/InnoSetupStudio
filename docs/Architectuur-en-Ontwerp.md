@@ -1809,3 +1809,64 @@ Raakt vermoedelijk `WizardEditorViewModel`'s project-aanmaakpad (`New project`) 
 scope, ook de wizard-afbeeldingen/kleuren van het Standaardscherm. Logisch pas op te pakken nadat
 de projectinstellingen en de schermeditor verder zijn uitgekristalliseerd (meer velden = duidelijker
 wat een zinvolle default is) — vandaar Herberts eigen inschatting dat dit voor later is.
+
+
+## 23. Waarschuwing bij niet-opgeslagen schermwijzigingen (2026-09-30)
+
+Oplossing voor het dataverlies-risico dat als CodeRabbit-bevinding #3 (PR #19) bewust NIET
+automatisch werd opgelost, maar als nieuw backlogitem werd vastgelegd (zie sectie hierboven,
+"CodeRabbit-bevindingen PR #19, geverifieerd en verwerkt"): `SetActiveProject` (MainWindow.xaml.cs)
+bouwt bij elke aanroep een gehele nieuwe `WizardEditorViewModel`, zonder te controleren of de
+vorige nog niet-opgeslagen wijzigingen had (`IsDirty == true`). Voorbeeld: een knopomschrijving
+typen in de schermeditor zonder op Opslaan te klikken, dan via de bovenbalk Projectinstellingen
+(her)openen — de getypte wijziging verdween dan stilletjes.
+
+Herbert koos hiervoor expliciet voor de eenvoudigste variant: vragen of de wijzigingen opgeslagen
+moeten worden, in plaats van automatisch samenvoegen of stilzwijgend negeren (een instelbare
+"Vragen"/"Automatisch opslaan"-voorkeur is expliciet voor later, zie onderaan).
+
+**Gekozen aanpak.** Een nieuwe hulpmethode `ConfirmDiscardUnsavedScreenChangesAsync` in
+MainWindow.xaml.cs, aangeroepen aan het begin van elk van de drie aanroeppaden die uiteindelijk op
+`SetActiveProject` uitkomen:
+
+- `NewProjectButton_Click` (Nieuw project)
+- `OpenProjectButton_Click` (Project openen)
+- `ProjectSettingsButton_Click` (Projectinstellingen heropenen voor het al actieve project — dit is
+  exact het CodeRabbit-scenario hierboven)
+
+Als `ScreenEditor.ViewModel.IsDirty` niet waar is (geen actief project, of de schermeditor is niet
+gewijzigd), gaat de aanroeper direct door — geen dialoog voor niets. Anders toont
+`MessageBox.Show` met `MessageBoxButton.YesNoCancel`:
+
+- **Ja** — dezelfde volgorde als `ScreenEditor_SaveClicked`: `ApplyTo` schrijft de bewerkte velden
+  terug naar `_activeProject`, `IsDirty` gaat vóór de `await` op false, en `SaveActiveProjectAsync`
+  wordt aangeroepen. Mislukt het opslaan, dan gaat `IsDirty` weer op true en breekt de aanroeper de
+  actie af (dezelfde bestaande logica als bij de inline Opslaan-knop, nu hergebruikt).
+- **Nee** — wijzigingen worden verworpen, de aanroeper gaat door (de eigen aanroep bouwt zo dadelijk
+  toch een nieuwe `WizardEditorViewModel` via `SetActiveProject`).
+- **Annuleren** (of het venster gesloten) — de aanroeper breekt de actie af; het actieve project en
+  de schermeditor blijven ongewijzigd, alsof er niets gebeurd is.
+
+**Waarom vóór `SetActiveProject` zelf, niet erin.** `ProjectSettingsWindow` is modaal
+(`ShowDialog`), dus tussen de aanroep van `ConfirmDiscardUnsavedScreenChangesAsync` in bijvoorbeeld
+`ProjectSettingsButton_Click` en de latere `SetActiveProject`-aanroepen binnen `OpenProjectSettings`
+kan de schermeditor niet alsnog dirty worden — de gebruiker kan er in die tussentijd niet bij. Eén
+controlepunt per gebruikersactie volstaat dus; een controle binnen `SetActiveProject` zelf zou
+hetzelfde afvangen maar minder duidelijk maken welke gebruikersactie de vraag veroorzaakt (relevant
+voor de dialoogtekst/titel).
+
+**Nieuwe vertaalstrings** (`Strings.resx`/`.en-US`/`.de-DE`, na `ButtonClose`, zelfde patroon als de
+rest van dit bestand): `UnsavedScreenChangesTitle` en `UnsavedScreenChangesMessage`. De
+Ja/Nee/Annuleren-knoppen van `MessageBoxButton.YesNoCancel` zelf zijn NIET apart vertaald — die
+komen van Windows' eigen gelokaliseerde resources op basis van `CultureInfo.CurrentUICulture`, die
+`LocalizationManager.SetLanguage` al proces-breed instelt (zie `LocalizationManager.cs`), dus die
+volgen vanzelf de actieve schermtaal.
+
+**Bewust niet gedaan.** Een instelbare voorkeur tussen "Vragen" en "Automatisch opslaan" bij
+niet-opgeslagen wijzigingen — Herbert noemde dit zelf expliciet als iets voor een later stadium, niet
+onderdeel van deze fix. Vastgelegd als nieuw, nog niet ontworpen backlogitem.
+
+**Build- en testresultaat.** `dotnet build`: 0 waarschuwingen, 0 fouten. `dotnet test`: 21/21
+geslaagd (ongewijzigd). Smoke-test: `InnoSetupStudio.exe` gestart en reageerde (`Responding: True`),
+daarna afgesloten. De daadwerkelijke dialoog (tekst, knoppen, het Ja/Nee/Annuleren-gedrag) kon ik
+niet zelf visueel doorklikken — gevraagd aan Herbert om te testen.
