@@ -1694,3 +1694,51 @@ InnoSetup-beperking die pariteit in de weg staat. Doorgevoerd:
 **Build- en testresultaat.** `dotnet build`: 0 waarschuwingen, 0 fouten. `dotnet test`: 21/21
 geslaagd (ongewijzigd). Smoke-test: `InnoSetupStudio.exe` gestart en reageerde
 (`Responding: True`), daarna afgesloten.
+
+
+**Standaardscherm was na selectie van een echt scherm niet meer terug te selecteren (2026-09-30),
+zelfde branch.** Herbert's testfeedback op de vorige twee wijzigingen:
+
+1. Akkoord met de tweelaagse resolutie voor knoppen die maar op één scherm voorkomen (geen
+   Standaardscherm-cascadelaag) — bevestigt de eerder gemaakte keuze, geen codewijziging nodig.
+2. De TextColor-wijziging van de Bladeren-knop leek niet te worden overgenomen. Vermoedelijke
+   oorzaak: de vier nieuwe converters in `InnoSetupStudio.Wizard/Converters/` (vorige sectie
+   hierboven) bleken tijdens het opstellen van die sectie nooit daadwerkelijk op schijf
+   terechtgekomen te zijn ondanks een geslaagde melding — de map bestond niet, en `dotnet build`
+   faalde daardoor eerst met `CS0234` bij het begin van deze sessie. Herbert heeft dus vermoedelijk
+   een `.exe` getest die dateert van vóór deze preview-koppeling (TextColor stond toen inderdaad
+   nog los van de voorvertoning, zoals expliciet gedocumenteerd in de vorige sectie). Na het
+   opnieuw aanmaken van de vier bestanden bouwt/test/start alles weer correct, met TextColor
+   zichtbaar gekoppeld aan de voorvertoning (zie vorige sectie). Geen aparte codewijziging nodig
+   voor dit punt — wel gevraagd aan Herbert om na deze push opnieuw te bouwen en te testen.
+3. Genuine bug, wel gevonden en gefixt: het Standaardscherm was, eenmaal een echt scherm
+   geselecteerd, niet meer terug te selecteren door erop te klikken — de markering van
+   Standaardscherm bleef bovendien zichtbaar staan alsof het nog steeds geselecteerd was.
+
+   Oorzaak: `DefaultScreenListBox` en `ScreensListBox` (in `ScreenEditorControl.xaml`) binden
+   allebei two-way naar dezelfde `WizardEditorViewModel.SelectedScreen`-eigenschap. Dat is een
+   bekende WPF-eigenaardigheid: `Selector.SelectedItem` negeert een toewijzing die geen match
+   vindt in de eigen `ItemsSource`, in plaats van de markering naar niets te wissen. Zodra je dus
+   een echt scherm selecteerde in `ScreensListBox`, bleef `DefaultScreenListBox` intern nog steeds
+   denken dat Standaardscherm geselecteerd was (zichtbaar aan de blijvende markering) — en een
+   volgende muisklik daarop leverde voor WPF geen wijziging op (het was voor die ListBox toch al
+   "geselecteerd"), dus er kwam geen `SelectionChanged`-event en dus ook nooit een nieuwe
+   `SelectedScreen`-waarde.
+
+   Dit staat los van de eerdere §12.7-beslissing om het Standaardscherm in een eigen rij, duidelijk
+   visueel gescheiden door een scheidingslijn, te tonen (dat is een bewuste, blijvende keuze om
+   duidelijk te maken dat het geen "scherm nul" tussen de echte installerschermen is) — die
+   ontwerpkeuze is niet de oorzaak van deze bug en blijft ongewijzigd.
+
+   Fix: een gedeelde `SelectionChanged`-handler (`ScreenListBox_SelectionChanged` in
+   `ScreenEditorControl.xaml.cs`) die bij een selectie in de ene lijst expliciet de `SelectedItem`
+   van de andere lijst op `null` zet (dat wist de markering altijd, ook als de ListBox zelf niet
+   "weet" van de nieuwe waarde) en `SelectedScreen` daarna expliciet opnieuw zet. Een
+   `_isSyncingScreenSelection`-guard voorkomt dat het nullen van de andere lijst zelf weer een
+   (lege, dus genegeerde) heropvoering van deze handler veroorzaakt.
+
+**Build- en testresultaat.** `dotnet build`: 0 waarschuwingen, 0 fouten. `dotnet test`: 21/21
+geslaagd. Smoke-test: `InnoSetupStudio.exe` gestart en reageerde (`Responding: True`), daarna
+afgesloten. Navigatie tussen Standaardscherm en de echte schermen kon niet door mij handmatig in
+de UI doorgeklikt worden (dat blijft aan Herbert) — de fix is beoordeeld op basis van code-analyse
+van het exacte WPF-mechanisme, niet op basis van visuele bevestiging.

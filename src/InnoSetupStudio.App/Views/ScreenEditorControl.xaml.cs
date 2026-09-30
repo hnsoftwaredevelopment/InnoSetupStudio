@@ -36,6 +36,45 @@ public partial class ScreenEditorControl : UserControl
 
     private void SaveButton_Click(object sender, RoutedEventArgs e) => SaveClicked?.Invoke(this, EventArgs.Empty);
 
+    // Herbert (2026-09-30): kon na het selecteren van een echt scherm nooit meer terug naar
+    // Standaardscherm. Oorzaak: DefaultScreenListBox en ScreensListBox binden allebei two-way naar
+    // dezelfde WizardEditorViewModel.SelectedScreen, maar WPF's Selector.SelectedItem negeert een
+    // toewijzing die niet in de eigen ItemsSource voorkomt in plaats van de markering te wissen —
+    // dus zodra je in ScreensListBox iets koos, bleef DefaultScreenListBox intern nog steeds
+    // "Standaardscherm geselecteerd" denken (zichtbaar aan de blijvende markering), en een
+    // volgende muisklik daarop gold voor WPF niet als een wijziging (het was toch al
+    // "geselecteerd"), dus er kwam geen SelectionChanged en dus ook geen nieuwe
+    // SelectedScreen-waarde. Losstaand van de eerdere §12.7-beslissing om het Standaardscherm
+    // visueel als geen echt scherm te tonen (aparte rij/scheidingslijn) — die blijft ongewijzigd.
+    //
+    // Fix: bij een selectie in de ene lijst expliciet de SelectedItem van de andere lijst op null
+    // zetten (dat wist altijd, ook als de lijst zelf niet "weet" van de nieuwe waarde) en
+    // SelectedScreen daarna expliciet opnieuw zetten, met een guard tegen de heropvoerde
+    // SelectionChanged die dat nullen zelf weer veroorzaakt.
+    private bool _isSyncingScreenSelection;
+
+    private void ScreenListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_isSyncingScreenSelection || e.AddedItems.Count == 0 || ViewModel is null)
+        {
+            return;
+        }
+
+        var selected = e.AddedItems[0];
+        var other = ReferenceEquals(sender, DefaultScreenListBox) ? ScreensListBox : DefaultScreenListBox;
+
+        _isSyncingScreenSelection = true;
+        try
+        {
+            other.SelectedItem = null;
+            ViewModel.SelectedScreen = selected;
+        }
+        finally
+        {
+            _isSyncingScreenSelection = false;
+        }
+    }
+
     // Knop-eigenschappenscherm (backlogitem 3, sectie 17; blijft een eigen venster, sectie 21):
     // het properties-knopje achter elk van de drie tekstvelden (Terug/Volgende/Annuleren) in
     // ButtonSettingsSectionTemplate roept dit aan met zijn Tag ("Back"/"Next"/"Cancel") en de

@@ -325,16 +325,28 @@
                  Geen aan/uit-vinkjes meer hier: welk scherm meedoet, wordt sinds sectie 21 in
                  Projectinstellingen bepaald (tabblad Schermen) — deze lijst toont alleen wat daar
                  al aan staat. Twee aparte ListBoxen die allebei naar dezelfde SelectedScreen
-                 two-way-binden: selecteer je een item in de ene lijst, dan verliest de andere zijn
-                 markering vanzelf (SelectedItem vindt daar dan geen match), zonder dat daar extra
-                 code voor nodig is. -->
+                 two-way-binden (2026-09-30: zie ScreenListBox_SelectionChanged in
+                 ScreenEditorControl.xaml.cs voor waarom dat een expliciete handler nodig heeft in
+                 plaats van vanzelf op te lossen). -->
             <DockPanel Grid.Column="0">
-                <ListBox DockPanel.Dock="Top" ItemsSource="{Binding DefaultScreenRow}"
+                <!-- SelectionChanged hieronder (ScreenListBox_SelectionChanged, zie
+                     ScreenEditorControl.xaml.cs): twee ListBoxen die naar dezelfde SelectedScreen
+                     two-way-binden lossen elkaars markering NIET vanzelf op zodra de gedeelde
+                     waarde een item is dat niet in hun eigen ItemsSource zit — WPF's Selector
+                     negeert een SelectedItem-toewijzing die geen match vindt in plaats van de
+                     markering te wissen (bekende WPF-eigenaardigheid, geen gevolg van de
+                     Standaardscherm/§12.7-ontwerpbeslissing zelf). Zonder deze handler bleef de
+                     oude selectie zichtbaar gemarkeerd staan én kon je er met een muisklik niet
+                     meer op terugkomen, omdat de ListBox intern nog dacht dat het al
+                     geselecteerd was. -->
+                <ListBox x:Name="DefaultScreenListBox" DockPanel.Dock="Top" ItemsSource="{Binding DefaultScreenRow}"
                          SelectedItem="{Binding SelectedScreen}" ItemTemplate="{StaticResource ScreenRowTemplate}"
+                         SelectionChanged="ScreenListBox_SelectionChanged"
                          Background="Transparent" BorderThickness="0" />
                 <Separator DockPanel.Dock="Top" Margin="6,4" />
-                <ListBox ItemsSource="{Binding Screens}" SelectedItem="{Binding SelectedScreen}"
+                <ListBox x:Name="ScreensListBox" ItemsSource="{Binding Screens}" SelectedItem="{Binding SelectedScreen}"
                          ItemTemplate="{StaticResource ScreenRowTemplate}"
+                         SelectionChanged="ScreenListBox_SelectionChanged"
                          Background="Transparent" BorderThickness="0" />
             </DockPanel>
 
