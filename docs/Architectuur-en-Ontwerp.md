@@ -1654,3 +1654,43 @@ Herbert ging akkoord met de schermopbouw, met twee aanvullende punten:
 geslaagd (ongewijzigd — geen bestaande test verwijst naar `BrowseButtonSettings`/
 `SelectDestinationBrowseButton`). Smoke-test: `InnoSetupStudio.exe` gestart en reageerde
 (`Responding: True`), daarna afgesloten.
+
+
+**Volledige knop-pariteit voor de Bladeren-knop (2026-09-30), zelfde branch.**
+Herbert's instructie: "Alle knoppen moeten dezelfde bewerkingsfunctionaliteiten krijgen als de
+knoppen '< Vorige', 'Volgende >', 'Annuleren' tenzij bepaalde functionaliteit niet beschikbaar is
+in InnoSetup" — expliciet ook bedoeld voor eventuele toekomstige schermspecifieke knoppen, niet
+alleen Bladeren. Bij de vorige wijziging (Caption, hierboven) bleven Enabled/Visible/Tooltip/
+TextColor/lettertype van de Bladeren-knop achter: de velden bestonden al in
+`BrowseButtonSettings`/`ButtonPropertiesWindow`, maar zonder de leeg-is-terugval-resolutie die
+Terug/Volgende/Annuleren wél hebben, en zonder dat de voorvertoning er ook maar iets mee deed.
+Omdat `WizardForm.DirBrowseButton` een `TNewButton` is — structureel identiek aan de andere drie
+knoppen (geverifieerd via jrsoftware.org/ishelp) — is er voor geen van deze eigenschappen een
+InnoSetup-beperking die pariteit in de weg staat. Doorgevoerd:
+
+- `SelectDestinationPageEditorViewModel`: nieuwe `IsBrowseButtonVisible`/`IsBrowseButtonEnabled`
+  (leeg/null is "aan", zelfde conventie als de drie gedeelde knoppen) en
+  `IsBrowseButtonEnabledInPreview`, die dat combineert met Inno Setup's eigen ingebouwde gedrag
+  (`AllowUserToChangeDir`) — een expliciete "Bladeren-knop uitschakelen"-instelling en Inno Setup's
+  eigen automatische uitschakeling werken nu allebei, onafhankelijk van elkaar.
+- `SelectDestinationPagePreview.xaml` (InnoSetupStudio.Wizard): de gesimuleerde Bladeren-knop
+  bindt nu ook `Visibility`, `Foreground` (TextColor), `FontFamily`, `FontSize`, `FontWeight`
+  (Bold) en `ToolTip` — voorheen bond alleen `Content`/`IsEnabled`. Vereiste vier nieuwe, kleine
+  converters in een nieuwe map `src/InnoSetupStudio.Wizard/Converters/`
+  (`HexColorToBrushConverter`, `FontFamilyOrUnsetConverter`, `FontSizeOrUnsetConverter`,
+  `NullableBoolToFontWeightConverter`) — letterlijke kopieën van de gelijknamige converters in
+  InnoSetupStudio.App, omdat het Wizard-project niet naar App mag verwijzen (circulaire
+  referentie). Dezelfde soort bewuste, kleine duplicatie die al elders in het project voorkomt
+  (bijv. `PickColor`/`NormalizeWhitespaceOnly`).
+- Bewust NIET toegevoegd: een derde, Standaardscherm-cascadelaag voor de Bladeren-knop (zoals
+  Terug/Volgende/Annuleren die wel hebben via `Defaults`/`RaiseEffectivePropertiesChanged`). Dat is
+  geen InnoSetup-beperking maar een structureel verschil: de cascade bestaat om een instelling over
+  meerdere schermen heen te kunnen hergebruiken, en de Bladeren-knop komt maar op één scherm voor
+  (Bestemmingspagina). Er is dus geen tweede scherm om vanuit/naartoe te cascaderen. Blijft
+  tweelaags: eigen waarde, anders Inno Setup's eigen ingebouwde gedrag/tekst. Als Herbert deze laag
+  toch wil (bijvoorbeeld met het oog op toekomstige knoppen die wél op meerdere schermen
+  voorkomen), is dat een aparte, gerichte uitbreiding.
+
+**Build- en testresultaat.** `dotnet build`: 0 waarschuwingen, 0 fouten. `dotnet test`: 21/21
+geslaagd (ongewijzigd). Smoke-test: `InnoSetupStudio.exe` gestart en reageerde
+(`Responding: True`), daarna afgesloten.

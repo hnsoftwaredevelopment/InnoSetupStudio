@@ -54,7 +54,11 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
 
     partial void OnDefaultDirNameChanged(string value) => OnPropertyChanged(nameof(DisplayDirName));
 
-    partial void OnAllowUserToChangeDirChanged(bool value) => OnPropertyChanged(nameof(ChangeDirHintVisibility));
+    partial void OnAllowUserToChangeDirChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ChangeDirHintVisibility));
+        OnPropertyChanged(nameof(IsBrowseButtonEnabledInPreview));
+    }
 
     [RelayCommand]
     private void Browse()
@@ -136,6 +140,38 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
         }
 
         OnPropertyChanged(nameof(EffectiveBrowseButtonCaption));
+    }
+
+    // Herbert (2026-09-30): alle knoppen moeten dezelfde bewerkingsfunctionaliteiten krijgen als
+    // Terug/Volgende/Annuleren, tenzij Inno Setup dat niet ondersteunt. Enabled/Visible stonden
+    // hier al als velden (zie hierboven, ButtonPropertiesWindow kon ze al instellen), maar zonder
+    // de leeg-is-true-terugvalwaarde die Terug/Volgende/Annuleren wél hebben (IsXxxButtonVisible/
+    // IsXxxButtonEnabled in WizardScreenEditorViewModel) — en de voorvertoning hieronder gebruikte
+    // ze zelfs helemaal niet: alleen AllowUserToChangeDir bepaalde IsEnabled, dus een expliciete
+    // "Bladeren-knop uitschakelen"-instelling had zichtbaar geen enkel effect. Tweelaags, geen
+    // Standaardscherm-cascade — zelfde reden als bij Caption hierboven (deze knop komt maar op één
+    // scherm voor).
+
+    /// <summary>True tenzij de Bladeren-knop expliciet op onzichtbaar gezet is.</summary>
+    public bool IsBrowseButtonVisible => BrowseButtonVisible ?? true;
+
+    /// <summary>True tenzij de Bladeren-knop expliciet op uitgeschakeld gezet is. Gebruikt de
+    /// voorvertoning niet rechtstreeks — zie <see cref="IsBrowseButtonEnabledInPreview"/>, die dit
+    /// combineert met Inno Setup's eigen ingebouwde gedrag.</summary>
+    public bool IsBrowseButtonEnabled => BrowseButtonEnabled ?? true;
+
+    /// <summary>Wat de voorvertoning daadwerkelijk als IsEnabled van de Bladeren-knop gebruikt:
+    /// zowel Inno Setup's eigen ingebouwde gedrag (de knop gaat sowieso uit zodra de gebruiker de
+    /// map niet mag wijzigen, zie AllowUserToChangeDir/ChangeDirHintVisibility) als de knop-eigen
+    /// Enabled-instelling moeten allebei "aan" staan.</summary>
+    public bool IsBrowseButtonEnabledInPreview => AllowUserToChangeDir && IsBrowseButtonEnabled;
+
+    partial void OnBrowseButtonVisibleChanged(bool? value) => OnPropertyChanged(nameof(IsBrowseButtonVisible));
+
+    partial void OnBrowseButtonEnabledChanged(bool? value)
+    {
+        OnPropertyChanged(nameof(IsBrowseButtonEnabled));
+        OnPropertyChanged(nameof(IsBrowseButtonEnabledInPreview));
     }
 
     /// <summary>Tegenhanger van de Bladerknop-velden in de constructor, gebruikt door
