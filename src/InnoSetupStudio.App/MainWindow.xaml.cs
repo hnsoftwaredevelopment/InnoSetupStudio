@@ -187,7 +187,7 @@ public partial class MainWindow : Window
         var result = MessageBox.Show(
             this,
             LocalizationManager.Instance["UnsavedScreenChangesMessage"],
-            LocalizationManager.Instance["UnsavedScreenChangesTitle"],
+            LocalizationManager.Instance["UnsavedChangesTitle"],
             MessageBoxButton.YesNoCancel,
             MessageBoxImage.Warning);
 

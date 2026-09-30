@@ -1870,3 +1870,71 @@ onderdeel van deze fix. Vastgelegd als nieuw, nog niet ontworpen backlogitem.
 geslaagd (ongewijzigd). Smoke-test: `InnoSetupStudio.exe` gestart en reageerde (`Responding: True`),
 daarna afgesloten. De daadwerkelijke dialoog (tekst, knoppen, het Ja/Nee/Annuleren-gedrag) kon ik
 niet zelf visueel doorklikken — gevraagd aan Herbert om te testen.
+
+**Aanvulling (2026-09-30, zelfde branch): niet-opgeslagen wijzigingen ín Projectinstellingen
+zelf.** Herbert testte sectie 23 hierboven handmatig en vond een gerelateerd maar apart gat: de
+waarschuwing hierboven dekt alleen de schermeditor (`WizardEditorViewModel.IsDirty`), niet
+`ProjectSettingsWindow`'s eigen velden (`ProjectSettingsViewModel.IsDirty`, bijvoorbeeld een
+getypte Applicatienaam). Zijn testresultaten, letterlijk:
+
+- Nieuw project, Applicatienaam getypt, gesloten via X → verwachtte een melding, kreeg er geen.
+  Niet goed.
+- Nieuw project, Applicatienaam getypt, Annuleren gekozen → verwachtte bewust GEEN melding ("ik
+  kies bewust voor annuleren"), kreeg er ook geen. Prima zo.
+- Bestaand project geopend, Applicatienaam gewijzigd, gesloten via X → verwachtte een melding,
+  kreeg er geen. Niet goed.
+- Bestaand project geopend, Applicatienaam gewijzigd, Openen gekozen → verwachtte een melding,
+  kreeg er geen. Niet goed.
+- Projectinstellingen heropend voor een al actief project, Applicatienaam gewijzigd, gesloten via
+  X → verwachtte een melding, kreeg er geen. Niet goed.
+- Zelfde, maar Openen gekozen → verwachtte een melding, kreeg er geen. Niet goed.
+- (Ter controle, drie scenario's met een schermwijziging in plaats van een projectinstelling, via
+  Nieuw project/Project openen/Projectinstellingen — alle drie toonden terecht de melding: sectie
+  23 hierboven werkte hier al correct.)
+
+**Belangrijke nuance uit Herberts eigen testresultaten:** Annuleren op een NIEUW project mag
+bewust ZONDER melding blijven — die knopklik ís zelf al de expliciete keuze om te verwerpen (zie
+`CancelButtonText`: toont dan ook letterlijk "Annuleren"). Bij een bestaand project heet diezelfde
+knop "Openen" (het project blijft open, de instellingen blijven zoals ze op schijf staan) — dat is
+dubbelzinnig zodra er nog niet-opgeslagen veldwijzigingen zijn, dus daar wél een melding. X-sluiten
+(native titelbalk) is in alle gevallen dubbelzinnig — daar dus altijd een melding, ongeacht
+nieuw/bestaand project.
+
+**Aanpak.** Twee wijzigingen, beide in de bestaande call-structuur:
+
+1. `ProjectSettingsViewModel.Cancel()` omgezet naar `CancelAsync()` (CommunityToolkit's
+   `[RelayCommand]` genereert dezelfde `CancelCommand`-naam, dus geen XAML-wijziging nodig). Bij
+   `IsExistingProject` roept deze nu eerst de nieuwe `ConfirmDiscardChangesAsync()` aan; bij een
+   nieuw project blijft het gedrag ongewijzigd (direct `RequestClose(false)`, geen vraag).
+2. `ProjectSettingsWindow.xaml.cs` kreeg een `Closing`-event-handler — er was voorheen geen enkele
+   hook op X-sluiten, dus dat pad ging altijd rechtstreeks langs `RequestClose`/`CancelCommand`
+   heen. Deze handler roept, ongeacht nieuw/bestaand project, ook `ConfirmDiscardChangesAsync()`
+   aan zodra `ViewModel.IsDirty` waar is. Een `_programmaticClose`-vlag (gezet in `OnRequestClose`,
+   dus bij elke Opslaan/Annuleren/Openen-afhandeling) onderscheidt "dit Close()-aanroep komt al
+   via een knop die zijn eigen afweging al maakte" van "dit is een echte X-klik" — zonder die vlag
+   zou een programmatische `Close()` na een geslaagde Opslaan de Closing-handler opnieuw laten
+   vragen.
+
+`ConfirmDiscardChangesAsync()` (nieuw op `ProjectSettingsViewModel`, publiek, gedeeld door beide
+aanroeppaden hierboven) volgt hetzelfde Ja/Nee/Annuleren-patroon als
+`MainWindow.ConfirmDiscardUnsavedScreenChangesAsync` (sectie 23): Ja slaat op (met een eigen
+`CanSave()`-controle vooraf — een lege verplichte Applicatienaam kan niet stilzwijgend als
+"opgeslagen" gelden), Nee verwerpt en gaat door, Annuleren houdt het venster open. Omdat Opslaan
+hier zelf al `RequestClose(true)` vuurt bij succes, geeft de methode een driewaardig resultaat
+terug (`UnsavedChangesDecision`: `Proceed`/`Abort`/`AlreadyClosing`) zodat de aanroeper weet of hij
+zelf nog `RequestClose(false)` moet vuren, moet stoppen (venster blijft open), of niets meer hoeft
+te doen (al gesloten via Opslaan).
+
+**Vertaalstrings.** `UnsavedScreenChangesTitle` (sectie 23) hernoemd naar het generieke
+`UnsavedChangesTitle`, nu hergebruikt door beide dialogen — de tekst zelf ("Niet-opgeslagen
+wijzigingen") was al generiek genoeg, alleen de sleutelnaam verwees nog specifiek naar de
+schermeditor. Twee nieuwe strings toegevoegd in alle drie `Strings*.resx`:
+`UnsavedProjectSettingsMessage` (de Ja/Nee/Annuleren-vraag) en
+`UnsavedProjectSettingsCannotSaveMessage` (getoond als Ja gekozen wordt maar Opslaan niet kan,
+bijvoorbeeld een lege Applicatienaam).
+
+**Build- en testresultaat.** `dotnet build`: 0 waarschuwingen, 0 fouten. `dotnet test`: 21/21
+geslaagd (ongewijzigd). Smoke-test: `InnoSetupStudio.exe` gestart en reageerde (`Responding:
+True`), daarna afgesloten. De zes hersteldialogen (drie scenario's × X-sluiten/Openen) kon ik niet
+zelf visueel doorklikken — gevraagd aan Herbert om opnieuw te testen, inclusief het scenario waarin
+hij bij de Ja/Nee/Annuleren-vraag voor "Ja" (opslaan) kiest.
