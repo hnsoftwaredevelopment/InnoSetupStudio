@@ -1792,3 +1792,20 @@ gevraagd aan Herbert om opnieuw te testen.
 (Terug/Volgende/Annuleren) waar dit al langer "werkte" — bevestigt dat de root-cause-analyse
 hierboven klopte: de zwarte tekst was een sluimerende bug die ook die knoppen al raakte, niet iets
 dat alleen de Bladeren-knop trof.
+
+
+## 22. Backlog: developer-template / projectdefaults (2026-09-30, nog niet ontworpen)
+
+Herbert wil op termijn een manier om een soort "developer template" te maken: een set defaults
+(kleurgebruik, company logo, directorystructuur) die bij elk nieuw project automatisch worden
+toegepast, in plaats van steeds opnieuw hetzelfde in te stellen. Expliciet voor later — hier alleen
+vastgelegd zodat het idee niet kwijtraakt, net als de andere backlogitems in dit document (secties
+14 en 20). Nog niet ontworpen: geen besluit over hoe zo'n template wordt opgeslagen (los bestand,
+onderdeel van instellingen, per-gebruiker of gedeeld binnen Voortman), hoe die inwerkt op een nieuw
+project (kopiëren bij aanmaken, of een levend sjabloon dat overschrijfbaar blijft), en welke
+projectvelden precies "template-waardig" zijn.
+
+Raakt vermoedelijk `WizardEditorViewModel`'s project-aanmaakpad (`New project`) en, afhankelijk van
+scope, ook de wizard-afbeeldingen/kleuren van het Standaardscherm. Logisch pas op te pakken nadat
+de projectinstellingen en de schermeditor verder zijn uitgekristalliseerd (meer velden = duidelijker
+wat een zinvolle default is) — vandaar Herberts eigen inschatting dat dit voor later is.
