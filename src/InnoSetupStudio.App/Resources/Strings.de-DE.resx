@@ -318,6 +318,9 @@
   <data name="HintLanguageOverrides" xml:space="preserve">
     <value>Leer = die obige Beschriftung/Tooltip wird auch für diese Sprache verwendet.</value>
   </data>
+  <data name="LabelEnglishSuffix" xml:space="preserve">
+    <value>(Englisch)</value>
+  </data>
   <data name="ButtonOpenProperties" xml:space="preserve">
     <value>Schaltflächeneigenschaften bearbeiten</value>
   </data>

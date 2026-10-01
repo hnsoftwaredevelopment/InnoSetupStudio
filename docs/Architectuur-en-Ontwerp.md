@@ -2152,3 +2152,37 @@ dictionaries op dat scherm na een save/load-cyclus leeg (niet null) blijven. Smo
 **Build- en testresultaat na deze fix.** `dotnet build`: 0 waarschuwingen, 0 fouten. `dotnet test`:
 22/22 geslaagd (ongewijzigd — beide fixes wijzigen geen bestaand, al geteste gedrag, alleen de
 nieuwe meertalige-vertalingen-functionaliteit uit deze PR zelf).
+
+
+### Layout-verduidelijking na Herberts handmatige UI-test (2026-10-01)
+
+Herbert heeft PR #21 handmatig getest en bevestigd dat het beheer van meertalige knopteksten
+functioneel goed werkt ("Het beheer werkt op dit moment goed"). Hij meldde daarbij twee
+layout-punten in `ButtonPropertiesWindow.xaml` die de bruikbaarheid verminderden, zonder dat er
+iets functioneel fout was:
+
+1. **Dubbelzinnigheid welke taal de bovenste Tekst/Tooltip-velden zijn.** Bij een meertalig
+   project met bijvoorbeeld Engels + Duits geselecteerd, en de interface van Inno Setup Studio
+   zelf ook in het Duits, leek het net of de bovenste velden (die altijd de Engelse/universele
+   terugvalwaarde zijn, zie sectie 24 hierboven) de Duitse knoptekst waren — er stond geen enkele
+   aanduiding bij welke taal dat veld bedient. Herberts voorstel: "tussen haakjes (Engels) achter
+   zetten, in de geselecteerde taal." Fix: nieuwe resourcesleutel `LabelEnglishSuffix`
+   ("(Engels)" / "(English)" / "(Englisch)" in de drie Strings*.resx-bestanden) die als kleine,
+   secundair gekleurde `TextBlock` naast zowel het Tekst- als het Tooltip-label staat. Deze
+   marker is net als de hele vertalingensectie alleen zichtbaar als `HasLanguageOverrides` waar
+   is (dus alleen bij een meertalig project) — bij een eentalig project is er toch geen andere
+   taal om mee te verwarren, dus blijft het scherm daar ongewijzigd zonder extra ruis.
+2. **Tooltip stond niet direct onder Tekst voor de standaardtaal.** Elke rij in de sectie
+   Vertalingen per taal toont Tooltip direct onder Tekst (logisch: TextColor/FontFamily/FontSize
+   zijn niet taalafhankelijk, dus horen daar niet tussen). De bovenste, Engelse Tekst/Tooltip
+   volgden dat patroon niet: Tooltip stond pas na TextColor/FontFamily/FontSize/FontBold.
+   Herberts opmerking: "Ik den dat het logischer is ook de Tooltip voor de standaard taal direct
+   onder de tekst te zetten." Fix: de Tooltip-`StackPanel` is verplaatst naar direct na de
+   Tekst-`StackPanel`, vóór TextColor — dezelfde volgorde als elke taalrij hieronder.
+
+Beide wijzigingen raken alleen XAML-structuur en resourcesleutels, geen ViewModel-logica: er is
+geen nieuwe property, geen nieuwe databinding-pad en geen wijziging aan `Save()`/
+`MergeLanguageOverrides`. Daarom was er geen nieuwe testcode nodig.
+
+**Build- en testresultaat na deze layout-wijziging.** `dotnet build`: 0 waarschuwingen, 0 fouten.
+`dotnet test`: 22/22 geslaagd (ongewijzigd, zoals verwacht bij een zuivere layout-aanpassing).

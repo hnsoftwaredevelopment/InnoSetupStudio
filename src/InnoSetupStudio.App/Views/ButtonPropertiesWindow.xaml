@@ -53,7 +53,17 @@
             <StackPanel>
                 <StackPanel Visibility="{Binding HasCaption, Converter={StaticResource BooleanToVisibilityConverter}}"
                             Margin="0,0,0,12">
-                    <TextBlock x:Name="CaptionLabel" Text="{loc:Loc LabelButtonCaption}" Margin="0,0,0,4" />
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <TextBlock x:Name="CaptionLabel" Text="{loc:Loc LabelButtonCaption}" />
+                        <!-- Alleen zichtbaar bij een meertalig project (HasLanguageOverrides): zonder
+                             dit label leek de bovenste Tekst/Tooltip voor onervaren gebruikers op de
+                             actief geselecteerde taal, terwijl dit altijd de Engelse/universele
+                             terugvalwaarde is (Herberts melding 2026-10-01, zie sectie 24 in
+                             Architectuur-en-Ontwerp.md). -->
+                        <TextBlock Text="{loc:Loc LabelEnglishSuffix}" Margin="4,0,0,0" VerticalAlignment="Bottom"
+                                   Foreground="{DynamicResource Brush.TextSecondary}"
+                                   Visibility="{Binding HasLanguageOverrides, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    </StackPanel>
                     <!-- Foreground volgt de (nog niet opgeslagen) tekstkleur hieronder, precies
                          zoals Herberts mockup vraagt: "hier kan de knoptekst al in worden
                          aangepast en wordt getoond in de geselecteerde kleur". -->
@@ -61,6 +71,23 @@
                              Foreground="{Binding PreviewTextColor, Converter={StaticResource HexColorToBrushConverter}}"
                              controls:Placeholder.Text="{Binding EffectiveCaption}"
                              AutomationProperties.LabeledBy="{Binding ElementName=CaptionLabel}" />
+                </StackPanel>
+
+                <!-- Tooltip staat hier direct onder Tekst (niet verderop na TextColor/FontFamily/
+                     FontSize), zodat het patroon gelijk is aan de rijen in de sectie Vertalingen
+                     per taal hieronder, die ook steeds Tooltip direct onder Tekst tonen (Herberts
+                     melding 2026-10-01: "logischer... Tooltip voor de standaard taal direct onder
+                     de tekst te zetten"). -->
+                <StackPanel Margin="0,0,0,12">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <TextBlock x:Name="TooltipLabel" Text="{loc:Loc LabelButtonTooltip}" />
+                        <TextBlock Text="{loc:Loc LabelEnglishSuffix}" Margin="4,0,0,0" VerticalAlignment="Bottom"
+                                   Foreground="{DynamicResource Brush.TextSecondary}"
+                                   Visibility="{Binding HasLanguageOverrides, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    </StackPanel>
+                    <TextBox Text="{Binding Tooltip, UpdateSourceTrigger=PropertyChanged}"
+                             controls:Placeholder.Text="{Binding EffectiveTooltip}"
+                             AutomationProperties.LabeledBy="{Binding ElementName=TooltipLabel}" />
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
@@ -97,13 +124,6 @@
                              controls:Placeholder.Text="{Binding EffectiveFontSize}"
                              AutomationProperties.LabeledBy="{Binding ElementName=FontSizeLabel}" />
                     <CheckBox Content="{loc:Loc LabelButtonFontBold}" IsChecked="{Binding FontBold}" IsThreeState="True" />
-                </StackPanel>
-
-                <StackPanel Margin="0,0,0,12">
-                    <TextBlock x:Name="TooltipLabel" Text="{loc:Loc LabelButtonTooltip}" Margin="0,0,0,4" />
-                    <TextBox Text="{Binding Tooltip, UpdateSourceTrigger=PropertyChanged}"
-                             controls:Placeholder.Text="{Binding EffectiveTooltip}"
-                             AutomationProperties.LabeledBy="{Binding ElementName=TooltipLabel}" />
                 </StackPanel>
 
                 <StackPanel Margin="0,0,0,4">
