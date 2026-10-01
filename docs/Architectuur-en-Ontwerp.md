@@ -1974,3 +1974,53 @@ fire-and-forget is hier precies de bedoeling). `dotnet test`: 21/21 geslaagd. Sm
 `InnoSetupStudio.exe` gestart en reageerde (`Responding: True`), daarna afgesloten. Het specifieke
 Nee-pad op de X-sluit-vraag (waar de fout optrad) kon ik niet zelf visueel doorklikken — gevraagd
 aan Herbert om dat scenario opnieuw te testen, samen met de overige vijf uit de vorige ronde.
+
+
+**CodeRabbit-bevindingen PR #20, geverifieerd en verwerkt (2026-10-01).** Vier "actionable
+comments" over twee reviewrondes (op de eerste en de laatste commit van deze branch), elk tegen de
+code zelf gecontroleerd vóór toepassing:
+
+1. *Genuine, maar bewust NIET automatisch opgelost.* `ConfirmDiscardUnsavedScreenChangesAsync`
+   (MainWindow) roept `viewModel.ApplyTo(_activeProject)` aan vóórdat de save-poging start. Mislukt
+   die save (bestand in gebruik, schijf vol), dan blijft `_activeProject` in het geheugen toch al
+   gewijzigd staan — `IsDirty` gaat weliswaar terug op true, maar het onderliggende project-object
+   draagt de nooit-bevestigde wijziging al met zich mee. Een latere `SetActiveProject`-aanroep met
+   datzelfde (nog niet herladen) `_activeProject` zou die nooit-opgeslagen wijziging dan ongemerkt
+   als "huidige staat" tonen. Dit patroon bestond al vóór deze branch, identiek, in
+   `ScreenEditor_SaveClicked` (sectie 21) — niet iets dat met deze PR is geïntroduceerd. De juiste
+   oplossing (een snapshot van het project bewaren en bij mislukking terugzetten, of ApplyTo pas na
+   een geslaagde save uitvoeren wat een herontwerp van `SaveActiveProjectAsync` vergt) is een
+   bredere wijziging die beide aanroepplekken raakt — vastgelegd als nieuw, nog niet ontworpen
+   backlogitem, dezelfde afweging als steeds bij dit project.
+2. *Genuine, opgelost.* Diezelfde methode gaf bij een geslaagde save onvoorwaardelijk `true` terug,
+   zonder te controleren of `viewModel.IsDirty` intussen (tijdens de save-await) opnieuw op true was
+   gezet. De ScreenEditor blijft namelijk interactief tijdens deze save (in tegenstelling tot
+   ProjectSettingsWindow, waar `CanEdit`/`IsSaving` de velden uitschakelt) — typt de gebruiker
+   tijdens het opslaan zelf nog iets, dan zou de aanroeper die nieuwe wijziging alsnog stilzwijgend
+   weggooien via `SetActiveProject`. Fix: `return !viewModel.IsDirty;` in plaats van
+   onvoorwaardelijk `true` ná een geslaagde save.
+3. *Genuine, maar bewust NIET automatisch opgelost.* Tussen de eerste
+   `ConfirmDiscardUnsavedScreenChangesAsync`-aanroep in `OpenProjectButton_Click` en de
+   daadwerkelijke `SetActiveProject`-aanroep zit nog een `await _projectService.LoadAsync(...)`,
+   waartijdens de (oude, nog niet vervangen) ScreenEditor weer interactief is. Een CodeRabbit-
+   gesuggereerde tweede confirm-aanroep ná die LoadAsync zou, zoals letterlijk voorgesteld, een
+   nieuwe bug introduceren: na een expliciete "Nee" (verwerpen) op de eerste vraag wordt
+   `viewModel.IsDirty` niet teruggezet, dus een tweede controle zou **dezelfde**, al beantwoorde
+   vraag opnieuw tonen. Een correcte fix vergt dus eerst ook IsDirty resetten bij "Nee" — en het
+   venster waarin dit kan misgaan is bovendien extreem smal (een lokale bestandslezing duurt
+   doorgaans een fractie van een seconde). Vastgelegd als nieuw, nog niet ontworpen backlogitem in
+   plaats van een haastige fix die een nieuwe regressie riskeert.
+4. *Genuine (robuustheid, geen aantoonbaar bereikbare bug), opgelost.* `ConfirmDiscardChangesAsync`
+   (ProjectSettingsViewModel) leidde succes van `SaveAsync` af via `IsDirty` achteraf, in plaats van
+   een expliciet resultaat. In de praktijk klopt dat zijkanaal hier altijd — `CanEdit`/`IsSaving`
+   schakelt de velden uit tijdens het opslaan, dus de race uit punt 2 hierboven is hier niet
+   mogelijk — maar een expliciet resultaat is ondubbelzinniger en blijft dat ook als die aanname
+   ooit wijzigt. Fix: `SaveAsync` opgesplitst in de bestaande knop-aanroep (ongewijzigde
+   `Task`-vorm voor `[RelayCommand]`) en een nieuwe `SaveCoreAsync` die een `Task<bool>` teruggeeft;
+   `ConfirmDiscardChangesAsync` gebruikt nu rechtstreeks dat resultaat.
+
+**Build- en testresultaat.** `dotnet build`: 0 waarschuwingen, 0 fouten. `dotnet test`: 21/21
+geslaagd (ongewijzigd). Smoke-test: `InnoSetupStudio.exe` gestart en reageerde (`Responding:
+True`), daarna afgesloten. Punt 2 en 4 wijzigen geen zichtbaar gedrag in de door Herbert al
+bevestigde scenario's (alleen interne robuustheid); geen nieuwe handmatige doorloop nodig vóór
+merge.

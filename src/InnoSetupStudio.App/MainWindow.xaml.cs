@@ -209,7 +209,13 @@ public partial class MainWindow : Window
 
         if (await SaveActiveProjectAsync())
         {
-            return true;
+            // CodeRabbit (PR #20): ScreenEditor blijft tijdens deze await interactief (in
+            // tegenstelling tot ProjectSettingsWindow, waar CanEdit/IsSaving de velden
+            // uitschakelt) — typt de gebruiker tijdens het opslaan zelf nog iets, dan zet de
+            // normale MarkDirty-route IsDirty hier opnieuw op true. Die nieuwe, niet in deze save
+            // meegenomen wijziging mag de aanroeper niet alsnog stilzwijgend weggooien door toch
+            // door te gaan met SetActiveProject.
+            return !viewModel.IsDirty;
         }
 
         viewModel.IsDirty = true;

@@ -251,7 +251,17 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
     partial void OnSetupIconFileChanged(string value) => MarkDirty();
 
     [RelayCommand(CanExecute = nameof(CanSave))]
-    private async Task SaveAsync()
+    private async Task SaveAsync() => await SaveCoreAsync();
+
+    /// <summary>
+    /// Daadwerkelijke opslaanlogica achter <see cref="SaveAsync"/> (de Opslaan-knop), met een
+    /// expliciet succes/mislukt-resultaat in plaats van dat achteraf via <see cref="IsDirty"/> af
+    /// te leiden (CodeRabbit, PR #20) — <see cref="SaveAsync"/> zelf blijft de void-Task-vorm
+    /// behouden die <c>[RelayCommand]</c> voor de knopbinding verwacht; <see
+    /// cref="ConfirmDiscardChangesAsync"/> roept dit rechtstreeks aan voor een betrouwbare
+    /// succes-check in plaats van IsDirty als zijkanaal te gebruiken.
+    /// </summary>
+    private async Task<bool> SaveCoreAsync()
     {
         var targetPath = ProjectFilePath;
         if (string.IsNullOrWhiteSpace(targetPath))
@@ -264,7 +274,7 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
 
             if (dialog.ShowDialog() != true)
             {
-                return;
+                return false;
             }
 
             targetPath = dialog.FileName;
@@ -306,7 +316,7 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
             // Specifieke, bruikbare foutmelding tonen in plaats van de wijzigingen stilzwijgend
             // te verliezen: het venster blijft open zodat de gebruiker het opnieuw kan proberen.
             MessageBox.Show(ex.Message, "Inno Setup Studio", MessageBoxButton.OK, MessageBoxImage.Error);
-            return;
+            return false;
         }
         finally
         {
@@ -321,6 +331,7 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
         SavedProject = project;
         IsDirty = false;
         RequestClose?.Invoke(this, true);
+        return true;
     }
 
     private bool CanCancel() => !IsSaving;
@@ -389,7 +400,7 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
         }
 
         // MessageBoxResult.Yes: CanSave() controleert behalve IsDirty ook verplichte velden
-        // (AppName) — zonder deze check zou SaveAsync stilzwijgend niets doen en het venster
+        // (AppName) — zonder deze check zou SaveCoreAsync stilzwijgend niets doen en het venster
         // alsnog dicht lijken te moeten gaan terwijl er niets is opgeslagen.
         if (!CanSave())
         {
@@ -401,8 +412,12 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
             return UnsavedChangesDecision.Abort;
         }
 
-        await SaveAsync();
-        return IsDirty ? UnsavedChangesDecision.Abort : UnsavedChangesDecision.AlreadyClosing;
+        // CodeRabbit (PR #20): expliciet succes/mislukt-resultaat van SaveCoreAsync gebruiken in
+        // plaats van dat achteraf via IsDirty af te leiden — dat zijkanaal klopt hier in de
+        // praktijk altijd (CanEdit/IsSaving schakelt de velden uit tijdens het opslaan, dus geen
+        // race met een nieuwe wijziging zoals bij MainWindow's ScreenEditor), maar een
+        // rechtstreeks resultaat is ondubbelzinnig en blijft dat ook als die aanname ooit wijzigt.
+        return await SaveCoreAsync() ? UnsavedChangesDecision.AlreadyClosing : UnsavedChangesDecision.Abort;
     }
 
     private static string? BrowseForFolder(string currentPath)
