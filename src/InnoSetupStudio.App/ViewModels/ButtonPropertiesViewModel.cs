@@ -1,8 +1,41 @@
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using InnoSetupStudio.Core.Project;
 
 namespace InnoSetupStudio.App.ViewModels;
+
+/// <summary>
+/// Eén rij in de meertalige-vertalingenlijst onderaan het Knop-eigenschappenscherm (sectie
+/// 14-backlogitem "meertalige knopteksten"): Caption/Tooltip-overschrijving voor precies één
+/// niet-Engelse, geselecteerde taal van het project. Zelfde eenvoudige rij-object-aanpak als
+/// LanguageRow (geen [ObservableProperty] op de bevattende ViewModel zelf), geabonneerd op
+/// PropertyChanged om ButtonPropertiesViewModel.MarkDirty() aan te roepen.
+/// </summary>
+public sealed partial class LanguageOverrideRow : ObservableObject
+{
+    public LanguageOverrideRow(string languageId, string displayName, string caption, string tooltip)
+    {
+        LanguageId = languageId;
+        DisplayName = displayName;
+        _caption = caption;
+        _tooltip = tooltip;
+    }
+
+    /// <summary>Taal-id uit InnoLanguageCatalog (bijvoorbeeld "dutch"), de sleutel waaronder deze
+    /// overschrijving in BackButtonCaptionByLanguage e.d. terechtkomt.</summary>
+    public string LanguageId { get; }
+
+    /// <summary>Leesbare naam voor deze rij, zelfde Engelse eigennaam als InnoLanguageCatalog
+    /// elders in de app gebruikt (zie LanguageRow/LanguagesViewModel).</summary>
+    public string DisplayName { get; }
+
+    [ObservableProperty]
+    private string _caption;
+
+    [ObservableProperty]
+    private string _tooltip;
+}
 
 /// <summary>
 /// ViewModel voor het Knop-eigenschappenscherm (backlogitem 3, sectie 17): één herbruikbaar
@@ -33,6 +66,8 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
     private readonly Action<int?> _setFontSize;
     private readonly Action<bool?> _setFontBold;
     private readonly Action<string> _setTooltip;
+    private readonly Action<Dictionary<string, string>> _setCaptionByLanguage;
+    private readonly Action<Dictionary<string, string>> _setTooltipByLanguage;
 
     /// <summary>Gevuurd zodra Opslaan of Sluiten/Annuleren is gekozen; het venster (zie
     /// ButtonPropertiesWindow.xaml.cs) sluit zichzelf hierop met het meegegeven DialogResult,
@@ -50,7 +85,10 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
         Func<string> getFontFamily, Action<string> setFontFamily, string effectiveFontFamily,
         Func<int?> getFontSize, Action<int?> setFontSize, int? effectiveFontSize,
         Func<bool?> getFontBold, Action<bool?> setFontBold, bool? effectiveFontBold,
-        Func<string> getTooltip, Action<string> setTooltip, string effectiveTooltip)
+        Func<string> getTooltip, Action<string> setTooltip, string effectiveTooltip,
+        IReadOnlyList<string> nonEnglishLanguageIds,
+        Func<Dictionary<string, string>> getCaptionByLanguage, Action<Dictionary<string, string>> setCaptionByLanguage,
+        Func<Dictionary<string, string>> getTooltipByLanguage, Action<Dictionary<string, string>> setTooltipByLanguage)
     {
         DialogTitle = dialogTitle;
         HasCaption = hasCaption;
@@ -63,6 +101,8 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
         _setFontSize = setFontSize;
         _setFontBold = setFontBold;
         _setTooltip = setTooltip;
+        _setCaptionByLanguage = setCaptionByLanguage;
+        _setTooltipByLanguage = setTooltipByLanguage;
 
         EffectiveCaption = effectiveCaption;
         EffectiveTextColor = effectiveTextColor;
@@ -80,6 +120,29 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
         _fontSize = getFontSize();
         _fontBold = getFontBold();
         _tooltip = getTooltip();
+
+        // Meertalige knopteksten (sectie 14-backlogitem): één rij per niet-Engelse, geselecteerde
+        // taal van het project, in InnoLanguageCatalog-volgorde (zelfde volgorde als de Talen-tab
+        // in Projectinstellingen). De catalogus bepaalt de volgorde, nonEnglishLanguageIds alleen
+        // welke talen meedoen — Where/IndexOf i.p.v. nonEnglishLanguageIds zelf doorlopen, zodat
+        // een handmatig bewerkt projectbestand met talen in een afwijkende volgorde hier toch
+        // netjes gesorteerd verschijnt, net als LanguagesViewModel dat al voor de Talen-tab doet.
+        var captionByLanguage = getCaptionByLanguage();
+        var tooltipByLanguage = getTooltipByLanguage();
+        LanguageOverrides = InnoLanguageCatalog.Languages
+            .Where(l => nonEnglishLanguageIds.Contains(l.Id))
+            .Select(l => new LanguageOverrideRow(
+                l.Id,
+                l.DisplayName,
+                captionByLanguage.GetValueOrDefault(l.Id, string.Empty),
+                tooltipByLanguage.GetValueOrDefault(l.Id, string.Empty)))
+            .ToList();
+
+        foreach (var row in LanguageOverrides)
+        {
+            row.PropertyChanged += (_, _) => MarkDirty();
+        }
+
         EndInit();
     }
 
@@ -91,6 +154,17 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
     /// toekomstige knop ooit wél zonder Caption nodig zijn — zie BrowseButtonSettings voor de
     /// eerdere aanname dat de Bladerknop er geen zou hebben.</summary>
     public bool HasCaption { get; }
+
+    /// <summary>Eén rij per niet-Engelse, geselecteerde taal van het project (sectie
+    /// 14-backlogitem "meertalige knopteksten"), leeg voor een eentalig project. Opgebouwd in de
+    /// constructor, zie daar voor de volgorde/herkomst.</summary>
+    public IReadOnlyList<LanguageOverrideRow> LanguageOverrides { get; }
+
+    /// <summary>True zodra er tenminste één rij in <see cref="LanguageOverrides"/> staat: bepaalt
+    /// in ButtonPropertiesWindow.xaml of de hele sectie getoond wordt. Een eentalig project (het
+    /// gebruikelijke geval) laat deze sectie dus gewoon weg, in plaats van een lege lijst te
+    /// tonen.</summary>
+    public bool HasLanguageOverrides => LanguageOverrides.Count > 0;
 
     /// <summary>Toelichting onder de Ingeschakeld/Zichtbaar-checkboxes, exact overgenomen van de
     /// aanroepende schermeditor-ViewModel (HintButtonTriStateText, of voor de Bladerknop
@@ -284,6 +358,19 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
         _setFontSize(FontSize);
         _setFontBold(FontBold);
         _setTooltip(Tooltip);
+
+        // Meertalige knopteksten (sectie 14-backlogitem): zelfde leeg-is-onveranderd-conventie
+        // als de overige velden (zie WizardScreenButtonSettings.BackButtonCaptionByLanguage) - een
+        // lege rij-waarde krijgt dus geen sleutel in de dictionary, in plaats van er met een lege
+        // string in te staan, zodat ResolveCaption-achtige leeg-checks bij het inlezen niet apart
+        // de dictionary-waarde van de "niet ingevuld"-staat hoeven te onderscheiden.
+        _setCaptionByLanguage(LanguageOverrides
+            .Where(row => !string.IsNullOrWhiteSpace(row.Caption))
+            .ToDictionary(row => row.LanguageId, row => row.Caption));
+        _setTooltipByLanguage(LanguageOverrides
+            .Where(row => !string.IsNullOrWhiteSpace(row.Tooltip))
+            .ToDictionary(row => row.LanguageId, row => row.Tooltip));
+
         RequestClose?.Invoke(this, true);
     }
 

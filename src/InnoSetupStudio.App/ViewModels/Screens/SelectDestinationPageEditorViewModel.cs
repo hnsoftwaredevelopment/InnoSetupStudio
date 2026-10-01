@@ -30,6 +30,8 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
         _browseButtonFontSize = browseButtonSettings.FontSize;
         _browseButtonFontBold = browseButtonSettings.FontBold;
         _browseButtonTooltip = browseButtonSettings.Tooltip;
+        _browseButtonCaptionByLanguage = new Dictionary<string, string>(browseButtonSettings.CaptionByLanguage);
+        _browseButtonTooltipByLanguage = new Dictionary<string, string>(browseButtonSettings.TooltipByLanguage);
     }
 
     [ObservableProperty]
@@ -112,6 +114,16 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
     [ObservableProperty]
     private string _browseButtonTooltip;
 
+    // Meertalige knopteksten (sectie 14-backlogitem): zelfde aanpak als BackButtonCaptionByLanguage
+    // op WizardScreenEditorViewModel, zie daar voor de volledige toelichting. Ook hier geen
+    // Effective*-tegenhanger: ButtonPropertiesViewModel bouwt de per-taal-rijen zelf op.
+
+    [ObservableProperty]
+    private Dictionary<string, string> _browseButtonCaptionByLanguage;
+
+    [ObservableProperty]
+    private Dictionary<string, string> _browseButtonTooltipByLanguage;
+
     // Hergebruikt de kleurenkiezer van de basisklasse (WizardScreenEditorViewModel.PickColor,
     // protected static): geen eigen kopie nodig, deze klasse erft al van die basisklasse (anders
     // dan DefaultScreenEditorViewModel, die geen gedeelde basisklasse heeft).
@@ -186,5 +198,7 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
         FontSize = BrowseButtonFontSize,
         FontBold = BrowseButtonFontBold,
         Tooltip = BrowseButtonTooltip,
+        CaptionByLanguage = new Dictionary<string, string>(BrowseButtonCaptionByLanguage),
+        TooltipByLanguage = new Dictionary<string, string>(BrowseButtonTooltipByLanguage),
     };
 }

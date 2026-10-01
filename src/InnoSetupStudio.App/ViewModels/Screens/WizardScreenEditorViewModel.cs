@@ -96,8 +96,28 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
             CancelButtonFontSize = value.CancelButtonFontSize;
             CancelButtonFontBold = value.CancelButtonFontBold;
             CancelButtonTooltip = value.CancelButtonTooltip;
+            // Meertalige knopteksten (sectie 14-backlogitem, zie WizardScreenButtonSettings):
+            // nieuwe dictionary-waarden kopiëren naar eigen veld, net als de tien velden
+            // hierboven, niet rechtstreeks de instantie van value overnemen - zelfde reden als de
+            // rest van dit blok (ButtonSettings is init-only, dit is de ene kopieerkans).
+            BackButtonCaptionByLanguage = new Dictionary<string, string>(value.BackButtonCaptionByLanguage);
+            BackButtonTooltipByLanguage = new Dictionary<string, string>(value.BackButtonTooltipByLanguage);
+            NextButtonCaptionByLanguage = new Dictionary<string, string>(value.NextButtonCaptionByLanguage);
+            NextButtonTooltipByLanguage = new Dictionary<string, string>(value.NextButtonTooltipByLanguage);
+            CancelButtonCaptionByLanguage = new Dictionary<string, string>(value.CancelButtonCaptionByLanguage);
+            CancelButtonTooltipByLanguage = new Dictionary<string, string>(value.CancelButtonTooltipByLanguage);
         }
     }
+
+    /// <summary>
+    /// De geselecteerde talen van het project, min Engels (zie InnoLanguageCatalog.EnglishId),
+    /// in catalogusvolgorde. Required init, door WizardEditorViewModel aan elk scherm meegegeven
+    /// vanuit InstallerProject.SupportedLanguageIds, net als <see cref="Defaults"/> hierboven.
+    /// Gebruikt door ButtonPropertiesViewModel (via ScreenEditorControl.BuildForScreenButton) om
+    /// de per-taal-vertalingsrijen op te bouwen - zie BackButtonCaptionByLanguage hierboven. Leeg
+    /// voor een eentalig project, waarvoor die rijen dan ook niet getoond worden.
+    /// </summary>
+    public required IReadOnlyList<string> NonEnglishLanguageIds { get; init; }
 
     private DefaultScreenEditorViewModel? _defaults;
 
@@ -241,6 +261,32 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
 
     [ObservableProperty]
     private string _cancelButtonTooltip = string.Empty;
+
+    // Meertalige knopteksten (sectie 14-backlogitem): per-taal-overschrijvingen van Caption/
+    // Tooltip hierboven, zie WizardScreenButtonSettings.BackButtonCaptionByLanguage voor de
+    // volledige toelichting (sleutel = taal-id, Engels gebruikt altijd gewoon de velden
+    // hierboven, geen cascade via het Standaardscherm). Gewone [ObservableProperty]'s, geen
+    // Effective*-tegenhanger: ButtonPropertiesViewModel bouwt de per-taal-rijen zelf op (met
+    // NonEnglishLanguageIds hierboven) en leest/schrijft deze dictionaries rechtstreeks via de
+    // get/set-delegate-aanpak die ook de overige velden al gebruikt.
+
+    [ObservableProperty]
+    private Dictionary<string, string> _backButtonCaptionByLanguage = new();
+
+    [ObservableProperty]
+    private Dictionary<string, string> _backButtonTooltipByLanguage = new();
+
+    [ObservableProperty]
+    private Dictionary<string, string> _nextButtonCaptionByLanguage = new();
+
+    [ObservableProperty]
+    private Dictionary<string, string> _nextButtonTooltipByLanguage = new();
+
+    [ObservableProperty]
+    private Dictionary<string, string> _cancelButtonCaptionByLanguage = new();
+
+    [ObservableProperty]
+    private Dictionary<string, string> _cancelButtonTooltipByLanguage = new();
 
     /// <summary>Inno Setup's eigen standaardtekst voor de Terug-knop op dit scherm, gebruikt zolang
     /// <see cref="BackButtonCaption"/> leeg is. De schermeditor toont hier de studio's eigen
@@ -539,5 +585,11 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
         CancelButtonFontSize = CancelButtonFontSize,
         CancelButtonFontBold = CancelButtonFontBold,
         CancelButtonTooltip = CancelButtonTooltip,
+        BackButtonCaptionByLanguage = new Dictionary<string, string>(BackButtonCaptionByLanguage),
+        BackButtonTooltipByLanguage = new Dictionary<string, string>(BackButtonTooltipByLanguage),
+        NextButtonCaptionByLanguage = new Dictionary<string, string>(NextButtonCaptionByLanguage),
+        NextButtonTooltipByLanguage = new Dictionary<string, string>(NextButtonTooltipByLanguage),
+        CancelButtonCaptionByLanguage = new Dictionary<string, string>(CancelButtonCaptionByLanguage),
+        CancelButtonTooltipByLanguage = new Dictionary<string, string>(CancelButtonTooltipByLanguage),
     };
 }

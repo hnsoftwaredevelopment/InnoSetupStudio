@@ -117,6 +117,36 @@
                                Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,4,0,0" />
                 </StackPanel>
 
+                <!-- Meertalige knopteksten (sectie 14-backlogitem): alleen zichtbaar voor een
+                     meertalig project (HasLanguageOverrides, zie ButtonPropertiesViewModel) - een
+                     eentalig project (het gebruikelijke geval) laat deze sectie dus gewoon weg.
+                     Elke rij is Caption/Tooltip voor precies één niet-Engelse, geselecteerde taal;
+                     Engels zelf gebruikt gewoon de velden bovenaan dit scherm (geen eigen rij),
+                     zie LanguageOverrideRow/WizardScreenButtonSettings.BackButtonCaptionByLanguage. -->
+                <StackPanel Visibility="{Binding HasLanguageOverrides, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            Margin="0,16,0,4">
+                    <TextBlock Text="{loc:Loc SectionLanguageOverrides}" FontWeight="Bold" Margin="0,0,0,4" />
+                    <TextBlock Text="{loc:Loc HintLanguageOverrides}" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,8" />
+                    <ItemsControl ItemsSource="{Binding LanguageOverrides}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="#FFACA899" BorderThickness="0,0,0,1" Padding="0,8,0,10">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" Margin="0,0,0,6" />
+                                        <TextBlock Text="{loc:Loc LabelButtonCaption}" FontSize="11"
+                                                   Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,2" />
+                                        <TextBox Text="{Binding Caption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,6" />
+                                        <TextBlock Text="{loc:Loc LabelButtonTooltip}" FontSize="11"
+                                                   Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,2" />
+                                        <TextBox Text="{Binding Tooltip, UpdateSourceTrigger=PropertyChanged}" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
                 <TextBlock Text="{loc:Loc SectionPreview}" FontWeight="Bold" Margin="0,16,0,8" />
                 <Border BorderBrush="#FFACA899" BorderThickness="1" Padding="16" HorizontalAlignment="Left">
                     <!-- Zelfde live-voorvertoning-aanpak als het bestaande Schermeditor-paneel

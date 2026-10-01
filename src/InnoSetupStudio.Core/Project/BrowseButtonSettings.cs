@@ -38,4 +38,12 @@ public sealed class BrowseButtonSettings
     public bool? FontBold { get; set; }
 
     public string Tooltip { get; set; } = string.Empty;
+
+    /// <summary>Zie <see cref="WizardScreenButtonSettings.BackButtonCaptionByLanguage"/>: zelfde
+    /// per-taal-vertaling van <see cref="Caption"/>, met Engels (via Caption hierboven) als
+    /// universele terugvalwaarde voor elke taal zonder eigen vertaling hier.</summary>
+    public Dictionary<string, string> CaptionByLanguage { get; set; } = new();
+
+    /// <summary>Zie <see cref="CaptionByLanguage"/>, maar dan voor <see cref="Tooltip"/>.</summary>
+    public Dictionary<string, string> TooltipByLanguage { get; set; } = new();
 }

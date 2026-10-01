@@ -79,4 +79,45 @@ public sealed class WizardScreenButtonSettings
     public bool? CancelButtonFontBold { get; set; }
 
     public string CancelButtonTooltip { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Vertaling per taal van <see cref="BackButtonCaption"/>, voor projecten met meer dan één
+    /// geselecteerde taal (InstallerProject.SupportedLanguageIds.Count &gt; 1; backlogitem
+    /// "meertalige knopteksten", sectie 14). Sleutel is een taal-id uit InnoLanguageCatalog
+    /// (bijvoorbeeld "dutch"), nooit InnoLanguageCatalog.EnglishId: Engels gebruikt gewoon
+    /// BackButtonCaption hierboven, dat blijft de universele terugvalwaarde voor elke taal zonder
+    /// eigen vertaling hier — zelfde terugval als Inno Setup's eigen CustomMessage()-mechanisme:
+    /// ontbreekt een taalspecifieke [CustomMessages]-regel, dan valt Inno Setup terug op de EERSTE
+    /// taal in [Languages], en dat is in deze app altijd Engels (zie
+    /// InnoLanguageCatalog.EnglishId/InstallerProject.SupportedLanguageIds). Een lege waarde (of
+    /// een ontbrekende sleutel) betekent: deze taal gebruikt ook gewoon BackButtonCaption.
+    ///
+    /// Alleen bedoeld voor overschrijvingen van de Terug-knop OP DIT SCHERM; er is bewust geen
+    /// cascade via het Standaardscherm zoals bij BackButtonCaption zelf — een vertaling die voor
+    /// alle schermen moet gelden, moet dus op elk scherm apart ingevuld worden. Dat is een bewuste
+    /// vereenvoudiging ten opzichte van de drielaagse Effective*-resolutie: zonder dit zou elke
+    /// taal ook zijn eigen Standaardscherm-laag nodig hebben, wat de omvang van deze eerste versie
+    /// flink vergroot. Kan later alsnog toegevoegd worden als Herbert daar behoefte aan heeft.
+    ///
+    /// Backward-compatible: een ouder .issproj-bestand zonder dit veld deserialiseert gewoon naar
+    /// een lege dictionary (System.Text.Json roept de parameterloze constructor aan en laat een
+    /// ontbrekende JSON-sleutel bij de hier getoonde standaardwaarde), dus bestaande eentalige
+    /// projecten hebben geen migratie nodig.
+    /// </summary>
+    public Dictionary<string, string> BackButtonCaptionByLanguage { get; set; } = new();
+
+    /// <summary>Zie <see cref="BackButtonCaptionByLanguage"/>, maar dan voor <see cref="BackButtonTooltip"/>.</summary>
+    public Dictionary<string, string> BackButtonTooltipByLanguage { get; set; } = new();
+
+    /// <summary>Zie <see cref="BackButtonCaptionByLanguage"/>, maar dan voor de Volgende-knop.</summary>
+    public Dictionary<string, string> NextButtonCaptionByLanguage { get; set; } = new();
+
+    /// <summary>Zie <see cref="BackButtonTooltipByLanguage"/>, maar dan voor de Volgende-knop.</summary>
+    public Dictionary<string, string> NextButtonTooltipByLanguage { get; set; } = new();
+
+    /// <summary>Zie <see cref="BackButtonCaptionByLanguage"/>, maar dan voor de Annuleren-knop.</summary>
+    public Dictionary<string, string> CancelButtonCaptionByLanguage { get; set; } = new();
+
+    /// <summary>Zie <see cref="BackButtonTooltipByLanguage"/>, maar dan voor de Annuleren-knop.</summary>
+    public Dictionary<string, string> CancelButtonTooltipByLanguage { get; set; } = new();
 }

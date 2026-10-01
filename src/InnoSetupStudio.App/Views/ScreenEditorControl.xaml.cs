@@ -133,7 +133,10 @@ public partial class ScreenEditorControl : UserControl
             () => vm.BackButtonFontFamily, v => vm.BackButtonFontFamily = v, vm.EffectiveBackButtonFontFamily,
             () => vm.BackButtonFontSize, v => vm.BackButtonFontSize = v, vm.EffectiveBackButtonFontSize,
             () => vm.BackButtonFontBold, v => vm.BackButtonFontBold = v, vm.EffectiveBackButtonFontBold,
-            () => vm.BackButtonTooltip, v => vm.BackButtonTooltip = v, vm.EffectiveBackButtonTooltip),
+            () => vm.BackButtonTooltip, v => vm.BackButtonTooltip = v, vm.EffectiveBackButtonTooltip,
+            vm.NonEnglishLanguageIds,
+            () => vm.BackButtonCaptionByLanguage, v => vm.BackButtonCaptionByLanguage = v,
+            () => vm.BackButtonTooltipByLanguage, v => vm.BackButtonTooltipByLanguage = v),
         "Next" => new ButtonPropertiesViewModel(
             BuildDialogTitle("LabelNextButtonSection"), hasCaption: true, vm.HintButtonTriStateText,
             () => vm.NextButtonCaption, v => vm.NextButtonCaption = v, vm.EffectiveNextButtonCaption,
@@ -143,7 +146,10 @@ public partial class ScreenEditorControl : UserControl
             () => vm.NextButtonFontFamily, v => vm.NextButtonFontFamily = v, vm.EffectiveNextButtonFontFamily,
             () => vm.NextButtonFontSize, v => vm.NextButtonFontSize = v, vm.EffectiveNextButtonFontSize,
             () => vm.NextButtonFontBold, v => vm.NextButtonFontBold = v, vm.EffectiveNextButtonFontBold,
-            () => vm.NextButtonTooltip, v => vm.NextButtonTooltip = v, vm.EffectiveNextButtonTooltip),
+            () => vm.NextButtonTooltip, v => vm.NextButtonTooltip = v, vm.EffectiveNextButtonTooltip,
+            vm.NonEnglishLanguageIds,
+            () => vm.NextButtonCaptionByLanguage, v => vm.NextButtonCaptionByLanguage = v,
+            () => vm.NextButtonTooltipByLanguage, v => vm.NextButtonTooltipByLanguage = v),
         "Cancel" => new ButtonPropertiesViewModel(
             BuildDialogTitle("LabelCancelButtonSection"), hasCaption: true, vm.HintButtonTriStateText,
             () => vm.CancelButtonCaption, v => vm.CancelButtonCaption = v, vm.EffectiveCancelButtonCaption,
@@ -153,7 +159,10 @@ public partial class ScreenEditorControl : UserControl
             () => vm.CancelButtonFontFamily, v => vm.CancelButtonFontFamily = v, vm.EffectiveCancelButtonFontFamily,
             () => vm.CancelButtonFontSize, v => vm.CancelButtonFontSize = v, vm.EffectiveCancelButtonFontSize,
             () => vm.CancelButtonFontBold, v => vm.CancelButtonFontBold = v, vm.EffectiveCancelButtonFontBold,
-            () => vm.CancelButtonTooltip, v => vm.CancelButtonTooltip = v, vm.EffectiveCancelButtonTooltip),
+            () => vm.CancelButtonTooltip, v => vm.CancelButtonTooltip = v, vm.EffectiveCancelButtonTooltip,
+            vm.NonEnglishLanguageIds,
+            () => vm.CancelButtonCaptionByLanguage, v => vm.CancelButtonCaptionByLanguage = v,
+            () => vm.CancelButtonTooltipByLanguage, v => vm.CancelButtonTooltipByLanguage = v),
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Onbekende knop-Tag op het properties-knopje."),
     };
 
@@ -170,7 +179,10 @@ public partial class ScreenEditorControl : UserControl
             () => vm.BackButtonFontFamily, v => vm.BackButtonFontFamily = v, vm.EffectiveBackButtonFontFamily,
             () => vm.BackButtonFontSize, v => vm.BackButtonFontSize = v, vm.EffectiveBackButtonFontSize,
             () => vm.BackButtonFontBold, v => vm.BackButtonFontBold = v, null,
-            () => vm.BackButtonTooltip, v => vm.BackButtonTooltip = v, vm.EffectiveBackButtonTooltip),
+            () => vm.BackButtonTooltip, v => vm.BackButtonTooltip = v, vm.EffectiveBackButtonTooltip,
+            vm.NonEnglishLanguageIds,
+            () => vm.BackButtonCaptionByLanguage, v => vm.BackButtonCaptionByLanguage = v,
+            () => vm.BackButtonTooltipByLanguage, v => vm.BackButtonTooltipByLanguage = v),
         "Next" => new ButtonPropertiesViewModel(
             BuildDialogTitle("LabelNextButtonSection"), hasCaption: true, vm.HintButtonTriStateText,
             () => vm.NextButtonCaption, v => vm.NextButtonCaption = v, vm.EffectiveNextButtonCaption,
@@ -180,7 +192,10 @@ public partial class ScreenEditorControl : UserControl
             () => vm.NextButtonFontFamily, v => vm.NextButtonFontFamily = v, vm.EffectiveNextButtonFontFamily,
             () => vm.NextButtonFontSize, v => vm.NextButtonFontSize = v, vm.EffectiveNextButtonFontSize,
             () => vm.NextButtonFontBold, v => vm.NextButtonFontBold = v, null,
-            () => vm.NextButtonTooltip, v => vm.NextButtonTooltip = v, vm.EffectiveNextButtonTooltip),
+            () => vm.NextButtonTooltip, v => vm.NextButtonTooltip = v, vm.EffectiveNextButtonTooltip,
+            vm.NonEnglishLanguageIds,
+            () => vm.NextButtonCaptionByLanguage, v => vm.NextButtonCaptionByLanguage = v,
+            () => vm.NextButtonTooltipByLanguage, v => vm.NextButtonTooltipByLanguage = v),
         "Cancel" => new ButtonPropertiesViewModel(
             BuildDialogTitle("LabelCancelButtonSection"), hasCaption: true, vm.HintButtonTriStateText,
             () => vm.CancelButtonCaption, v => vm.CancelButtonCaption = v, vm.EffectiveCancelButtonCaption,
@@ -190,7 +205,10 @@ public partial class ScreenEditorControl : UserControl
             () => vm.CancelButtonFontFamily, v => vm.CancelButtonFontFamily = v, vm.EffectiveCancelButtonFontFamily,
             () => vm.CancelButtonFontSize, v => vm.CancelButtonFontSize = v, vm.EffectiveCancelButtonFontSize,
             () => vm.CancelButtonFontBold, v => vm.CancelButtonFontBold = v, null,
-            () => vm.CancelButtonTooltip, v => vm.CancelButtonTooltip = v, vm.EffectiveCancelButtonTooltip),
+            () => vm.CancelButtonTooltip, v => vm.CancelButtonTooltip = v, vm.EffectiveCancelButtonTooltip,
+            vm.NonEnglishLanguageIds,
+            () => vm.CancelButtonCaptionByLanguage, v => vm.CancelButtonCaptionByLanguage = v,
+            () => vm.CancelButtonTooltipByLanguage, v => vm.CancelButtonTooltipByLanguage = v),
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Onbekende knop-Tag op het properties-knopje."),
     };
 
@@ -204,5 +222,8 @@ public partial class ScreenEditorControl : UserControl
         () => vm.BrowseButtonFontFamily, v => vm.BrowseButtonFontFamily = v, string.Empty,
         () => vm.BrowseButtonFontSize, v => vm.BrowseButtonFontSize = v, null,
         () => vm.BrowseButtonFontBold, v => vm.BrowseButtonFontBold = v, null,
-        () => vm.BrowseButtonTooltip, v => vm.BrowseButtonTooltip = v, string.Empty);
+        () => vm.BrowseButtonTooltip, v => vm.BrowseButtonTooltip = v, string.Empty,
+        vm.NonEnglishLanguageIds,
+        () => vm.BrowseButtonCaptionByLanguage, v => vm.BrowseButtonCaptionByLanguage = v,
+        () => vm.BrowseButtonTooltipByLanguage, v => vm.BrowseButtonTooltipByLanguage = v);
 }
