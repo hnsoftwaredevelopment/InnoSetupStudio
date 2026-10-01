@@ -73,6 +73,8 @@ public class InstallerProjectTests
             CancelButtonCaption = "Stoppen",
             CancelButtonEnabled = null,
             CancelButtonVisible = null,
+            BackButtonCaptionByLanguage = new Dictionary<string, string> { ["german"] = "Zurück", ["dutch"] = "Terug" },
+            NextButtonTooltipByLanguage = new Dictionary<string, string> { ["german"] = "Weiter zum nächsten Schritt" },
         };
         project.LicenseScreenButtons = new WizardScreenButtonSettings
         {
@@ -150,6 +152,10 @@ public class InstallerProjectTests
             Assert.Equal(project.WelcomeScreenButtons.CancelButtonCaption, loaded.WelcomeScreenButtons.CancelButtonCaption);
             Assert.Null(loaded.WelcomeScreenButtons.CancelButtonEnabled);
             Assert.Null(loaded.WelcomeScreenButtons.CancelButtonVisible);
+            Assert.Equal(project.WelcomeScreenButtons.BackButtonCaptionByLanguage, loaded.WelcomeScreenButtons.BackButtonCaptionByLanguage);
+            Assert.Equal(project.WelcomeScreenButtons.NextButtonTooltipByLanguage, loaded.WelcomeScreenButtons.NextButtonTooltipByLanguage);
+            Assert.Empty(loaded.WelcomeScreenButtons.BackButtonTooltipByLanguage);
+            Assert.Empty(loaded.WelcomeScreenButtons.CancelButtonCaptionByLanguage);
             Assert.Equal(project.LicenseScreenButtons.BackButtonCaption, loaded.LicenseScreenButtons.BackButtonCaption);
             Assert.Equal(project.LicenseScreenButtons.BackButtonEnabled, loaded.LicenseScreenButtons.BackButtonEnabled);
             Assert.Equal(project.LicenseScreenButtons.BackButtonVisible, loaded.LicenseScreenButtons.BackButtonVisible);
@@ -348,6 +354,48 @@ public class InstallerProjectTests
             var loaded = await service.LoadAsync(path);
 
             Assert.Equal([InnoLanguageCatalog.EnglishId, "german", "dutch"], loaded.SupportedLanguageIds);
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task LoadAsyncDefaultsLanguageOverrideDictionariesForOlderProjectFileWithoutThem()
+    {
+        // Meertalige knopteksten (sectie 14-backlogitem) zijn nieuwer dan WizardScreenButtonSettings
+        // zelf: een ouder .issproj-bestand (of elk bestand van vóór deze feature) heeft de
+        // BackButtonCaptionByLanguage-velden e.d. simpelweg niet in de JSON staan. Dit moet
+        // stilzwijgend naar een lege dictionary vallen (geen NullReferenceException zodra het
+        // Knop-eigenschappenscherm de per-taal-rijen opbouwt), zonder dat daar — anders dan bij
+        // WizardScreens/ButtonSettings/SupportedLanguageIds hierboven — een expliciete
+        // ??=-normalisatie in JsonInstallerProjectService voor nodig is: System.Text.Json roept de
+        // parameterloze constructor van WizardScreenButtonSettings aan, die het veld al op "new()"
+        // zet, en een ontbrekende JSON-sleutel overschrijft dat nooit met null.
+        var service = new JsonInstallerProjectService();
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.issproj");
+        await File.WriteAllTextAsync(
+            path,
+            "{\"AppName\":\"Ouder project zonder vertalingen\"," +
+            "\"WelcomeScreenButtons\":{\"BackButtonCaption\":\"Terug\"}}");
+
+        try
+        {
+            var loaded = await service.LoadAsync(path);
+
+            Assert.NotNull(loaded.WelcomeScreenButtons.BackButtonCaptionByLanguage);
+            Assert.Empty(loaded.WelcomeScreenButtons.BackButtonCaptionByLanguage);
+            Assert.Empty(loaded.WelcomeScreenButtons.BackButtonTooltipByLanguage);
+            Assert.Empty(loaded.WelcomeScreenButtons.NextButtonCaptionByLanguage);
+            Assert.Empty(loaded.WelcomeScreenButtons.NextButtonTooltipByLanguage);
+            Assert.Empty(loaded.WelcomeScreenButtons.CancelButtonCaptionByLanguage);
+            Assert.Empty(loaded.WelcomeScreenButtons.CancelButtonTooltipByLanguage);
+            Assert.Empty(loaded.SelectDestinationBrowseButton.CaptionByLanguage);
+            Assert.Empty(loaded.SelectDestinationBrowseButton.TooltipByLanguage);
         }
         finally
         {

@@ -2024,3 +2024,165 @@ geslaagd (ongewijzigd). Smoke-test: `InnoSetupStudio.exe` gestart en reageerde (
 True`), daarna afgesloten. Punt 2 en 4 wijzigen geen zichtbaar gedrag in de door Herbert al
 bevestigde scenario's (alleen interne robuustheid); geen nieuwe handmatige doorloop nodig vóór
 merge.
+
+## 24. Meertalige knopteksten (2026-10-01)
+
+Tweede item van de na PR #20 afgesproken roadmap (direct gestart op Herberts expliciete verzoek:
+"Ik wil daar nu direct mee beginnen"). Doel: voor een meertalig project (meer dan één
+geselecteerde taal, zie Talen-tab in Projectinstellingen) ook de knopteksten (Caption) en tooltips
+van Terug/Volgende/Annuleren en de Bladerknop per taal kunnen invullen, in plaats van één
+Engelstalige tekst die voor elke installatietaal getoond wordt.
+
+### Ontwerpkeuze: per-knop-lijst in het bestaande Knop-eigenschappenscherm
+
+Drie opties besproken via AskUserQuestion vóór implementatie (project-principe "eerst ontwerpen,
+dan bouwen"): (a) een centrale matrix-achtige vertalingentabel elders in de app, (b) een
+losstaand "Vertalingen"-venster per scherm, (c) per knop een lijst met één rij per taal, in het
+bestaande ButtonPropertiesWindow. Herbert koos (c), "aanbevolen": knop en vertaling blijven zo op
+dezelfde plek zichtbaar, geen nieuw venstertype nodig, en de sectie verschijnt vanzelf alleen voor
+een project dat al meer dan één taal heeft.
+
+### Datamodel: bestaand veld = Engelse/universele terugvalwaarde
+
+Zowel `WizardScreenButtonSettings` (Terug/Volgende/Annuleren, per scherm) als
+`BrowseButtonSettings` (de Bladerknop) kregen per bestaand Caption/Tooltip-veld een nieuwe
+`Dictionary<string, string> XxxByLanguage`-eigenschap (zes nieuwe velden op
+WizardScreenButtonSettings, twee op BrowseButtonSettings). Sleutel is een taal-id uit
+InnoLanguageCatalog (bijvoorbeeld "dutch"), nooit `InnoLanguageCatalog.EnglishId`: Engels blijft
+gewoon het bestaande Caption/Tooltip-veld gebruiken. Een lege waarde of ontbrekende sleutel
+betekent "deze taal gebruikt ook gewoon de Engelse/universele tekst" — exact dezelfde leeg-is-
+onveranderd-conventie als de rest van WizardScreenButtonSettings, en bewust hetzelfde terugvalgedrag
+als Inno Setup's eigen `CustomMessage()`-mechanisme: ontbreekt een taalspecifieke
+`[CustomMessages]`-regel, dan valt Inno Setup terug op de EERSTE taal in `[Languages]`, en dat is
+in deze app altijd Engels (`InstallerProject.SupportedLanguageIds` bevat altijd
+`InnoLanguageCatalog.EnglishId`, als eerste).
+
+Dit is volledig backward-compatible: een ouder .issproj-bestand zonder deze velden deserialiseert
+via System.Text.Json gewoon naar een lege dictionary (de parameterloze constructor van
+`WizardScreenButtonSettings`/`BrowseButtonSettings` zet het veld al op `new()`, en een ontbrekende
+JSON-sleutel overschrijft dat nooit met null) — geen migratie nodig, geen aanpassing aan
+`JsonInstallerProjectService` (anders dan bij eerdere, vergelijkbare uitbreidingen zoals
+WizardScreens/SupportedLanguageIds, waar wél een expliciete `??=`-normalisatie nodig was voor het
+geval van een expliciete JSON-`null`). Zie de nieuwe test
+`LoadAsyncDefaultsLanguageOverrideDictionariesForOlderProjectFileWithoutThem`.
+
+**Bewuste vereenvoudiging: geen cascade via het Standaardscherm.** Caption/Tooltip zelf cascaderen
+drielaags (eigen scherm → Standaardscherm → Inno Setup's ingebouwde tekst, zie §12.6/§12.7). De
+nieuwe per-taal-dictionaries doen dat niet: een vertaling geldt alleen voor het scherm waarop hij
+is ingevuld. Wil je bijvoorbeeld de Nederlandse Annuleren-tekst op elk scherm hetzelfde laten zijn,
+dan vul je die nu op elk scherm apart in. Zonder deze vereenvoudiging had elke taal ook zijn eigen
+Standaardscherm-laag nodig (een extra set dictionaries op `DefaultScreenEditorViewModel`, plus
+live-doormelding naar elk scherm net als `RaiseEffectivePropertiesChanged` dat voor de bestaande
+Effective*-eigenschappen doet) — dat vergroot de omvang van deze eerste versie aanzienlijk. Kan
+later alsnog toegevoegd worden als Herbert daar in de praktijk behoefte aan blijkt te hebben
+(genoteerd als backlogitem hieronder).
+
+### UI: nieuwe sectie in ButtonPropertiesWindow, alleen zichtbaar voor een meertalig project
+
+`ButtonPropertiesViewModel` kreeg een nieuwe geneste `LanguageOverrideRow`-klasse (zelfde eenvoudige
+rij-object-aanpak als `LanguageRow` in de Talen-tab) en een `LanguageOverrides`-lijst: één rij per
+niet-Engelse, geselecteerde taal van het project, in InnoLanguageCatalog-volgorde. Opgebouwd in de
+constructor uit een nieuwe `NonEnglishLanguageIds`-parameter plus vier nieuwe get/set-delegates
+(Caption/Tooltip-dictionary), zelfde "adapter met delegates"-patroon als de bestaande acht velden.
+`HasLanguageOverrides` (`LanguageOverrides.Count > 0`) bepaalt in ButtonPropertiesWindow.xaml of de
+hele sectie getoond wordt — een eentalig project (het gebruikelijke geval) laat hem dus gewoon weg.
+Elke rij heeft een eigen Caption/Tooltip-tekstvak; bij Opslaan filtert `Save()` lege/witruimte-
+waarden eruit (geen sleutel in de dictionary, consistent met de leeg-is-onveranderd-conventie)
+vóórdat de twee set-delegates worden aangeroepen.
+
+`NonEnglishLanguageIds` (project.SupportedLanguageIds minus Engels) wordt één keer per
+schermeditor-sessie berekend in `WizardEditorViewModel`'s constructor en aan elk scherm meegegeven
+— als nieuwe required-init-eigenschap op de basisklasse `WizardScreenEditorViewModel` (erft dus ook
+door naar `SelectDestinationPageEditorViewModel`), en als nieuwe constructorparameter op
+`DefaultScreenEditorViewModel` (geen gedeelde basisklasse, zie die klassencommentaar). Omdat
+`MainWindow.SetActiveProject` deze hele `WizardEditorViewModel` na elke Projectinstellingen-opslag
+opnieuw opbouwt (zie sectie 23), komt een gewijzigde talenselectie hier vanzelf weer vers binnen —
+geen aparte verversingslogica nodig.
+
+`ScreenEditorControl.xaml.cs`'s drie bouwmethoden (`BuildForScreenButton`,
+`BuildForDefaultScreenButton`, `BuildForBrowseButton`) geven nu ook `vm.NonEnglishLanguageIds` en de
+vier nieuwe delegates door aan `ButtonPropertiesViewModel`'s constructor.
+
+### Build- en testresultaat
+
+`dotnet build` (volledige oplossing): 0 waarschuwingen, 0 fouten. `dotnet test`: 22/22 geslaagd (21
+bestaand + 1 nieuwe: `LoadAsyncDefaultsLanguageOverrideDictionariesForOlderProjectFileWithoutThem`).
+De bestaande round-trip-test (`JsonInstallerProjectServiceRoundTripsAllFields`) is uitgebreid met
+twee gevulde per-taal-dictionaries op `WelcomeScreenButtons`, plus assertions dat de overige
+dictionaries op dat scherm na een save/load-cyclus leeg (niet null) blijven. Smoke-test:
+`InnoSetupStudio.exe` gestart en reageerde (`Responding: True`), daarna afgesloten.
+
+### Backlog
+
+- Cascade van per-taal-vertalingen via het Standaardscherm (zie hierboven) — alleen oppakken als
+  Herbert in de praktijk tegen de huidige "elk scherm apart invullen"-beperking aanloopt.
+- De generator (fase 5/6, nog niet gebouwd) moet deze dictionaries omzetten naar een
+  `[CustomMessages]`-sectie (`MyBackCaption.dutch=Terug` enz.) plus `CustomMessage(...)`-aanroepen
+  in de Pascal Script `CurPageChanged`-event-handler, in plaats van de huidige aanname (vóór dit
+  item) dat Caption altijd een vaste string was.
+
+### CodeRabbit-bevindingen PR #21, geverifieerd en verwerkt (2026-10-01)
+
+1. *Genuine, opgelost.* `ButtonPropertiesViewModel.Save()` herbouwde de hele
+   `BackButtonCaptionByLanguage`-dictionary (en de andere vijf) uit louter de zichtbare
+   `LanguageOverrides`-rijen. `LanguageOverrides` bevat alleen rijen voor de talen die bij het
+   OPENEN van dit scherm geselecteerd waren (`NonEnglishLanguageIds`) — een taal die al een
+   vertaling had maar intussen in de Talen-tab is uitgevinkt, kreeg dus geen rij, en de
+   eerstvolgende Opslaan van dit knop-scherm (voor eender welke wijziging, ook een die niets met
+   vertalingen te maken had) wiste die vertaling stilzwijgend. Fix: `Save()` merget nu via de
+   nieuwe `MergeLanguageOverrides`-methode tegen `_originalCaptionByLanguage`/
+   `_originalTooltipByLanguage` (een kopie van de dictionary zoals die bij het openen was) — alleen
+   de talen die als rij zichtbaar waren worden aangepast/verwijderd, elke andere sleutel blijft
+   ongewijzigd staan.
+2. *Genuine, opgelost.* Dezelfde wortel maakte een tweede, op het eerste gezicht onschuldig lijkend
+   gat zichtbaar: `BuildForDefaultScreenButton` (ScreenEditorControl.xaml.cs) gaf ook
+   `vm.NonEnglishLanguageIds` door voor de drie knoppen van het Standaardscherm, dus toonde ook
+   dáár de per-taal-vertalingensectie. Maar de per-taal-dictionaries op het Standaardscherm
+   cascaderen bewust niet door naar de echte schermen (zie sectie 24 hierboven) — alleen de
+   gewone, Engelse Caption/Tooltip-velden doen dat. Een daar ingevulde vertaling zou dus stil
+   niets doen, wat verwarrend is naast de rest van dat scherm (waar alles juist WEL overal
+   doorwerkt). Fix: `BuildForDefaultScreenButton` geeft nu een vaste lege lijst
+   (`NoLanguageOverridesOnDefaultScreen`) door in plaats van `vm.NonEnglishLanguageIds`, zodat
+   `ButtonPropertiesViewModel.HasLanguageOverrides` daar altijd false is en de sectie verborgen
+   blijft. Punt 1's merge-fix beschermt daarnaast ook meteen de dictionaries van het
+   Standaardscherm zelf: met een lege rijenlijst raakt `MergeLanguageOverrides` daar nooit iets
+   aan, dus een bestaand gevulde dictionary (bijvoorbeeld uit een handmatig bewerkt projectbestand,
+   of een toekomstige Standaardscherm-cascade) overleeft een Opslaan van dat scherm ongewijzigd.
+
+**Build- en testresultaat na deze fix.** `dotnet build`: 0 waarschuwingen, 0 fouten. `dotnet test`:
+22/22 geslaagd (ongewijzigd — beide fixes wijzigen geen bestaand, al geteste gedrag, alleen de
+nieuwe meertalige-vertalingen-functionaliteit uit deze PR zelf).
+
+
+### Layout-verduidelijking na Herberts handmatige UI-test (2026-10-01)
+
+Herbert heeft PR #21 handmatig getest en bevestigd dat het beheer van meertalige knopteksten
+functioneel goed werkt ("Het beheer werkt op dit moment goed"). Hij meldde daarbij twee
+layout-punten in `ButtonPropertiesWindow.xaml` die de bruikbaarheid verminderden, zonder dat er
+iets functioneel fout was:
+
+1. **Dubbelzinnigheid welke taal de bovenste Tekst/Tooltip-velden zijn.** Bij een meertalig
+   project met bijvoorbeeld Engels + Duits geselecteerd, en de interface van Inno Setup Studio
+   zelf ook in het Duits, leek het net of de bovenste velden (die altijd de Engelse/universele
+   terugvalwaarde zijn, zie sectie 24 hierboven) de Duitse knoptekst waren — er stond geen enkele
+   aanduiding bij welke taal dat veld bedient. Herberts voorstel: "tussen haakjes (Engels) achter
+   zetten, in de geselecteerde taal." Fix: nieuwe resourcesleutel `LabelEnglishSuffix`
+   ("(Engels)" / "(English)" / "(Englisch)" in de drie Strings*.resx-bestanden) die als kleine,
+   secundair gekleurde `TextBlock` naast zowel het Tekst- als het Tooltip-label staat. Deze
+   marker is net als de hele vertalingensectie alleen zichtbaar als `HasLanguageOverrides` waar
+   is (dus alleen bij een meertalig project) — bij een eentalig project is er toch geen andere
+   taal om mee te verwarren, dus blijft het scherm daar ongewijzigd zonder extra ruis.
+2. **Tooltip stond niet direct onder Tekst voor de standaardtaal.** Elke rij in de sectie
+   Vertalingen per taal toont Tooltip direct onder Tekst (logisch: TextColor/FontFamily/FontSize
+   zijn niet taalafhankelijk, dus horen daar niet tussen). De bovenste, Engelse Tekst/Tooltip
+   volgden dat patroon niet: Tooltip stond pas na TextColor/FontFamily/FontSize/FontBold.
+   Herberts opmerking: "Ik den dat het logischer is ook de Tooltip voor de standaard taal direct
+   onder de tekst te zetten." Fix: de Tooltip-`StackPanel` is verplaatst naar direct na de
+   Tekst-`StackPanel`, vóór TextColor — dezelfde volgorde als elke taalrij hieronder.
+
+Beide wijzigingen raken alleen XAML-structuur en resourcesleutels, geen ViewModel-logica: er is
+geen nieuwe property, geen nieuwe databinding-pad en geen wijziging aan `Save()`/
+`MergeLanguageOverrides`. Daarom was er geen nieuwe testcode nodig.
+
+**Build- en testresultaat na deze layout-wijziging.** `dotnet build`: 0 waarschuwingen, 0 fouten.
+`dotnet test`: 22/22 geslaagd (ongewijzigd, zoals verwacht bij een zuivere layout-aanpassing).

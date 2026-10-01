@@ -312,6 +312,15 @@
   <data name="LabelButtonTooltip" xml:space="preserve">
     <value>Tooltip</value>
   </data>
+  <data name="SectionLanguageOverrides" xml:space="preserve">
+    <value>Translations per language</value>
+  </data>
+  <data name="HintLanguageOverrides" xml:space="preserve">
+    <value>Empty = the caption/tooltip above is also used for this language.</value>
+  </data>
+  <data name="LabelEnglishSuffix" xml:space="preserve">
+    <value>(English)</value>
+  </data>
   <data name="ButtonOpenProperties" xml:space="preserve">
     <value>Edit button properties</value>
   </data>

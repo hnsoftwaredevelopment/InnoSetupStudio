@@ -53,7 +53,17 @@
             <StackPanel>
                 <StackPanel Visibility="{Binding HasCaption, Converter={StaticResource BooleanToVisibilityConverter}}"
                             Margin="0,0,0,12">
-                    <TextBlock x:Name="CaptionLabel" Text="{loc:Loc LabelButtonCaption}" Margin="0,0,0,4" />
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <TextBlock x:Name="CaptionLabel" Text="{loc:Loc LabelButtonCaption}" />
+                        <!-- Alleen zichtbaar bij een meertalig project (HasLanguageOverrides): zonder
+                             dit label leek de bovenste Tekst/Tooltip voor onervaren gebruikers op de
+                             actief geselecteerde taal, terwijl dit altijd de Engelse/universele
+                             terugvalwaarde is (Herberts melding 2026-10-01, zie sectie 24 in
+                             Architectuur-en-Ontwerp.md). -->
+                        <TextBlock Text="{loc:Loc LabelEnglishSuffix}" Margin="4,0,0,0" VerticalAlignment="Bottom"
+                                   Foreground="{DynamicResource Brush.TextSecondary}"
+                                   Visibility="{Binding HasLanguageOverrides, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    </StackPanel>
                     <!-- Foreground volgt de (nog niet opgeslagen) tekstkleur hieronder, precies
                          zoals Herberts mockup vraagt: "hier kan de knoptekst al in worden
                          aangepast en wordt getoond in de geselecteerde kleur". -->
@@ -61,6 +71,23 @@
                              Foreground="{Binding PreviewTextColor, Converter={StaticResource HexColorToBrushConverter}}"
                              controls:Placeholder.Text="{Binding EffectiveCaption}"
                              AutomationProperties.LabeledBy="{Binding ElementName=CaptionLabel}" />
+                </StackPanel>
+
+                <!-- Tooltip staat hier direct onder Tekst (niet verderop na TextColor/FontFamily/
+                     FontSize), zodat het patroon gelijk is aan de rijen in de sectie Vertalingen
+                     per taal hieronder, die ook steeds Tooltip direct onder Tekst tonen (Herberts
+                     melding 2026-10-01: "logischer... Tooltip voor de standaard taal direct onder
+                     de tekst te zetten"). -->
+                <StackPanel Margin="0,0,0,12">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <TextBlock x:Name="TooltipLabel" Text="{loc:Loc LabelButtonTooltip}" />
+                        <TextBlock Text="{loc:Loc LabelEnglishSuffix}" Margin="4,0,0,0" VerticalAlignment="Bottom"
+                                   Foreground="{DynamicResource Brush.TextSecondary}"
+                                   Visibility="{Binding HasLanguageOverrides, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    </StackPanel>
+                    <TextBox Text="{Binding Tooltip, UpdateSourceTrigger=PropertyChanged}"
+                             controls:Placeholder.Text="{Binding EffectiveTooltip}"
+                             AutomationProperties.LabeledBy="{Binding ElementName=TooltipLabel}" />
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
@@ -99,13 +126,6 @@
                     <CheckBox Content="{loc:Loc LabelButtonFontBold}" IsChecked="{Binding FontBold}" IsThreeState="True" />
                 </StackPanel>
 
-                <StackPanel Margin="0,0,0,12">
-                    <TextBlock x:Name="TooltipLabel" Text="{loc:Loc LabelButtonTooltip}" Margin="0,0,0,4" />
-                    <TextBox Text="{Binding Tooltip, UpdateSourceTrigger=PropertyChanged}"
-                             controls:Placeholder.Text="{Binding EffectiveTooltip}"
-                             AutomationProperties.LabeledBy="{Binding ElementName=TooltipLabel}" />
-                </StackPanel>
-
                 <StackPanel Margin="0,0,0,4">
                     <StackPanel Orientation="Horizontal">
                         <CheckBox Content="{loc:Loc LabelButtonEnabled}" IsChecked="{Binding ButtonEnabled}"
@@ -115,6 +135,36 @@
                     </StackPanel>
                     <TextBlock Text="{Binding TriStateHint}" FontSize="11" TextWrapping="Wrap"
                                Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,4,0,0" />
+                </StackPanel>
+
+                <!-- Meertalige knopteksten (sectie 14-backlogitem): alleen zichtbaar voor een
+                     meertalig project (HasLanguageOverrides, zie ButtonPropertiesViewModel) - een
+                     eentalig project (het gebruikelijke geval) laat deze sectie dus gewoon weg.
+                     Elke rij is Caption/Tooltip voor precies één niet-Engelse, geselecteerde taal;
+                     Engels zelf gebruikt gewoon de velden bovenaan dit scherm (geen eigen rij),
+                     zie LanguageOverrideRow/WizardScreenButtonSettings.BackButtonCaptionByLanguage. -->
+                <StackPanel Visibility="{Binding HasLanguageOverrides, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            Margin="0,16,0,4">
+                    <TextBlock Text="{loc:Loc SectionLanguageOverrides}" FontWeight="Bold" Margin="0,0,0,4" />
+                    <TextBlock Text="{loc:Loc HintLanguageOverrides}" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,8" />
+                    <ItemsControl ItemsSource="{Binding LanguageOverrides}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="#FFACA899" BorderThickness="0,0,0,1" Padding="0,8,0,10">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" Margin="0,0,0,6" />
+                                        <TextBlock Text="{loc:Loc LabelButtonCaption}" FontSize="11"
+                                                   Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,2" />
+                                        <TextBox Text="{Binding Caption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,6" />
+                                        <TextBlock Text="{loc:Loc LabelButtonTooltip}" FontSize="11"
+                                                   Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,2" />
+                                        <TextBox Text="{Binding Tooltip, UpdateSourceTrigger=PropertyChanged}" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </StackPanel>
 
                 <TextBlock Text="{loc:Loc SectionPreview}" FontWeight="Bold" Margin="0,16,0,8" />

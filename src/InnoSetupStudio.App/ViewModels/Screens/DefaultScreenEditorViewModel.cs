@@ -40,12 +40,13 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
     private readonly string? _projectFilePath;
     private readonly IProjectAssetService _assetService;
 
-    public DefaultScreenEditorViewModel(WizardScreenButtonSettings settings, string wizardImageFile, string wizardSmallImageFile, string? projectFilePath, IProjectAssetService assetService)
+    public DefaultScreenEditorViewModel(WizardScreenButtonSettings settings, string wizardImageFile, string wizardSmallImageFile, string? projectFilePath, IProjectAssetService assetService, IReadOnlyList<string> nonEnglishLanguageIds)
     {
         _projectFilePath = projectFilePath;
         _assetService = assetService;
         _wizardImageFile = wizardImageFile;
         _wizardSmallImageFile = wizardSmallImageFile;
+        NonEnglishLanguageIds = nonEnglishLanguageIds;
         // NormalizeWhitespace op de negen tekstvelden (Caption/TextColor/FontFamily x 3): deze
         // backingvelden worden hier rechtstreeks gezet, dus zonder deze aanroep zou een ouder,
         // al opgeslagen project met een alleen-witruimte-waarde nooit door de OnXxxChanged-hooks
@@ -76,7 +77,23 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
         _cancelButtonFontSize = settings.CancelButtonFontSize;
         _cancelButtonFontBold = settings.CancelButtonFontBold;
         _cancelButtonTooltip = NormalizeWhitespace(settings.CancelButtonTooltip);
+        // Meertalige knopteksten (sectie 14-backlogitem): zie WizardScreenEditorViewModel voor de
+        // volledige toelichting. Geen NormalizeWhitespace nodig zoals bij de tekstvelden
+        // hierboven: lege/witruimte-waarden per taal worden pas bij het opslaan vanuit
+        // ButtonPropertiesViewModel weggefilterd (zie Save() daar), dus hier simpelweg een kopie.
+        _backButtonCaptionByLanguage = new Dictionary<string, string>(settings.BackButtonCaptionByLanguage);
+        _backButtonTooltipByLanguage = new Dictionary<string, string>(settings.BackButtonTooltipByLanguage);
+        _nextButtonCaptionByLanguage = new Dictionary<string, string>(settings.NextButtonCaptionByLanguage);
+        _nextButtonTooltipByLanguage = new Dictionary<string, string>(settings.NextButtonTooltipByLanguage);
+        _cancelButtonCaptionByLanguage = new Dictionary<string, string>(settings.CancelButtonCaptionByLanguage);
+        _cancelButtonTooltipByLanguage = new Dictionary<string, string>(settings.CancelButtonTooltipByLanguage);
     }
+
+    /// <summary>Zie <see cref="WizardScreenEditorViewModel.NonEnglishLanguageIds"/>: hier een
+    /// gewone constructorparameter in plaats van required init, want deze klasse wordt door
+    /// WizardEditorViewModel met positionele argumenten gebouwd, niet via object-initializer-
+    /// syntax (zie de klassencommentaar: geen gedeelde basisklasse).</summary>
+    public IReadOnlyList<string> NonEnglishLanguageIds { get; }
 
     /// <summary>Vertaalde naam, getoond in de linkerlijst (eigen rij boven de scheidingslijn).</summary>
     public string Title { get; } = LocalizationManager.Instance["WizardScreenDefault"];
@@ -339,6 +356,28 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
     [ObservableProperty]
     private string _cancelButtonTooltip;
 
+    // Meertalige knopteksten (sectie 14-backlogitem): eigen waarde, geen Effective*-tegenhanger
+    // nodig — dit scherm IS de bron van de standaardwaarde, zie WizardScreenEditorViewModel voor
+    // de volledige toelichting op deze dictionaries.
+
+    [ObservableProperty]
+    private Dictionary<string, string> _backButtonCaptionByLanguage;
+
+    [ObservableProperty]
+    private Dictionary<string, string> _backButtonTooltipByLanguage;
+
+    [ObservableProperty]
+    private Dictionary<string, string> _nextButtonCaptionByLanguage;
+
+    [ObservableProperty]
+    private Dictionary<string, string> _nextButtonTooltipByLanguage;
+
+    [ObservableProperty]
+    private Dictionary<string, string> _cancelButtonCaptionByLanguage;
+
+    [ObservableProperty]
+    private Dictionary<string, string> _cancelButtonTooltipByLanguage;
+
     // Zelfde alleen-witruimte-normalisatie als bij de captions hierboven, nu voor TextColor/
     // FontFamily: zonder dit zou ReadButtonSettings() (en dus het opgeslagen project) een
     // alleen-witruimte-waarde doorgeven als "wel een eigen kleur/lettertype ingesteld" aan de
@@ -446,5 +485,11 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
         CancelButtonFontSize = CancelButtonFontSize,
         CancelButtonFontBold = CancelButtonFontBold,
         CancelButtonTooltip = CancelButtonTooltip,
+        BackButtonCaptionByLanguage = new Dictionary<string, string>(BackButtonCaptionByLanguage),
+        BackButtonTooltipByLanguage = new Dictionary<string, string>(BackButtonTooltipByLanguage),
+        NextButtonCaptionByLanguage = new Dictionary<string, string>(NextButtonCaptionByLanguage),
+        NextButtonTooltipByLanguage = new Dictionary<string, string>(NextButtonTooltipByLanguage),
+        CancelButtonCaptionByLanguage = new Dictionary<string, string>(CancelButtonCaptionByLanguage),
+        CancelButtonTooltipByLanguage = new Dictionary<string, string>(CancelButtonTooltipByLanguage),
     };
 }

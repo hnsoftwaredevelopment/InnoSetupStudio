@@ -22,6 +22,18 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
     {
         BeginInit();
 
+        // Meertalige knopteksten (sectie 14-backlogitem): één keer berekend voor de hele
+        // schermeditor-sessie en aan elk scherm (inclusief het Standaardscherm) meegegeven, zie
+        // WizardScreenEditorViewModel.NonEnglishLanguageIds. Project.SupportedLanguageIds bevat
+        // altijd Engels (InnoLanguageCatalog.EnglishId, zie InstallerProject/LanguagesViewModel),
+        // dat hier dus wordt uitgefilterd — Engels gebruikt gewoon de bestaande Caption/Tooltip-
+        // velden, geen eigen rij in de per-taal-lijst. SetActiveProject bouwt deze hele
+        // WizardEditorViewModel opnieuw op na elke Projectinstellingen-opslag (zie MainWindow),
+        // dus een gewijzigde talenselectie komt hier vanzelf weer vers binnen.
+        var nonEnglishLanguageIds = project.SupportedLanguageIds
+            .Where(id => id != InnoLanguageCatalog.EnglishId)
+            .ToList();
+
         // Het Standaardscherm (§12.6/§12.7): één instantie voor de hele sessie, hieronder aan elk
         // scherm doorgegeven via de required Defaults-eigenschap, vóórdat die schermen zelf
         // aangemaakt worden. Geen aan/uit-vinkje zoals de echte schermen (WizardScreens uit fase
@@ -30,7 +42,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
         // vandaan komen (voorheen hier zelf één keer opgezocht via WizardImageResolver); elk scherm
         // leest ze voortaan live van hier via WizardScreenEditorViewModel.WizardImage/
         // WizardSmallImage, in plaats van een eenmalige init-waarde te krijgen.
-        _defaultScreen = new DefaultScreenEditorViewModel(project.DefaultScreenButtons, project.WizardImageFile, project.WizardSmallImageFile, projectFilePath, assetService);
+        _defaultScreen = new DefaultScreenEditorViewModel(project.DefaultScreenButtons, project.WizardImageFile, project.WizardSmallImageFile, projectFilePath, assetService, nonEnglishLanguageIds);
 
         // Bewust GEEN collectie-expressie ([_defaultScreen]) hier: de compiler bakt die voor een
         // IReadOnlyList<T>-doeltype met precies één element in tot een intern eenmalig-element-
@@ -51,6 +63,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
             {
                 ButtonSettings = project.WelcomeScreenButtons,
                 Defaults = _defaultScreen,
+                NonEnglishLanguageIds = nonEnglishLanguageIds,
             });
         }
 
@@ -60,6 +73,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
             {
                 ButtonSettings = project.LicenseScreenButtons,
                 Defaults = _defaultScreen,
+                NonEnglishLanguageIds = nonEnglishLanguageIds,
             });
         }
 
@@ -69,6 +83,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
             {
                 ButtonSettings = project.SelectDestinationScreenButtons,
                 Defaults = _defaultScreen,
+                NonEnglishLanguageIds = nonEnglishLanguageIds,
             });
         }
 
