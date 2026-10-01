@@ -2120,3 +2120,35 @@ dictionaries op dat scherm na een save/load-cyclus leeg (niet null) blijven. Smo
   `[CustomMessages]`-sectie (`MyBackCaption.dutch=Terug` enz.) plus `CustomMessage(...)`-aanroepen
   in de Pascal Script `CurPageChanged`-event-handler, in plaats van de huidige aanname (vóór dit
   item) dat Caption altijd een vaste string was.
+
+### CodeRabbit-bevindingen PR #21, geverifieerd en verwerkt (2026-10-01)
+
+1. *Genuine, opgelost.* `ButtonPropertiesViewModel.Save()` herbouwde de hele
+   `BackButtonCaptionByLanguage`-dictionary (en de andere vijf) uit louter de zichtbare
+   `LanguageOverrides`-rijen. `LanguageOverrides` bevat alleen rijen voor de talen die bij het
+   OPENEN van dit scherm geselecteerd waren (`NonEnglishLanguageIds`) — een taal die al een
+   vertaling had maar intussen in de Talen-tab is uitgevinkt, kreeg dus geen rij, en de
+   eerstvolgende Opslaan van dit knop-scherm (voor eender welke wijziging, ook een die niets met
+   vertalingen te maken had) wiste die vertaling stilzwijgend. Fix: `Save()` merget nu via de
+   nieuwe `MergeLanguageOverrides`-methode tegen `_originalCaptionByLanguage`/
+   `_originalTooltipByLanguage` (een kopie van de dictionary zoals die bij het openen was) — alleen
+   de talen die als rij zichtbaar waren worden aangepast/verwijderd, elke andere sleutel blijft
+   ongewijzigd staan.
+2. *Genuine, opgelost.* Dezelfde wortel maakte een tweede, op het eerste gezicht onschuldig lijkend
+   gat zichtbaar: `BuildForDefaultScreenButton` (ScreenEditorControl.xaml.cs) gaf ook
+   `vm.NonEnglishLanguageIds` door voor de drie knoppen van het Standaardscherm, dus toonde ook
+   dáár de per-taal-vertalingensectie. Maar de per-taal-dictionaries op het Standaardscherm
+   cascaderen bewust niet door naar de echte schermen (zie sectie 24 hierboven) — alleen de
+   gewone, Engelse Caption/Tooltip-velden doen dat. Een daar ingevulde vertaling zou dus stil
+   niets doen, wat verwarrend is naast de rest van dat scherm (waar alles juist WEL overal
+   doorwerkt). Fix: `BuildForDefaultScreenButton` geeft nu een vaste lege lijst
+   (`NoLanguageOverridesOnDefaultScreen`) door in plaats van `vm.NonEnglishLanguageIds`, zodat
+   `ButtonPropertiesViewModel.HasLanguageOverrides` daar altijd false is en de sectie verborgen
+   blijft. Punt 1's merge-fix beschermt daarnaast ook meteen de dictionaries van het
+   Standaardscherm zelf: met een lege rijenlijst raakt `MergeLanguageOverrides` daar nooit iets
+   aan, dus een bestaand gevulde dictionary (bijvoorbeeld uit een handmatig bewerkt projectbestand,
+   of een toekomstige Standaardscherm-cascade) overleeft een Opslaan van dat scherm ongewijzigd.
+
+**Build- en testresultaat na deze fix.** `dotnet build`: 0 waarschuwingen, 0 fouten. `dotnet test`:
+22/22 geslaagd (ongewijzigd — beide fixes wijzigen geen bestaand, al geteste gedrag, alleen de
+nieuwe meertalige-vertalingen-functionaliteit uit deze PR zelf).

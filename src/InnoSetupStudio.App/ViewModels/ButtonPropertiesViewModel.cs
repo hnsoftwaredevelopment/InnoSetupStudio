@@ -69,6 +69,16 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
     private readonly Action<Dictionary<string, string>> _setCaptionByLanguage;
     private readonly Action<Dictionary<string, string>> _setTooltipByLanguage;
 
+    // Bewaard om in Save() tegen te mergen (CodeRabbit, PR #21): LanguageOverrides bevat alleen
+    // rijen voor de talen die BIJ HET OPENEN van dit scherm geselecteerd waren. Zonder deze
+    // originelen zou Save() de hele dictionary herbouwen uit louter die rijen, en zo een
+    // vertaling voor een taal die ná het invullen weer uitgevinkt is in de Talen-tab (of, op het
+    // Standaardscherm, elke vertaling - zie BuildForDefaultScreenButton) stilzwijgend wegschrijven
+    // bij de eerstvolgende Opslaan van DIT scherm, ook als de gebruiker die taal helemaal niet
+    // aanraakte. Zie MergeLanguageOverrides hieronder.
+    private readonly Dictionary<string, string> _originalCaptionByLanguage;
+    private readonly Dictionary<string, string> _originalTooltipByLanguage;
+
     /// <summary>Gevuurd zodra Opslaan of Sluiten/Annuleren is gekozen; het venster (zie
     /// ButtonPropertiesWindow.xaml.cs) sluit zichzelf hierop met het meegegeven DialogResult,
     /// zelfde patroon als ProjectSettingsViewModel/WizardScreensViewModel.</summary>
@@ -127,15 +137,15 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
         // welke talen meedoen — Where/IndexOf i.p.v. nonEnglishLanguageIds zelf doorlopen, zodat
         // een handmatig bewerkt projectbestand met talen in een afwijkende volgorde hier toch
         // netjes gesorteerd verschijnt, net als LanguagesViewModel dat al voor de Talen-tab doet.
-        var captionByLanguage = getCaptionByLanguage();
-        var tooltipByLanguage = getTooltipByLanguage();
+        _originalCaptionByLanguage = new Dictionary<string, string>(getCaptionByLanguage());
+        _originalTooltipByLanguage = new Dictionary<string, string>(getTooltipByLanguage());
         LanguageOverrides = InnoLanguageCatalog.Languages
             .Where(l => nonEnglishLanguageIds.Contains(l.Id))
             .Select(l => new LanguageOverrideRow(
                 l.Id,
                 l.DisplayName,
-                captionByLanguage.GetValueOrDefault(l.Id, string.Empty),
-                tooltipByLanguage.GetValueOrDefault(l.Id, string.Empty)))
+                _originalCaptionByLanguage.GetValueOrDefault(l.Id, string.Empty),
+                _originalTooltipByLanguage.GetValueOrDefault(l.Id, string.Empty)))
             .ToList();
 
         foreach (var row in LanguageOverrides)
@@ -359,19 +369,42 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
         _setFontBold(FontBold);
         _setTooltip(Tooltip);
 
-        // Meertalige knopteksten (sectie 14-backlogitem): zelfde leeg-is-onveranderd-conventie
-        // als de overige velden (zie WizardScreenButtonSettings.BackButtonCaptionByLanguage) - een
-        // lege rij-waarde krijgt dus geen sleutel in de dictionary, in plaats van er met een lege
-        // string in te staan, zodat ResolveCaption-achtige leeg-checks bij het inlezen niet apart
-        // de dictionary-waarde van de "niet ingevuld"-staat hoeven te onderscheiden.
-        _setCaptionByLanguage(LanguageOverrides
-            .Where(row => !string.IsNullOrWhiteSpace(row.Caption))
-            .ToDictionary(row => row.LanguageId, row => row.Caption));
-        _setTooltipByLanguage(LanguageOverrides
-            .Where(row => !string.IsNullOrWhiteSpace(row.Tooltip))
-            .ToDictionary(row => row.LanguageId, row => row.Tooltip));
+        // Meertalige knopteksten (sectie 14-backlogitem): MergeLanguageOverrides tegen de
+        // originelen in plaats van de dictionary volledig uit LanguageOverrides te herbouwen
+        // (CodeRabbit, PR #21) - zie _originalCaptionByLanguage/_originalTooltipByLanguage
+        // hierboven voor waarom. Zelfde leeg-is-onveranderd-conventie als de overige velden (zie
+        // WizardScreenButtonSettings.BackButtonCaptionByLanguage): een leeggemaakte rij verwijdert
+        // zijn sleutel, in plaats van er met een lege string in te blijven staan.
+        _setCaptionByLanguage(MergeLanguageOverrides(_originalCaptionByLanguage, LanguageOverrides, row => row.Caption));
+        _setTooltipByLanguage(MergeLanguageOverrides(_originalTooltipByLanguage, LanguageOverrides, row => row.Tooltip));
 
         RequestClose?.Invoke(this, true);
+    }
+
+    /// <summary>Past alleen de talen aan die als rij zichtbaar waren (<paramref name="rows"/>,
+    /// zie <see cref="LanguageOverrides"/>) - elke andere sleutel in <paramref name="original"/>
+    /// (een taal die intussen uitgevinkt is in de Talen-tab, of - op het Standaardscherm - elke
+    /// taal, zie BuildForDefaultScreenButton) blijft ongewijzigd staan. Zie
+    /// _originalCaptionByLanguage hierboven voor de reden.</summary>
+    private static Dictionary<string, string> MergeLanguageOverrides(
+        Dictionary<string, string> original, IReadOnlyList<LanguageOverrideRow> rows, Func<LanguageOverrideRow, string> selector)
+    {
+        var merged = new Dictionary<string, string>(original);
+
+        foreach (var row in rows)
+        {
+            var value = selector(row);
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                merged.Remove(row.LanguageId);
+            }
+            else
+            {
+                merged[row.LanguageId] = value;
+            }
+        }
+
+        return merged;
     }
 
     [RelayCommand]

@@ -53,6 +53,12 @@ public partial class ScreenEditorControl : UserControl
     // SelectionChanged die dat nullen zelf weer veroorzaakt.
     private bool _isSyncingScreenSelection;
 
+    /// <summary>Zie BuildForDefaultScreenButton: een lege lijst onderdrukt de per-taal-
+    /// vertalingensectie in ButtonPropertiesWindow voor de drie knoppen van het Standaardscherm,
+    /// omdat die vertalingen daar (anders dan de Engelse Caption/Tooltip) niet cascaderen naar de
+    /// echte schermen.</summary>
+    private static readonly IReadOnlyList<string> NoLanguageOverridesOnDefaultScreen = [];
+
     private void ScreenListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (_isSyncingScreenSelection || e.AddedItems.Count == 0 || ViewModel is null)
@@ -168,6 +174,16 @@ public partial class ScreenEditorControl : UserControl
 
     // DefaultScreenEditorViewModel heeft geen EffectiveXxxButtonFontBold (geen cascade, dit
     // scherm ÍS de bron van de standaardwaarde), dus hier steeds "null" als effectiveFontBold.
+    //
+    // Meertalige knopteksten (sectie 14-backlogitem) krijgen hier bewust GEEN rijen
+    // (NoLanguageOverridesOnDefaultScreen hieronder, in plaats van vm.NonEnglishLanguageIds zoals
+    // BuildForScreenButton hierboven dat wél doorgeeft): CodeRabbit-opmerking op PR #21, de
+    // per-taal-dictionaries op het Standaardscherm cascaderen (bewust, zie docs/Architectuur-en-
+    // Ontwerp.md sectie 24) niet door naar de echte schermen zoals de Engelse Caption/Tooltip dat
+    // wél doen - een hier ingevulde vertaling zou dus stil niets doen, terwijl de rest van dit
+    // scherm (de gewone Caption/Tooltip-velden) juist wél overal als terugvalwaarde gebruikt
+    // wordt. Rijen tonen die geen enkel effect hebben zou verwarrend zijn, dus die sectie blijft
+    // hier verborgen (ButtonPropertiesViewModel.HasLanguageOverrides wordt dan false).
     private static ButtonPropertiesViewModel BuildForDefaultScreenButton(DefaultScreenEditorViewModel vm, string kind) => kind switch
     {
         "Back" => new ButtonPropertiesViewModel(
@@ -180,7 +196,7 @@ public partial class ScreenEditorControl : UserControl
             () => vm.BackButtonFontSize, v => vm.BackButtonFontSize = v, vm.EffectiveBackButtonFontSize,
             () => vm.BackButtonFontBold, v => vm.BackButtonFontBold = v, null,
             () => vm.BackButtonTooltip, v => vm.BackButtonTooltip = v, vm.EffectiveBackButtonTooltip,
-            vm.NonEnglishLanguageIds,
+            NoLanguageOverridesOnDefaultScreen,
             () => vm.BackButtonCaptionByLanguage, v => vm.BackButtonCaptionByLanguage = v,
             () => vm.BackButtonTooltipByLanguage, v => vm.BackButtonTooltipByLanguage = v),
         "Next" => new ButtonPropertiesViewModel(
@@ -193,7 +209,7 @@ public partial class ScreenEditorControl : UserControl
             () => vm.NextButtonFontSize, v => vm.NextButtonFontSize = v, vm.EffectiveNextButtonFontSize,
             () => vm.NextButtonFontBold, v => vm.NextButtonFontBold = v, null,
             () => vm.NextButtonTooltip, v => vm.NextButtonTooltip = v, vm.EffectiveNextButtonTooltip,
-            vm.NonEnglishLanguageIds,
+            NoLanguageOverridesOnDefaultScreen,
             () => vm.NextButtonCaptionByLanguage, v => vm.NextButtonCaptionByLanguage = v,
             () => vm.NextButtonTooltipByLanguage, v => vm.NextButtonTooltipByLanguage = v),
         "Cancel" => new ButtonPropertiesViewModel(
@@ -206,7 +222,7 @@ public partial class ScreenEditorControl : UserControl
             () => vm.CancelButtonFontSize, v => vm.CancelButtonFontSize = v, vm.EffectiveCancelButtonFontSize,
             () => vm.CancelButtonFontBold, v => vm.CancelButtonFontBold = v, null,
             () => vm.CancelButtonTooltip, v => vm.CancelButtonTooltip = v, vm.EffectiveCancelButtonTooltip,
-            vm.NonEnglishLanguageIds,
+            NoLanguageOverridesOnDefaultScreen,
             () => vm.CancelButtonCaptionByLanguage, v => vm.CancelButtonCaptionByLanguage = v,
             () => vm.CancelButtonTooltipByLanguage, v => vm.CancelButtonTooltipByLanguage = v),
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Onbekende knop-Tag op het properties-knopje."),
