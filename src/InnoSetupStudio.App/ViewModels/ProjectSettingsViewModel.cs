@@ -251,7 +251,17 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
     partial void OnSetupIconFileChanged(string value) => MarkDirty();
 
     [RelayCommand(CanExecute = nameof(CanSave))]
-    private async Task SaveAsync()
+    private async Task SaveAsync() => await SaveCoreAsync();
+
+    /// <summary>
+    /// Daadwerkelijke opslaanlogica achter <see cref="SaveAsync"/> (de Opslaan-knop), met een
+    /// expliciet succes/mislukt-resultaat in plaats van dat achteraf via <see cref="IsDirty"/> af
+    /// te leiden (CodeRabbit, PR #20) — <see cref="SaveAsync"/> zelf blijft de void-Task-vorm
+    /// behouden die <c>[RelayCommand]</c> voor de knopbinding verwacht; <see
+    /// cref="ConfirmDiscardChangesAsync"/> roept dit rechtstreeks aan voor een betrouwbare
+    /// succes-check in plaats van IsDirty als zijkanaal te gebruiken.
+    /// </summary>
+    private async Task<bool> SaveCoreAsync()
     {
         var targetPath = ProjectFilePath;
         if (string.IsNullOrWhiteSpace(targetPath))
@@ -264,7 +274,7 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
 
             if (dialog.ShowDialog() != true)
             {
-                return;
+                return false;
             }
 
             targetPath = dialog.FileName;
@@ -306,7 +316,7 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
             // Specifieke, bruikbare foutmelding tonen in plaats van de wijzigingen stilzwijgend
             // te verliezen: het venster blijft open zodat de gebruiker het opnieuw kan proberen.
             MessageBox.Show(ex.Message, "Inno Setup Studio", MessageBoxButton.OK, MessageBoxImage.Error);
-            return;
+            return false;
         }
         finally
         {
@@ -321,12 +331,94 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
         SavedProject = project;
         IsDirty = false;
         RequestClose?.Invoke(this, true);
+        return true;
     }
 
     private bool CanCancel() => !IsSaving;
 
     [RelayCommand(CanExecute = nameof(CanCancel))]
-    private void Cancel() => RequestClose?.Invoke(this, false);
+    private async Task CancelAsync()
+    {
+        // Bij een nieuw project ís deze knopklik (Annuleren) zelf al de expliciete keuze om de
+        // wijzigingen te verwerpen — zie CancelButtonText hierboven, die dan ook "Annuleren" toont
+        // in plaats van "Openen". Geen aparte waarschuwing nodig; Herbert bevestigde dit expliciet
+        // (2026-09-30): bewust geen melding bij Annuleren op een nieuw project. Bij een al bestaand
+        // project heet deze knop "Openen" — het project blijft open met de instellingen zoals ze op
+        // schijf staan, wat dubbelzinnig is zodra er nog niet-opgeslagen veldwijzigingen zijn (die
+        // worden dan alsnog stilzwijgend weggegooid tenzij we hier waarschuwen). Zelfde
+        // Ja/Nee/Annuleren-vraag als X-sluiten (zie ProjectSettingsWindow_Closing).
+        if (IsExistingProject)
+        {
+            var decision = await ConfirmDiscardChangesAsync();
+            if (decision != UnsavedChangesDecision.Proceed)
+            {
+                // Abort: gebruiker annuleerde, venster blijft open. AlreadyClosing: SaveAsync
+                // heeft zelf al RequestClose(true) gevuurd, hieronder dus niet nogmaals sluiten.
+                return;
+            }
+        }
+
+        RequestClose?.Invoke(this, false);
+    }
+
+    /// <summary>
+    /// Vraagt de gebruiker om niet-opgeslagen wijzigingen in dit scherm op te slaan of te
+    /// verwerpen, gebruikt door zowel <see cref="CancelAsync"/> (alleen bij een al bestaand
+    /// project, zie daar) als <see cref="Views.ProjectSettingsWindow"/>'s Closing-handler (X-
+    /// sluiten in de titelbalk, altijd — dat is dubbelzinnig ongeacht nieuw/bestaand project).
+    /// Zelfde patroon als MainWindow.ConfirmDiscardUnsavedScreenChangesAsync.
+    /// </summary>
+    /// <returns>
+    /// <see cref="UnsavedChangesDecision.Proceed"/> als er niets te verliezen was of de gebruiker
+    /// expliciet voor verwerpen koos (de aanroeper mag zelf RequestClose(false) vuren);
+    /// <see cref="UnsavedChangesDecision.AlreadyClosing"/> als opslaan is gelukt (SaveAsync heeft
+    /// dan al RequestClose(true) gevuurd, de aanroeper hoeft niets meer te doen);
+    /// <see cref="UnsavedChangesDecision.Abort"/> als de gebruiker annuleerde, of opslaan niet kon
+    /// (bijvoorbeeld een leeg verplicht veld) of mislukte — dan blijft het venster open.
+    /// </returns>
+    public async Task<UnsavedChangesDecision> ConfirmDiscardChangesAsync()
+    {
+        if (!IsDirty)
+        {
+            return UnsavedChangesDecision.Proceed;
+        }
+
+        var result = MessageBox.Show(
+            LocalizationManager.Instance["UnsavedProjectSettingsMessage"],
+            LocalizationManager.Instance["UnsavedChangesTitle"],
+            MessageBoxButton.YesNoCancel,
+            MessageBoxImage.Warning);
+
+        if (result == MessageBoxResult.Cancel)
+        {
+            return UnsavedChangesDecision.Abort;
+        }
+
+        if (result == MessageBoxResult.No)
+        {
+            return UnsavedChangesDecision.Proceed;
+        }
+
+        // MessageBoxResult.Yes: CanSave() controleert behalve IsDirty ook verplichte velden
+        // (AppName) — zonder deze check zou SaveCoreAsync stilzwijgend niets doen en het venster
+        // alsnog dicht lijken te moeten gaan terwijl er niets is opgeslagen.
+        if (!CanSave())
+        {
+            MessageBox.Show(
+                LocalizationManager.Instance["UnsavedProjectSettingsCannotSaveMessage"],
+                LocalizationManager.Instance["UnsavedChangesTitle"],
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return UnsavedChangesDecision.Abort;
+        }
+
+        // CodeRabbit (PR #20): expliciet succes/mislukt-resultaat van SaveCoreAsync gebruiken in
+        // plaats van dat achteraf via IsDirty af te leiden — dat zijkanaal klopt hier in de
+        // praktijk altijd (CanEdit/IsSaving schakelt de velden uit tijdens het opslaan, dus geen
+        // race met een nieuwe wijziging zoals bij MainWindow's ScreenEditor), maar een
+        // rechtstreeks resultaat is ondubbelzinnig en blijft dat ook als die aanname ooit wijzigt.
+        return await SaveCoreAsync() ? UnsavedChangesDecision.AlreadyClosing : UnsavedChangesDecision.Abort;
+    }
 
     private static string? BrowseForFolder(string currentPath)
     {
@@ -338,4 +430,13 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
 
         return dialog.ShowDialog() == true ? dialog.FolderName : null;
     }
+}
+
+/// <summary>Resultaat van <see cref="ProjectSettingsViewModel.ConfirmDiscardChangesAsync"/> —
+/// zie die methode voor de precieze betekenis van elke waarde.</summary>
+public enum UnsavedChangesDecision
+{
+    Proceed,
+    Abort,
+    AlreadyClosing,
 }

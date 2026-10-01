@@ -135,6 +135,18 @@
   <data name="ButtonClose" xml:space="preserve">
     <value>Schließen</value>
   </data>
+  <data name="UnsavedChangesTitle" xml:space="preserve">
+    <value>Nicht gespeicherte Änderungen</value>
+  </data>
+  <data name="UnsavedScreenChangesMessage" xml:space="preserve">
+    <value>Es gibt nicht gespeicherte Änderungen im Bildschirmeditor. Möchten Sie diese speichern, bevor Sie fortfahren?</value>
+  </data>
+  <data name="UnsavedProjectSettingsMessage" xml:space="preserve">
+    <value>Es gibt nicht gespeicherte Änderungen in den Projekteinstellungen. Möchten Sie diese speichern, bevor Sie fortfahren?</value>
+  </data>
+  <data name="UnsavedProjectSettingsCannotSaveMessage" xml:space="preserve">
+    <value>Diese Änderungen können nicht gespeichert werden: Der Anwendungsname darf nicht leer sein.</value>
+  </data>
   <data name="DialogFilterProjectFiles" xml:space="preserve">
     <value>Inno Setup Studio-Projekt (*.issproj)|*.issproj</value>
   </data>

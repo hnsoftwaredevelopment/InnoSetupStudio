@@ -1809,3 +1809,218 @@ Raakt vermoedelijk `WizardEditorViewModel`'s project-aanmaakpad (`New project`) 
 scope, ook de wizard-afbeeldingen/kleuren van het Standaardscherm. Logisch pas op te pakken nadat
 de projectinstellingen en de schermeditor verder zijn uitgekristalliseerd (meer velden = duidelijker
 wat een zinvolle default is) — vandaar Herberts eigen inschatting dat dit voor later is.
+
+
+## 23. Waarschuwing bij niet-opgeslagen schermwijzigingen (2026-09-30)
+
+Oplossing voor het dataverlies-risico dat als CodeRabbit-bevinding #3 (PR #19) bewust NIET
+automatisch werd opgelost, maar als nieuw backlogitem werd vastgelegd (zie sectie hierboven,
+"CodeRabbit-bevindingen PR #19, geverifieerd en verwerkt"): `SetActiveProject` (MainWindow.xaml.cs)
+bouwt bij elke aanroep een gehele nieuwe `WizardEditorViewModel`, zonder te controleren of de
+vorige nog niet-opgeslagen wijzigingen had (`IsDirty == true`). Voorbeeld: een knopomschrijving
+typen in de schermeditor zonder op Opslaan te klikken, dan via de bovenbalk Projectinstellingen
+(her)openen — de getypte wijziging verdween dan stilletjes.
+
+Herbert koos hiervoor expliciet voor de eenvoudigste variant: vragen of de wijzigingen opgeslagen
+moeten worden, in plaats van automatisch samenvoegen of stilzwijgend negeren (een instelbare
+"Vragen"/"Automatisch opslaan"-voorkeur is expliciet voor later, zie onderaan).
+
+**Gekozen aanpak.** Een nieuwe hulpmethode `ConfirmDiscardUnsavedScreenChangesAsync` in
+MainWindow.xaml.cs, aangeroepen aan het begin van elk van de drie aanroeppaden die uiteindelijk op
+`SetActiveProject` uitkomen:
+
+- `NewProjectButton_Click` (Nieuw project)
+- `OpenProjectButton_Click` (Project openen)
+- `ProjectSettingsButton_Click` (Projectinstellingen heropenen voor het al actieve project — dit is
+  exact het CodeRabbit-scenario hierboven)
+
+Als `ScreenEditor.ViewModel.IsDirty` niet waar is (geen actief project, of de schermeditor is niet
+gewijzigd), gaat de aanroeper direct door — geen dialoog voor niets. Anders toont
+`MessageBox.Show` met `MessageBoxButton.YesNoCancel`:
+
+- **Ja** — dezelfde volgorde als `ScreenEditor_SaveClicked`: `ApplyTo` schrijft de bewerkte velden
+  terug naar `_activeProject`, `IsDirty` gaat vóór de `await` op false, en `SaveActiveProjectAsync`
+  wordt aangeroepen. Mislukt het opslaan, dan gaat `IsDirty` weer op true en breekt de aanroeper de
+  actie af (dezelfde bestaande logica als bij de inline Opslaan-knop, nu hergebruikt).
+- **Nee** — wijzigingen worden verworpen, de aanroeper gaat door (de eigen aanroep bouwt zo dadelijk
+  toch een nieuwe `WizardEditorViewModel` via `SetActiveProject`).
+- **Annuleren** (of het venster gesloten) — de aanroeper breekt de actie af; het actieve project en
+  de schermeditor blijven ongewijzigd, alsof er niets gebeurd is.
+
+**Waarom vóór `SetActiveProject` zelf, niet erin.** `ProjectSettingsWindow` is modaal
+(`ShowDialog`), dus tussen de aanroep van `ConfirmDiscardUnsavedScreenChangesAsync` in bijvoorbeeld
+`ProjectSettingsButton_Click` en de latere `SetActiveProject`-aanroepen binnen `OpenProjectSettings`
+kan de schermeditor niet alsnog dirty worden — de gebruiker kan er in die tussentijd niet bij. Eén
+controlepunt per gebruikersactie volstaat dus; een controle binnen `SetActiveProject` zelf zou
+hetzelfde afvangen maar minder duidelijk maken welke gebruikersactie de vraag veroorzaakt (relevant
+voor de dialoogtekst/titel).
+
+**Nieuwe vertaalstrings** (`Strings.resx`/`.en-US`/`.de-DE`, na `ButtonClose`, zelfde patroon als de
+rest van dit bestand): `UnsavedScreenChangesTitle` en `UnsavedScreenChangesMessage`. De
+Ja/Nee/Annuleren-knoppen van `MessageBoxButton.YesNoCancel` zelf zijn NIET apart vertaald — die
+komen van Windows' eigen gelokaliseerde resources op basis van `CultureInfo.CurrentUICulture`, die
+`LocalizationManager.SetLanguage` al proces-breed instelt (zie `LocalizationManager.cs`), dus die
+volgen vanzelf de actieve schermtaal.
+
+**Bewust niet gedaan.** Een instelbare voorkeur tussen "Vragen" en "Automatisch opslaan" bij
+niet-opgeslagen wijzigingen — Herbert noemde dit zelf expliciet als iets voor een later stadium, niet
+onderdeel van deze fix. Vastgelegd als nieuw, nog niet ontworpen backlogitem.
+
+**Build- en testresultaat.** `dotnet build`: 0 waarschuwingen, 0 fouten. `dotnet test`: 21/21
+geslaagd (ongewijzigd). Smoke-test: `InnoSetupStudio.exe` gestart en reageerde (`Responding: True`),
+daarna afgesloten. De daadwerkelijke dialoog (tekst, knoppen, het Ja/Nee/Annuleren-gedrag) kon ik
+niet zelf visueel doorklikken — gevraagd aan Herbert om te testen.
+
+**Aanvulling (2026-09-30, zelfde branch): niet-opgeslagen wijzigingen ín Projectinstellingen
+zelf.** Herbert testte sectie 23 hierboven handmatig en vond een gerelateerd maar apart gat: de
+waarschuwing hierboven dekt alleen de schermeditor (`WizardEditorViewModel.IsDirty`), niet
+`ProjectSettingsWindow`'s eigen velden (`ProjectSettingsViewModel.IsDirty`, bijvoorbeeld een
+getypte Applicatienaam). Zijn testresultaten, letterlijk:
+
+- Nieuw project, Applicatienaam getypt, gesloten via X → verwachtte een melding, kreeg er geen.
+  Niet goed.
+- Nieuw project, Applicatienaam getypt, Annuleren gekozen → verwachtte bewust GEEN melding ("ik
+  kies bewust voor annuleren"), kreeg er ook geen. Prima zo.
+- Bestaand project geopend, Applicatienaam gewijzigd, gesloten via X → verwachtte een melding,
+  kreeg er geen. Niet goed.
+- Bestaand project geopend, Applicatienaam gewijzigd, Openen gekozen → verwachtte een melding,
+  kreeg er geen. Niet goed.
+- Projectinstellingen heropend voor een al actief project, Applicatienaam gewijzigd, gesloten via
+  X → verwachtte een melding, kreeg er geen. Niet goed.
+- Zelfde, maar Openen gekozen → verwachtte een melding, kreeg er geen. Niet goed.
+- (Ter controle, drie scenario's met een schermwijziging in plaats van een projectinstelling, via
+  Nieuw project/Project openen/Projectinstellingen — alle drie toonden terecht de melding: sectie
+  23 hierboven werkte hier al correct.)
+
+**Belangrijke nuance uit Herberts eigen testresultaten:** Annuleren op een NIEUW project mag
+bewust ZONDER melding blijven — die knopklik ís zelf al de expliciete keuze om te verwerpen (zie
+`CancelButtonText`: toont dan ook letterlijk "Annuleren"). Bij een bestaand project heet diezelfde
+knop "Openen" (het project blijft open, de instellingen blijven zoals ze op schijf staan) — dat is
+dubbelzinnig zodra er nog niet-opgeslagen veldwijzigingen zijn, dus daar wél een melding. X-sluiten
+(native titelbalk) is in alle gevallen dubbelzinnig — daar dus altijd een melding, ongeacht
+nieuw/bestaand project.
+
+**Aanpak.** Twee wijzigingen, beide in de bestaande call-structuur:
+
+1. `ProjectSettingsViewModel.Cancel()` omgezet naar `CancelAsync()` (CommunityToolkit's
+   `[RelayCommand]` genereert dezelfde `CancelCommand`-naam, dus geen XAML-wijziging nodig). Bij
+   `IsExistingProject` roept deze nu eerst de nieuwe `ConfirmDiscardChangesAsync()` aan; bij een
+   nieuw project blijft het gedrag ongewijzigd (direct `RequestClose(false)`, geen vraag).
+2. `ProjectSettingsWindow.xaml.cs` kreeg een `Closing`-event-handler — er was voorheen geen enkele
+   hook op X-sluiten, dus dat pad ging altijd rechtstreeks langs `RequestClose`/`CancelCommand`
+   heen. Deze handler roept, ongeacht nieuw/bestaand project, ook `ConfirmDiscardChangesAsync()`
+   aan zodra `ViewModel.IsDirty` waar is. Een `_programmaticClose`-vlag (gezet in `OnRequestClose`,
+   dus bij elke Opslaan/Annuleren/Openen-afhandeling) onderscheidt "dit Close()-aanroep komt al
+   via een knop die zijn eigen afweging al maakte" van "dit is een echte X-klik" — zonder die vlag
+   zou een programmatische `Close()` na een geslaagde Opslaan de Closing-handler opnieuw laten
+   vragen.
+
+`ConfirmDiscardChangesAsync()` (nieuw op `ProjectSettingsViewModel`, publiek, gedeeld door beide
+aanroeppaden hierboven) volgt hetzelfde Ja/Nee/Annuleren-patroon als
+`MainWindow.ConfirmDiscardUnsavedScreenChangesAsync` (sectie 23): Ja slaat op (met een eigen
+`CanSave()`-controle vooraf — een lege verplichte Applicatienaam kan niet stilzwijgend als
+"opgeslagen" gelden), Nee verwerpt en gaat door, Annuleren houdt het venster open. Omdat Opslaan
+hier zelf al `RequestClose(true)` vuurt bij succes, geeft de methode een driewaardig resultaat
+terug (`UnsavedChangesDecision`: `Proceed`/`Abort`/`AlreadyClosing`) zodat de aanroeper weet of hij
+zelf nog `RequestClose(false)` moet vuren, moet stoppen (venster blijft open), of niets meer hoeft
+te doen (al gesloten via Opslaan).
+
+**Vertaalstrings.** `UnsavedScreenChangesTitle` (sectie 23) hernoemd naar het generieke
+`UnsavedChangesTitle`, nu hergebruikt door beide dialogen — de tekst zelf ("Niet-opgeslagen
+wijzigingen") was al generiek genoeg, alleen de sleutelnaam verwees nog specifiek naar de
+schermeditor. Twee nieuwe strings toegevoegd in alle drie `Strings*.resx`:
+`UnsavedProjectSettingsMessage` (de Ja/Nee/Annuleren-vraag) en
+`UnsavedProjectSettingsCannotSaveMessage` (getoond als Ja gekozen wordt maar Opslaan niet kan,
+bijvoorbeeld een lege Applicatienaam).
+
+**Build- en testresultaat.** `dotnet build`: 0 waarschuwingen, 0 fouten. `dotnet test`: 21/21
+geslaagd (ongewijzigd). Smoke-test: `InnoSetupStudio.exe` gestart en reageerde (`Responding:
+True`), daarna afgesloten. De zes hersteldialogen (drie scenario's × X-sluiten/Openen) kon ik niet
+zelf visueel doorklikken — gevraagd aan Herbert om opnieuw te testen, inclusief het scenario waarin
+hij bij de Ja/Nee/Annuleren-vraag voor "Ja" (opslaan) kiest.
+
+
+**Bugfix (2026-10-01, zelfde branch): "Cannot ... Close ... while a Window is closing" bij Nee
+op de X-sluit-vraag.** Herbert testte de vorige aanvulling (sectie hierboven) en kreeg op alle zes
+genoemde plekken terecht de waarschuwing, maar bij Nee (wijzigingen verwerpen) op de X-sluit-vraag
+verscheen in plaats van het venster dat sloot deze WPF-foutmelding:
+
+> Cannot set Visibility to Visible or call Show, ShowDialog, Close, or
+> WindowInteropHelper.EnsureHandle while a Window is closing.
+
+**Oorzaak.** `ProjectSettingsWindow_Closing` zet `e.Cancel = true` en `await`
+`ConfirmDiscardChangesAsync()`. Bij Nee (of bij een `CanSave()`-mislukking) bevat die methode geen
+enkele échte asynchrone operatie vóór haar return — `MessageBox.Show` is een synchrone, blokkerende
+aanroep met een eigen geneste berichtenlus, geen `await`. Daardoor keert de `async`-methode feitelijk
+synchroon terug, nog steeds binnen dezelfde aanroepstack als WPF's eigen Closing-dispatch. Een
+rechtstreekse `Close()`-aanroep (en, bleek bij nader inzien, ook het zetten van `DialogResult`, dat
+intern zelf `Close()` aanroept) ví·n die stack raakt WPF's interne "venster is aan het sluiten"-
+bewaking, vandaar de foutmelding. Bij Ja (opslaan) trad dit toevallig niet op, omdat `SaveAsync`'s
+echte bestands-I/O wél een echte `await`-onderbreking veroorzaakt — de melding was dus
+inputafhankelijk, niet bij elke keuze reproduceerbaar.
+
+**Fix.** Zowel `OnRequestClose` (het gedeelde sluitpad voor Opslaan/Annuleren/Openen, inclusief een
+geslaagde save vanuit `ConfirmDiscardChangesAsync`) als de `Proceed`-tak van
+`ProjectSettingsWindow_Closing` zelf stellen de daadwerkelijke `DialogResult`/`Close()`-aanroep nu
+uit via `Dispatcher.BeginInvoke`, in plaats van die rechtstreeks te doen. Dat plaatst de aanroep op
+een nieuwe dispatcher-cyclus, altijd ná volledige afhandeling van de huidige (eventuele) Closing-
+dispatch — ongeacht of de weg ernaartoe een echte `await` passeerde of niet. Voor de knop-paden
+(Opslaan/Annuleren buiten een X-klik om, dus sowieso al buiten elke Closing-dispatch) is dit
+onmerkbaar: één dispatcher-tick later sluit het venster, zoals voorheen.
+
+**Build- en testresultaat.** `dotnet build`: 0 waarschuwingen, 0 fouten (de CS4014-waarschuwing
+over de niet-afgewachte `DispatcherOperation` is weggenomen met een expliciete `_ =`-discard, want
+fire-and-forget is hier precies de bedoeling). `dotnet test`: 21/21 geslaagd. Smoke-test:
+`InnoSetupStudio.exe` gestart en reageerde (`Responding: True`), daarna afgesloten. Het specifieke
+Nee-pad op de X-sluit-vraag (waar de fout optrad) kon ik niet zelf visueel doorklikken — gevraagd
+aan Herbert om dat scenario opnieuw te testen, samen met de overige vijf uit de vorige ronde.
+
+
+**CodeRabbit-bevindingen PR #20, geverifieerd en verwerkt (2026-10-01).** Vier "actionable
+comments" over twee reviewrondes (op de eerste en de laatste commit van deze branch), elk tegen de
+code zelf gecontroleerd vóór toepassing:
+
+1. *Genuine, maar bewust NIET automatisch opgelost.* `ConfirmDiscardUnsavedScreenChangesAsync`
+   (MainWindow) roept `viewModel.ApplyTo(_activeProject)` aan vóórdat de save-poging start. Mislukt
+   die save (bestand in gebruik, schijf vol), dan blijft `_activeProject` in het geheugen toch al
+   gewijzigd staan — `IsDirty` gaat weliswaar terug op true, maar het onderliggende project-object
+   draagt de nooit-bevestigde wijziging al met zich mee. Een latere `SetActiveProject`-aanroep met
+   datzelfde (nog niet herladen) `_activeProject` zou die nooit-opgeslagen wijziging dan ongemerkt
+   als "huidige staat" tonen. Dit patroon bestond al vóór deze branch, identiek, in
+   `ScreenEditor_SaveClicked` (sectie 21) — niet iets dat met deze PR is geïntroduceerd. De juiste
+   oplossing (een snapshot van het project bewaren en bij mislukking terugzetten, of ApplyTo pas na
+   een geslaagde save uitvoeren wat een herontwerp van `SaveActiveProjectAsync` vergt) is een
+   bredere wijziging die beide aanroepplekken raakt — vastgelegd als nieuw, nog niet ontworpen
+   backlogitem, dezelfde afweging als steeds bij dit project.
+2. *Genuine, opgelost.* Diezelfde methode gaf bij een geslaagde save onvoorwaardelijk `true` terug,
+   zonder te controleren of `viewModel.IsDirty` intussen (tijdens de save-await) opnieuw op true was
+   gezet. De ScreenEditor blijft namelijk interactief tijdens deze save (in tegenstelling tot
+   ProjectSettingsWindow, waar `CanEdit`/`IsSaving` de velden uitschakelt) — typt de gebruiker
+   tijdens het opslaan zelf nog iets, dan zou de aanroeper die nieuwe wijziging alsnog stilzwijgend
+   weggooien via `SetActiveProject`. Fix: `return !viewModel.IsDirty;` in plaats van
+   onvoorwaardelijk `true` ná een geslaagde save.
+3. *Genuine, maar bewust NIET automatisch opgelost.* Tussen de eerste
+   `ConfirmDiscardUnsavedScreenChangesAsync`-aanroep in `OpenProjectButton_Click` en de
+   daadwerkelijke `SetActiveProject`-aanroep zit nog een `await _projectService.LoadAsync(...)`,
+   waartijdens de (oude, nog niet vervangen) ScreenEditor weer interactief is. Een CodeRabbit-
+   gesuggereerde tweede confirm-aanroep ná die LoadAsync zou, zoals letterlijk voorgesteld, een
+   nieuwe bug introduceren: na een expliciete "Nee" (verwerpen) op de eerste vraag wordt
+   `viewModel.IsDirty` niet teruggezet, dus een tweede controle zou **dezelfde**, al beantwoorde
+   vraag opnieuw tonen. Een correcte fix vergt dus eerst ook IsDirty resetten bij "Nee" — en het
+   venster waarin dit kan misgaan is bovendien extreem smal (een lokale bestandslezing duurt
+   doorgaans een fractie van een seconde). Vastgelegd als nieuw, nog niet ontworpen backlogitem in
+   plaats van een haastige fix die een nieuwe regressie riskeert.
+4. *Genuine (robuustheid, geen aantoonbaar bereikbare bug), opgelost.* `ConfirmDiscardChangesAsync`
+   (ProjectSettingsViewModel) leidde succes van `SaveAsync` af via `IsDirty` achteraf, in plaats van
+   een expliciet resultaat. In de praktijk klopt dat zijkanaal hier altijd — `CanEdit`/`IsSaving`
+   schakelt de velden uit tijdens het opslaan, dus de race uit punt 2 hierboven is hier niet
+   mogelijk — maar een expliciet resultaat is ondubbelzinniger en blijft dat ook als die aanname
+   ooit wijzigt. Fix: `SaveAsync` opgesplitst in de bestaande knop-aanroep (ongewijzigde
+   `Task`-vorm voor `[RelayCommand]`) en een nieuwe `SaveCoreAsync` die een `Task<bool>` teruggeeft;
+   `ConfirmDiscardChangesAsync` gebruikt nu rechtstreeks dat resultaat.
+
+**Build- en testresultaat.** `dotnet build`: 0 waarschuwingen, 0 fouten. `dotnet test`: 21/21
+geslaagd (ongewijzigd). Smoke-test: `InnoSetupStudio.exe` gestart en reageerde (`Responding:
+True`), daarna afgesloten. Punt 2 en 4 wijzigen geen zichtbaar gedrag in de door Herbert al
+bevestigde scenario's (alleen interne robuustheid); geen nieuwe handmatige doorloop nodig vóór
+merge.
