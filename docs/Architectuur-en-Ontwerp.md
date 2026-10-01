@@ -2186,3 +2186,74 @@ geen nieuwe property, geen nieuwe databinding-pad en geen wijziging aan `Save()`
 
 **Build- en testresultaat na deze layout-wijziging.** `dotnet build`: 0 waarschuwingen, 0 fouten.
 `dotnet test`: 22/22 geslaagd (ongewijzigd, zoals verwacht bij een zuivere layout-aanpassing).
+
+
+## 25. Overige instellingen: bureaublad-snelkoppeling, startmenu, update capability (2026-10-01)
+
+Roadmapitem 3 (zie de projectkickoff): een nieuw tabblad "Overige instellingen" in
+`ProjectSettingsWindow`, voor instellingen die niet bij één specifiek wizardscherm horen.
+
+### Referentie en scope-afbakening
+
+Herbert gaf als referentie een aantal schermafbeeldingen van Inno Script Studio (Kymoto
+Solutions) door, een ouder vergelijkbaar programma. Dat programma biedt tientallen van dit soort
+instellingen aan in een boomstructuur (Appearance, Program Group, Uninstall Settings, Restart
+Manager, Compiler Settings, Code Signing, Compression, Disk Spanning, Log File, System
+Requirements, en meer). Herbert zelf: "Er zijn er veel meer, misschien ook een aantal voor een
+eigen tabblad, maar dat komt later allemaal wel." Dit tabblad is daarom bewust beperkt tot
+precies de drie groepen die hij noemde; de rest volgt later, mogelijk als eigen tabbladen.
+
+### Datamodel (`InstallerProject`)
+
+Zeven nieuwe `bool`-eigenschappen, elk met een directe tegenhanger in een Inno Setup-richtlijn:
+
+- **`CreateDesktopIcon`** (standaard `false`) — biedt een optionele taak "Maak een snelkoppeling
+  op het bureaublad" aan. Komt overeen met de desktopicon-taak uit
+  HNSoftwareInstallerFramework's `Shortcuts.iss` (`CreateDesktopIcon == "yes"`, `Flags:
+  unchecked`): staat standaard uit, de eindgebruiker kiest het bewust aan op de
+  Aanvullende-taken-pagina.
+- **`CreateStartMenuIcon`** (standaard `true`) — of er een snelkoppeling in het startmenu komt.
+  Omgekeerde van Inno Setup's `AllowNoIcons`-richtlijn; `true` is zowel Inno Setup's eigen
+  standaard als wat `Base.iss` altijd doet.
+- **`UsePreviousAppDir`**, **`UsePreviousGroup`**, **`UsePreviousSetupType`**,
+  **`UsePreviousTasks`**, **`UsePreviousLanguage`** (allemaal standaard `true`) — "update
+  capability": onthoudt bij een update over een bestaande installatie de eerder gekozen
+  installatiemap/startmenugroep/installatietype/taken/taal, in plaats van die opnieuw te vragen.
+  Komt rechtstreeks overeen met Inno Setup's gelijknamige `UsePrevious*`-richtlijnen, die ook
+  zonder deze instelling al standaard "yes" zijn — deze velden maken die keuze alleen zichtbaar
+  en per project aanpasbaar. `UsePreviousTasks` is in het bijzonder relevant voor de
+  `CreateDesktopIcon`-taak hierboven: die blijft bij een update aangevinkt als de gebruiker hem
+  eerder aanvinkte.
+
+Geen van deze zeven velden heeft een `??=`-normalisatie nodig in `JsonInstallerProjectService`:
+het zijn allemaal `bool`-waardetypes (geen referentietype dat expliciet JSON `null` kan zijn), en
+een ontbrekende JSON-sleutel in een ouder projectbestand laat de property-initializer-
+standaardwaarde gewoon staan — zelfde redenering als bij de meertalige-knopteksten-dictionaries
+uit sectie 24. Bevestigd met een eigen test
+(`LoadAsyncDefaultsOtherSettingsForOlderProjectFileWithoutThem`).
+
+### UI
+
+Derde tabblad in `ProjectSettingsWindow.xaml`, na Schermen en Talen: drie gegroepeerde secties
+(Bureaublad-snelkoppeling, Startmenu, Update capability) met een korte toelichtende tekst per
+sectie en gewone `CheckBox`-besturingselementen, in lijn met de rest van het venster. Geen eigen
+sub-viewmodel nodig (in tegenstelling tot Schermen/Talen, sectie 21): dit zijn zeven simpele
+onafhankelijke booleans, direct als `[ObservableProperty]` op `ProjectSettingsViewModel`, met
+dezelfde `MarkDirty()`-koppeling als de bestaande tekstvelden.
+
+### Build- en testresultaat
+
+`dotnet build`: 0 waarschuwingen, 0 fouten. `dotnet test`: 23/23 geslaagd (22 bestaand + 1
+nieuwe backward-compatibility-test; de bestaande round-trip-test is uitgebreid met deze zeven
+velden, elk bewust op de tegenovergestelde waarde van hun standaardwaarde gezet).
+
+### Backlog
+
+- De overige Inno Script Studio-referentie-instellingen (Compiler Settings, Code Signing,
+  Compression, Disk Spanning, Log File, System Requirements, wizardvenster-uiterlijk,
+  Program-Group-naam/DisableProgramGroupPage-pagina, enzovoort) zijn nog niet gebouwd. Mogelijk
+  eigen tabbladen, te plannen zodra Herbert dat oppakt.
+- De generator (fase 5/6, nog niet gebouwd) moet deze zeven velden straks vertalen naar de
+  juiste `[Setup]`-richtlijnen (`AllowNoIcons`, de vijf `UsePrevious*`-richtlijnen) en de
+  `[Tasks]`/`[Icons]`-secties voor de bureaublad-snelkoppeling, naar het patroon van
+  HNSoftwareInstallerFramework's `Shortcuts.iss`.

@@ -87,6 +87,14 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
         CustomImagesPath = project.CustomImagesPath;
         SetupIconFile = project.SetupIconFile;
 
+        CreateDesktopIcon = project.CreateDesktopIcon;
+        CreateStartMenuIcon = project.CreateStartMenuIcon;
+        UsePreviousAppDir = project.UsePreviousAppDir;
+        UsePreviousGroup = project.UsePreviousGroup;
+        UsePreviousSetupType = project.UsePreviousSetupType;
+        UsePreviousTasks = project.UsePreviousTasks;
+        UsePreviousLanguage = project.UsePreviousLanguage;
+
         EndInit();
 
         // Bij een al bestaand (opgeslagen) project doet Annuleren feitelijk niets anders dan het
@@ -169,6 +177,31 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
     [ObservableProperty]
     private string _setupIconFile = string.Empty;
 
+    // Overige instellingen (backlogitem 3, sectie 25, tabblad "Overige instellingen"): zie
+    // InstallerProject voor de uitleg per veld en waarom dit bewust alleen deze drie groepen zijn
+    // (bureaublad-snelkoppeling, startmenu, update capability) en niet de volledige instellingen-
+    // boom uit Herberts Inno Script Studio-referentie.
+    [ObservableProperty]
+    private bool _createDesktopIcon;
+
+    [ObservableProperty]
+    private bool _createStartMenuIcon = true;
+
+    [ObservableProperty]
+    private bool _usePreviousAppDir = true;
+
+    [ObservableProperty]
+    private bool _usePreviousGroup = true;
+
+    [ObservableProperty]
+    private bool _usePreviousSetupType = true;
+
+    [ObservableProperty]
+    private bool _usePreviousTasks = true;
+
+    [ObservableProperty]
+    private bool _usePreviousLanguage = true;
+
     [RelayCommand]
     private void BrowseSourceFiles() => SourceFilesPath = BrowseForFolder(SourceFilesPath) ?? SourceFilesPath;
 
@@ -250,6 +283,20 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
 
     partial void OnSetupIconFileChanged(string value) => MarkDirty();
 
+    partial void OnCreateDesktopIconChanged(bool value) => MarkDirty();
+
+    partial void OnCreateStartMenuIconChanged(bool value) => MarkDirty();
+
+    partial void OnUsePreviousAppDirChanged(bool value) => MarkDirty();
+
+    partial void OnUsePreviousGroupChanged(bool value) => MarkDirty();
+
+    partial void OnUsePreviousSetupTypeChanged(bool value) => MarkDirty();
+
+    partial void OnUsePreviousTasksChanged(bool value) => MarkDirty();
+
+    partial void OnUsePreviousLanguageChanged(bool value) => MarkDirty();
+
     [RelayCommand(CanExecute = nameof(CanSave))]
     private async Task SaveAsync() => await SaveCoreAsync();
 
@@ -304,6 +351,13 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
             SelectDestinationScreenButtons = _selectDestinationScreenButtons,
             SelectDestinationBrowseButton = _selectDestinationBrowseButton,
             DefaultScreenButtons = _defaultScreenButtons,
+            CreateDesktopIcon = CreateDesktopIcon,
+            CreateStartMenuIcon = CreateStartMenuIcon,
+            UsePreviousAppDir = UsePreviousAppDir,
+            UsePreviousGroup = UsePreviousGroup,
+            UsePreviousSetupType = UsePreviousSetupType,
+            UsePreviousTasks = UsePreviousTasks,
+            UsePreviousLanguage = UsePreviousLanguage,
         };
 
         IsSaving = true;

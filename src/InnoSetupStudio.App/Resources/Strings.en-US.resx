@@ -72,6 +72,48 @@
   <data name="TabScreens" xml:space="preserve">
     <value>Screens</value>
   </data>
+  <data name="TabOtherSettings" xml:space="preserve">
+    <value>Other settings</value>
+  </data>
+  <data name="SectionDesktopShortcut" xml:space="preserve">
+    <value>Desktop shortcut</value>
+  </data>
+  <data name="HintDesktopShortcut" xml:space="preserve">
+    <value>Offers an optional task during installation to place a shortcut on the desktop.</value>
+  </data>
+  <data name="LabelCreateDesktopIcon" xml:space="preserve">
+    <value>Offer a desktop shortcut</value>
+  </data>
+  <data name="SectionStartMenu" xml:space="preserve">
+    <value>Start menu</value>
+  </data>
+  <data name="HintStartMenu" xml:space="preserve">
+    <value>Determines whether this installer creates a Start menu shortcut.</value>
+  </data>
+  <data name="LabelCreateStartMenuIcon" xml:space="preserve">
+    <value>Create a Start menu shortcut</value>
+  </data>
+  <data name="SectionUpdateCapability" xml:space="preserve">
+    <value>Update capability</value>
+  </data>
+  <data name="HintUpdateCapability" xml:space="preserve">
+    <value>Remembers the previously chosen settings when updating over an existing installation, instead of asking again.</value>
+  </data>
+  <data name="LabelUsePreviousAppDir" xml:space="preserve">
+    <value>Remember the previously chosen install folder</value>
+  </data>
+  <data name="LabelUsePreviousGroup" xml:space="preserve">
+    <value>Remember the previously chosen Start menu group</value>
+  </data>
+  <data name="LabelUsePreviousSetupType" xml:space="preserve">
+    <value>Remember the previously chosen setup type</value>
+  </data>
+  <data name="LabelUsePreviousTasks" xml:space="preserve">
+    <value>Remember the previously checked tasks</value>
+  </data>
+  <data name="LabelUsePreviousLanguage" xml:space="preserve">
+    <value>Remember the previously chosen setup language</value>
+  </data>
   <data name="LabelUnsavedChanges" xml:space="preserve">
     <value>Unsaved changes</value>
   </data>
