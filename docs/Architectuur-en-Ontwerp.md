@@ -1938,3 +1938,39 @@ geslaagd (ongewijzigd). Smoke-test: `InnoSetupStudio.exe` gestart en reageerde (
 True`), daarna afgesloten. De zes hersteldialogen (drie scenario's × X-sluiten/Openen) kon ik niet
 zelf visueel doorklikken — gevraagd aan Herbert om opnieuw te testen, inclusief het scenario waarin
 hij bij de Ja/Nee/Annuleren-vraag voor "Ja" (opslaan) kiest.
+
+
+**Bugfix (2026-10-01, zelfde branch): "Cannot ... Close ... while a Window is closing" bij Nee
+op de X-sluit-vraag.** Herbert testte de vorige aanvulling (sectie hierboven) en kreeg op alle zes
+genoemde plekken terecht de waarschuwing, maar bij Nee (wijzigingen verwerpen) op de X-sluit-vraag
+verscheen in plaats van het venster dat sloot deze WPF-foutmelding:
+
+> Cannot set Visibility to Visible or call Show, ShowDialog, Close, or
+> WindowInteropHelper.EnsureHandle while a Window is closing.
+
+**Oorzaak.** `ProjectSettingsWindow_Closing` zet `e.Cancel = true` en `await`
+`ConfirmDiscardChangesAsync()`. Bij Nee (of bij een `CanSave()`-mislukking) bevat die methode geen
+enkele échte asynchrone operatie vóór haar return — `MessageBox.Show` is een synchrone, blokkerende
+aanroep met een eigen geneste berichtenlus, geen `await`. Daardoor keert de `async`-methode feitelijk
+synchroon terug, nog steeds binnen dezelfde aanroepstack als WPF's eigen Closing-dispatch. Een
+rechtstreekse `Close()`-aanroep (en, bleek bij nader inzien, ook het zetten van `DialogResult`, dat
+intern zelf `Close()` aanroept) ví·n die stack raakt WPF's interne "venster is aan het sluiten"-
+bewaking, vandaar de foutmelding. Bij Ja (opslaan) trad dit toevallig niet op, omdat `SaveAsync`'s
+echte bestands-I/O wél een echte `await`-onderbreking veroorzaakt — de melding was dus
+inputafhankelijk, niet bij elke keuze reproduceerbaar.
+
+**Fix.** Zowel `OnRequestClose` (het gedeelde sluitpad voor Opslaan/Annuleren/Openen, inclusief een
+geslaagde save vanuit `ConfirmDiscardChangesAsync`) als de `Proceed`-tak van
+`ProjectSettingsWindow_Closing` zelf stellen de daadwerkelijke `DialogResult`/`Close()`-aanroep nu
+uit via `Dispatcher.BeginInvoke`, in plaats van die rechtstreeks te doen. Dat plaatst de aanroep op
+een nieuwe dispatcher-cyclus, altijd ná volledige afhandeling van de huidige (eventuele) Closing-
+dispatch — ongeacht of de weg ernaartoe een echte `await` passeerde of niet. Voor de knop-paden
+(Opslaan/Annuleren buiten een X-klik om, dus sowieso al buiten elke Closing-dispatch) is dit
+onmerkbaar: één dispatcher-tick later sluit het venster, zoals voorheen.
+
+**Build- en testresultaat.** `dotnet build`: 0 waarschuwingen, 0 fouten (de CS4014-waarschuwing
+over de niet-afgewachte `DispatcherOperation` is weggenomen met een expliciete `_ =`-discard, want
+fire-and-forget is hier precies de bedoeling). `dotnet test`: 21/21 geslaagd. Smoke-test:
+`InnoSetupStudio.exe` gestart en reageerde (`Responding: True`), daarna afgesloten. Het specifieke
+Nee-pad op de X-sluit-vraag (waar de fout optrad) kon ik niet zelf visueel doorklikken — gevraagd
+aan Herbert om dat scenario opnieuw te testen, samen met de overige vijf uit de vorige ronde.

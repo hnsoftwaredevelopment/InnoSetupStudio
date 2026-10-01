@@ -27,8 +27,24 @@ public partial class ProjectSettingsWindow : Window
     private void OnRequestClose(object? sender, bool saved)
     {
         _programmaticClose = true;
-        DialogResult = saved;
-        Close();
+
+        // Dispatcher.BeginInvoke in plaats van DialogResult/Close rechtstreeks aan te roepen:
+        // wanneer dit binnenkomt vanuit ConfirmDiscardChangesAsync (Ja/opslaan, of Nee/verwerpen)
+        // tijdens een X-klik, bevinden we ons mogelijk nog steeds synchroon binnen WPF's eigen
+        // Closing-dispatch (het Nee-pad heeft geen echte I/O-await, dus de async-methode keert na
+        // de modale MessageBox-pomp synchroon terug zonder ooit echt naar de dispatcher-wachtrij
+        // te zijn gesprongen). Zowel DialogResult zetten als Close() aanroepen terwijl het venster
+        // nog "closing" is, gooit dan "Cannot ... Close ... while a Window is closing." (Herbert,
+        // 2026-10-01). BeginInvoke stelt beide veilig uit tot de huidige dispatch volledig is
+        // afgerond; voor de knop-paden (Opslaan/Annuleren, buiten elke Closing-dispatch) is dat
+        // onmerkbaar, één dispatcher-tick later.
+        // Resultaat (DispatcherOperation) bewust genegeerd: fire-and-forget is hier precies de
+        // bedoeling, niet iets om op te wachten.
+        _ = Dispatcher.BeginInvoke(new Action(() =>
+        {
+            DialogResult = saved;
+            Close();
+        }));
     }
 
     // Herbert (2026-09-30): X-sluiten van dit venster met niet-opgeslagen wijzigingen (bijvoorbeeld
@@ -54,7 +70,10 @@ public partial class ProjectSettingsWindow : Window
         {
             case UnsavedChangesDecision.Proceed:
                 _programmaticClose = true;
-                Close();
+                // Zelfde Dispatcher.BeginInvoke-reden als in OnRequestClose hierboven: dit pad
+                // (Nee/verwerpen gekozen op de X-sluit-vraag) heeft geen echte I/O-await gehad, dus
+                // we zitten hier nog steeds synchroon binnen WPF's eigen Closing-dispatch.
+                _ = Dispatcher.BeginInvoke(new Action(Close));
                 break;
             case UnsavedChangesDecision.AlreadyClosing:
                 // SaveAsync heeft al RequestClose(true) gevuurd (via OnRequestClose hierboven,
