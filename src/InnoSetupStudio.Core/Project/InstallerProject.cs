@@ -49,6 +49,88 @@ public sealed class InstallerProject
     public string LicenseFilePath { get; set; } = string.Empty;
 
     /// <summary>
+    /// Pad naar het leesmij-/infobestand (.txt of .rtf) dat vóór de bestemmingspagina wordt
+    /// getoond, Inno Setup's <c>InfoBeforeFile</c>-richtlijn. Alleen relevant zolang
+    /// <see cref="WizardScreenSelection.ShowInfoBeforePage"/> aan staat. Net als
+    /// <see cref="LicenseFilePath"/>: leeg totdat de gebruiker in de schermeditor (fase 4) een
+    /// bestand kiest, en Inno Setup toont de Info Before-pagina alleen als dit veld een bestand
+    /// bevat (zie categorie 2 van de Feature-Checklist: "(InfoBeforeFile aanwezig)").
+    /// </summary>
+    public string InfoBeforeFilePath { get; set; } = string.Empty;
+
+    /// <summary>Zie <see cref="InfoBeforeFilePath"/>, maar dan voor de Info After-pagina (Inno
+    /// Setup's <c>InfoAfterFile</c>-richtlijn, na de bestemmingspagina en vóór Voltooid).</summary>
+    public string InfoAfterFilePath { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Standaard vooringevulde naam op de User Info-pagina, Inno Setup's
+    /// <c>DefaultUserInfoName</c>-richtlijn. Leeg betekent: Inno Setup's eigen standaardgedrag
+    /// (meestal de ingelogde Windows-gebruikersnaam) blijft gelden.
+    /// </summary>
+    public string DefaultUserInfoName { get; set; } = string.Empty;
+
+    /// <summary>Zie <see cref="DefaultUserInfoName"/>, maar dan voor de organisatie (Inno Setup's
+    /// <c>DefaultUserInfoOrg</c>-richtlijn).</summary>
+    public string DefaultUserInfoOrg { get; set; } = string.Empty;
+
+    /// <summary>Zie <see cref="DefaultUserInfoName"/>, maar dan voor het serienummer (Inno
+    /// Setup's <c>DefaultUserInfoSerial</c>-richtlijn).</summary>
+    public string DefaultUserInfoSerial { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Onthoudt deze installer bij een update de eerder ingevulde naam/organisatie/serienummer,
+    /// in plaats van de User Info-pagina leeg (of met de hierboven ingestelde standaardwaarden)
+    /// opnieuw te tonen. Komt overeen met Inno Setup's <c>UsePreviousUserInfo</c>-richtlijn, die
+    /// ook zonder deze instelling al standaard "yes" is — zelfde conventie als
+    /// <see cref="UsePreviousAppDir"/> hieronder, hier gegroepeerd bij de User Info-velden
+    /// zodat de schermeditor voor dit scherm alles bij elkaar heeft.
+    /// </summary>
+    public bool UsePreviousUserInfo { get; set; } = true;
+
+    /// <summary>
+    /// Standaard voorgestelde startmenugroep op de Select Start Menu Folder-pagina, Inno Setup's
+    /// <c>DefaultGroupName</c>-richtlijn. Leeg betekent: de schermeditor en generator vallen
+    /// terug op <see cref="AppName"/>, net als <see cref="DefaultDirName"/> hierboven voor de
+    /// bestemmingspagina.
+    /// </summary>
+    public string DefaultGroupName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Voegt <see cref="DefaultGroupName"/> toe als de gebruiker op de Select Start Menu
+    /// Folder-pagina zelf een andere groepsnaam kiest, in plaats van die te vervangen. Komt
+    /// overeen met Inno Setup's <c>AppendDefaultGroupName</c>-richtlijn, standaard
+    /// <see langword="false"/> net als Inno Setup zelf.
+    /// </summary>
+    public bool AppendDefaultGroupName { get; set; }
+
+    /// <summary>
+    /// Plaatst de startmenugroep altijd in het persoonlijke startmenu van de huidige gebruiker,
+    /// nooit in "Alle gebruikers", ongeacht of de installatie voor alle gebruikers is. Komt overeen met
+    /// Inno Setup's <c>AlwaysUsePersonalGroup</c>-richtlijn, standaard <see langword="false"/>
+    /// net als Inno Setup zelf.
+    /// </summary>
+    public bool AlwaysUsePersonalGroup { get; set; }
+
+    /// <summary>
+    /// Verbergt de samenvattingstekst (memo) op de Klaar-om-te-installeren-pagina. Komt overeen
+    /// met Inno Setup's <c>DisableReadyMemo</c>-richtlijn, standaard <see langword="false"/>
+    /// (de samenvatting staat dus standaard aan) net als Inno Setup zelf.
+    /// </summary>
+    public bool DisableReadyMemo { get; set; }
+
+    /// <summary>
+    /// Toont de gekozen installatiemap altijd in de samenvatting op de
+    /// Klaar-om-te-installeren-pagina, ook wanneer die pagina (<see cref="WizardScreenSelection.ShowSelectDestinationPage"/>)
+    /// is overgeslagen. Komt overeen met Inno Setup's <c>AlwaysShowDirOnReadyPage</c>-richtlijn,
+    /// standaard <see langword="false"/> net als Inno Setup zelf.
+    /// </summary>
+    public bool AlwaysShowDirOnReadyPage { get; set; }
+
+    /// <summary>Zie <see cref="AlwaysShowDirOnReadyPage"/>, maar dan voor de startmenugroep
+    /// (Inno Setup's <c>AlwaysShowGroupOnReadyPage</c>-richtlijn).</summary>
+    public bool AlwaysShowGroupOnReadyPage { get; set; }
+
+    /// <summary>
     /// Vaste installatiemap die op de bestemmingspagina wordt voorgesteld, in Inno Setup's eigen
     /// constanten-notatie (bijvoorbeeld <c>{autopf}\MijnApp</c>). Leeg betekent: de schermeditor
     /// en generator vallen terug op <c>{autopf}\AppName</c> op basis van <see cref="AppName"/>.
@@ -97,8 +179,25 @@ public sealed class InstallerProject
     /// <summary>Zie <see cref="WelcomeScreenButtons"/>, maar dan voor de licentiepagina.</summary>
     public WizardScreenButtonSettings LicenseScreenButtons { get; set; } = new();
 
+    /// <summary>Zie <see cref="WelcomeScreenButtons"/>, maar dan voor de Info Before-pagina.</summary>
+    public WizardScreenButtonSettings InfoBeforeScreenButtons { get; set; } = new();
+
+    /// <summary>Zie <see cref="WelcomeScreenButtons"/>, maar dan voor de User Info-pagina.</summary>
+    public WizardScreenButtonSettings UserInfoScreenButtons { get; set; } = new();
+
     /// <summary>Zie <see cref="WelcomeScreenButtons"/>, maar dan voor de bestemmingspagina.</summary>
     public WizardScreenButtonSettings SelectDestinationScreenButtons { get; set; } = new();
+
+    /// <summary>Zie <see cref="WelcomeScreenButtons"/>, maar dan voor de Select Start Menu
+    /// Folder-pagina.</summary>
+    public WizardScreenButtonSettings SelectProgramGroupScreenButtons { get; set; } = new();
+
+    /// <summary>Zie <see cref="WelcomeScreenButtons"/>, maar dan voor de
+    /// Klaar-om-te-installeren-pagina.</summary>
+    public WizardScreenButtonSettings ReadyScreenButtons { get; set; } = new();
+
+    /// <summary>Zie <see cref="WelcomeScreenButtons"/>, maar dan voor de Info After-pagina.</summary>
+    public WizardScreenButtonSettings InfoAfterScreenButtons { get; set; } = new();
 
     /// <summary>
     /// Standaardwaarden voor de Terug-/Volgende-/Annuleren-knop die elk scherm overneemt zolang

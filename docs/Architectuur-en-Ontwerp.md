@@ -2262,3 +2262,122 @@ velden, elk bewust op de tegenovergestelde waarde van hun standaardwaarde gezet)
   van HNSoftwareInstallerFramework's `Shortcuts.iss`/`Base.iss`. `CreateStartMenuIcon` wordt dus
   vertaald naar het al dan niet aanwezig zijn van een Start Menu-`[Icons]`-regel, niet naar
   `AllowNoIcons`.
+
+## 26. Vijf nieuwe schermeditors: Info Before, User Info, Select Start Menu Folder, Ready to Install, Info After (2026-10-02)
+
+Roadmapitem 4 (vervolg op fase 4): dedicated schermeditors voor de vijf resterende "eenvoudige"
+wizardschermen die nog geen editor hadden, bepaald aan de hand van de Feature-Checklist
+(`docs/Feature-Checklist.md`, sectie 1): elk scherm waarvoor categorie 2 van die checklist nog
+onbeantwoorde (`?`) velden toonde, behalve Setup Completed (dat heeft voor nu geen nieuwe velden
+nodig — zijn enige open punt, `AlwaysRestart`, hoort bij een toekomstig "Herstart en lopende
+applicaties"-tabblad, niet bij dit scherm zelf). Herbert koos er bewust voor om alle vijf in één
+branch/PR te bouwen in plaats van incrementeel.
+
+### Volgorde in de schermeditor
+
+De vijf nieuwe schermen zijn ingevoegd op hun eigen plek in Inno Setup's vaste paginavolgorde,
+niet achteraan: Welkom → Licentie → **Info Before** → **User Info** → Installatiemap kiezen →
+**Select Start Menu Folder** → **Klaar om te installeren** → **Info After**. Select Components en
+Select Tasks ontbreken nog in deze volgorde (geen editor), dus Select Start Menu Folder sluit in
+de lijst rechtstreeks aan op Installatiemap kiezen, en Klaar-om-te-installeren rechtstreeks op
+Select Start Menu Folder — zie de toelichting in `WizardEditorViewModel`'s constructor. Dit is
+belangrijk voor Terug/Volgende-navigatie binnen de schermeditor: die navigeert simpelweg door de
+`_screens`-lijst in volgorde van toevoegen.
+
+### Datamodel (`InstallerProject`)
+
+Veertien nieuwe eigenschappen, elk met een directe tegenhanger in een Inno Setup-richtlijn (zie
+categorie 2 van de Feature-Checklist):
+
+- **`InfoBeforeFilePath`** / **`InfoAfterFilePath`** (`string`, standaard leeg) — pad naar het
+  leesmij-/infobestand vóór/na de bestemmingspagina (`InfoBeforeFile`/`InfoAfterFile`). Zelfde
+  patroon als `LicenseFilePath`: leeg totdat de gebruiker een bestand kiest.
+- **`DefaultUserInfoName`**, **`DefaultUserInfoOrg`**, **`DefaultUserInfoSerial`** (`string`,
+  standaard leeg) — vooringevulde velden op de User Info-pagina (`DefaultUserInfoName/Org/
+  Serial`).
+- **`UsePreviousUserInfo`** (`bool`, standaard `true`) — onthoudt bij een update de eerder
+  ingevulde User Info-gegevens (`UsePreviousUserInfo`). Zelfde conventie als de vijf
+  `UsePrevious*`-vlaggen uit sectie 25, maar hier bewust bij de User Info-velden zelf gehouden
+  (niet toegevoegd aan het tabblad Overige instellingen): de gebruiker bewerkt alles over dit
+  scherm op één plek, in de schermeditor.
+- **`DefaultGroupName`** (`string`, standaard leeg) — voorgestelde startmenugroep
+  (`DefaultGroupName`); leeg valt terug op `AppName`, net als `DefaultDirName`.
+- **`AppendDefaultGroupName`**, **`AlwaysUsePersonalGroup`** (`bool`, standaard `false`) —
+  gedragskeuzes zonder eigen aanvinkvakje voor de eindgebruiker (`AppendDefaultGroupName`/
+  `AlwaysUsePersonalGroup`).
+- **`DisableReadyMemo`**, **`AlwaysShowDirOnReadyPage`**, **`AlwaysShowGroupOnReadyPage`**
+  (`bool`, standaard `false`) — bepalen wat de samenvatting op de Klaar-om-te-installeren-pagina
+  toont (`DisableReadyMemo`/`AlwaysShowDirOnReadyPage`/`AlwaysShowGroupOnReadyPage`).
+
+Plus vijf nieuwe `WizardScreenButtonSettings`-eigenschappen (`InfoBeforeScreenButtons`,
+`UserInfoScreenButtons`, `SelectProgramGroupScreenButtons`, `ReadyScreenButtons`,
+`InfoAfterScreenButtons`), zelfde patroon als `WelcomeScreenButtons` — elk met een `??=`-
+normalisatie in `JsonInstallerProjectService` voor een expliciete JSON-`null`. De veertien
+scalaire velden hierboven hebben geen normalisatie nodig: `string`-velden hebben een
+niet-`null`-initializer en `bool`-velden kunnen sowieso geen JSON-`null` zijn, zelfde redenering
+als sectie 25.
+
+### ViewModels en voorvertoning
+
+Vijf nieuwe `WizardScreenEditorViewModel`-subklassen in
+`InnoSetupStudio.App.ViewModels.Screens`, elk naar het dichtstbijzijnde bestaande patroon:
+
+- **`InfoBeforePageEditorViewModel`** / **`InfoAfterPageEditorViewModel`** — kopie van
+  `LicensePageEditorViewModel`'s bestandskeuze-patroon (inclusief de `IsUncOrDevicePath`-
+  beveiliging tegen automatische SMB-toegang vanuit een geladen projectbestand), zonder de
+  "akkoord"-keuzerondjes van de licentiepagina.
+- **`UserInfoPageEditorViewModel`**, **`SelectProgramGroupPageEditorViewModel`**,
+  **`ReadyPageEditorViewModel`** — kopie van `WelcomePageEditorViewModel`'s eenvoudige patroon:
+  alleen `[ObservableProperty]`-velden, geen bestandsdialoog of eigen knop.
+
+Vijf nieuwe voorvertoning-`UserControl`s in `InnoSetupStudio.Wizard.Screens`
+(`InfoBeforePagePreview`, `UserInfoPagePreview`, `SelectProgramGroupPagePreview`,
+`ReadyPagePreview`, `InfoAfterPagePreview`), met Inno Setup's eigen (vaste, niet-thema-
+afhankelijke) Engelstalige paginateksten, zelfde aanpak als de drie bestaande voorvertoningen.
+De Klaar-om-te-installeren-voorvertoning toont een illustratieve, statische samenvattingstekst
+(geen live gegenereerde tekst — dat is generatorwerk, fase 5/6) puur om te laten zien dat
+`DisableReadyMemo` het hele memo-vak verbergt (via een `DataTrigger` op `Border.Visibility`, geen
+nieuwe inverse-boolean-converter nodig). `AppendDefaultGroupName`/`AlwaysUsePersonalGroup`/
+`AlwaysShowDirOnReadyPage`/`AlwaysShowGroupOnReadyPage` hebben geen eigen zichtbaar element in de
+voorvertoning: het zijn bouwtijd-gedragskeuzes zonder een eigen aanvinkvakje op de echte
+Inno Setup-pagina.
+
+`ScreenEditorControl.xaml` kreeg vijf nieuwe keyless preview-`DataTemplate`s en vijf nieuwe
+`x:Key`'d `PropertyPanelTemplate`s (instellingenpaneel rechts), en `PropertyPanelTemplateSelector`
+vijf nieuwe `DataTemplate`-eigenschappen — exact dezelfde twee-lagen-aanpak (keyless voor de
+voorvertoning, `x:Key` + expliciete selector voor het instellingenpaneel) als de drie bestaande
+schermen, zie sectie 21.
+
+### Wiring (`WizardEditorViewModel`)
+
+Vijf nieuwe conditionele `_screens.Add(...)`-blokken in de constructor (op hun plek in Inno
+Setup's volgorde, zie hierboven) en vijf nieuwe `case`-blokken in `ApplyTo`, naar het bestaande
+patroon van Welkom/Licentie/Installatiemap kiezen.
+
+### Lokalisatie
+
+Zestien nieuwe resourcesleutels (NL/EN/DE) voor labels, dialoogfilters en toelichtende teksten
+van de vijf nieuwe instellingenpanelen. De vijf schermnamen zelf (`WizardScreenInfoBefore`,
+`WizardScreenUserInfo`, `WizardScreenSelectProgramGroup`, `WizardScreenReady`,
+`WizardScreenInfoAfter`) bestonden al (fase 3, wizardschermen-overzicht) en zijn hergebruikt.
+`ScreenEditorNoScreens` (de toelichting die verschijnt als geen van de door de schermeditor
+ondersteunde schermen aan staat) is bijgewerkt om alle acht nu ondersteunde schermen te noemen in
+plaats van alleen de oorspronkelijke drie.
+
+### Build- en testresultaat
+
+`dotnet build`: 0 waarschuwingen, 0 fouten. `dotnet test`: 24/24 geslaagd (23 bestaand + 1 nieuwe
+backward-compatibility-test voor de veertien nieuwe scalaire velden; de bestaande round-trip-test
+is uitgebreid met alle veertien velden plus de vijf nieuwe knopinstellingen, en de bestaande
+explicite-JSON-`null`-test voor knopinstellingen is uitgebreid met de vijf nieuwe
+`WizardScreenButtonSettings`-eigenschappen).
+
+### Backlog
+
+- Select Components en Select Tasks (roadmapitem 5) hebben nog geen editor; volgen in een latere
+  PR.
+- De generator (fase 5/6, nog niet gebouwd) moet deze veertien velden vertalen naar de
+  bijbehorende `[Setup]`-richtlijnen.
+- Setup Completed/Finished-scherm zijn enige openstaande veld, `AlwaysRestart`, hoort bij een
+  toekomstig "Herstart en lopende applicaties"-tabblad (categorie 20 van de Feature-Checklist),
+  niet bij dit scherm zelf.

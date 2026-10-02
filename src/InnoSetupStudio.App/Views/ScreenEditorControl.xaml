@@ -129,8 +129,23 @@
         <DataTemplate DataType="{x:Type vm:LicensePageEditorViewModel}">
             <wizard:LicensePagePreview />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:InfoBeforePageEditorViewModel}">
+            <wizard:InfoBeforePagePreview />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:UserInfoPageEditorViewModel}">
+            <wizard:UserInfoPagePreview />
+        </DataTemplate>
         <DataTemplate DataType="{x:Type vm:SelectDestinationPageEditorViewModel}">
             <wizard:SelectDestinationPagePreview />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SelectProgramGroupPageEditorViewModel}">
+            <wizard:SelectProgramGroupPagePreview />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ReadyPageEditorViewModel}">
+            <wizard:ReadyPagePreview />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:InfoAfterPageEditorViewModel}">
+            <wizard:InfoAfterPagePreview />
         </DataTemplate>
 
         <!-- Instellingenpaneel (rechts, nu het middendeel van MainWindow): staat wél hier in
@@ -160,6 +175,97 @@
                               Stretch="Uniform" Width="16" Height="16" />
                     </Button>
                 </Grid>
+                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" />
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- Info Before/After (hieronder): functioneel identiek aan de licentiepagina hierboven
+             (bestand kiezen + voorvertoning van de inhoud), alleen een andere labeltekst en geen
+             "akkoord"-keuzerondjes (zie InfoBeforePagePreview/InfoAfterPagePreview). -->
+        <DataTemplate DataType="{x:Type vm:InfoBeforePageEditorViewModel}" x:Key="InfoBeforePropertyPanelTemplate">
+            <StackPanel>
+                <TextBlock Text="{loc:Loc LabelInfoBeforeFilePath}" Margin="0,0,0,6" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" Text="{Binding InfoFilePath, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0" />
+                    <Button Grid.Column="1" Command="{Binding BrowseCommand}" ToolTip="{loc:Loc ButtonBrowse}"
+                            AutomationProperties.Name="{loc:Loc ButtonBrowse}">
+                        <Path Data="{StaticResource Folder}" Fill="{DynamicResource Brush.TextPrimary}"
+                              Stretch="Uniform" Width="16" Height="16" />
+                    </Button>
+                </Grid>
+                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" />
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:InfoAfterPageEditorViewModel}" x:Key="InfoAfterPropertyPanelTemplate">
+            <StackPanel>
+                <TextBlock Text="{loc:Loc LabelInfoAfterFilePath}" Margin="0,0,0,6" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" Text="{Binding InfoFilePath, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0" />
+                    <Button Grid.Column="1" Command="{Binding BrowseCommand}" ToolTip="{loc:Loc ButtonBrowse}"
+                            AutomationProperties.Name="{loc:Loc ButtonBrowse}">
+                        <Path Data="{StaticResource Folder}" Fill="{DynamicResource Brush.TextPrimary}"
+                              Stretch="Uniform" Width="16" Height="16" />
+                    </Button>
+                </Grid>
+                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" />
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- User Info: drie vooringevulde tekstvelden plus het "onthoud bij update"-vinkje, geen
+             bestandskeuze of eigen knop (zie UserInfoPageEditorViewModel). -->
+        <DataTemplate DataType="{x:Type vm:UserInfoPageEditorViewModel}" x:Key="UserInfoPropertyPanelTemplate">
+            <StackPanel>
+                <TextBlock Text="{loc:Loc LabelDefaultUserInfoName}" Margin="0,0,0,6" />
+                <TextBox Text="{Binding DefaultUserInfoName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12" />
+
+                <TextBlock Text="{loc:Loc LabelDefaultUserInfoOrg}" Margin="0,0,0,6" />
+                <TextBox Text="{Binding DefaultUserInfoOrg, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12" />
+
+                <TextBlock Text="{loc:Loc LabelDefaultUserInfoSerial}" Margin="0,0,0,6" />
+                <TextBox Text="{Binding DefaultUserInfoSerial, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12" />
+
+                <CheckBox Content="{loc:Loc LabelUsePreviousUserInfo}" IsChecked="{Binding UsePreviousUserInfo}"
+                          Foreground="{DynamicResource Brush.TextPrimary}" />
+                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" />
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- Select Start Menu Folder: vooringevulde groepsnaam + twee gedragsvinkjes (zie
+             SelectProgramGroupPageEditorViewModel; geen eigen Bladeren-knopstijl zoals de
+             bestemmingspagina, dit scherm heeft geen eigen aanpasbare knop). -->
+        <DataTemplate DataType="{x:Type vm:SelectProgramGroupPageEditorViewModel}" x:Key="SelectProgramGroupPropertyPanelTemplate">
+            <StackPanel>
+                <TextBlock Text="{loc:Loc LabelDefaultGroupName}" Margin="0,0,0,6" />
+                <TextBox Text="{Binding DefaultGroupName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4" />
+                <TextBlock Text="{loc:Loc LabelDefaultGroupNameHint}" FontSize="11"
+                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,16" />
+                <CheckBox Content="{loc:Loc LabelAppendDefaultGroupName}" IsChecked="{Binding AppendDefaultGroupName}"
+                          Foreground="{DynamicResource Brush.TextPrimary}" Margin="0,0,0,8" />
+                <CheckBox Content="{loc:Loc LabelAlwaysUsePersonalGroup}" IsChecked="{Binding AlwaysUsePersonalGroup}"
+                          Foreground="{DynamicResource Brush.TextPrimary}" />
+                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" />
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- Klaar om te installeren: drie vinkjes die bepalen wat de samenvatting (ReadyMemo) op
+             deze pagina toont (zie ReadyPageEditorViewModel). -->
+        <DataTemplate DataType="{x:Type vm:ReadyPageEditorViewModel}" x:Key="ReadyPropertyPanelTemplate">
+            <StackPanel>
+                <CheckBox Content="{loc:Loc LabelDisableReadyMemo}" IsChecked="{Binding DisableReadyMemo}"
+                          Foreground="{DynamicResource Brush.TextPrimary}" Margin="0,0,0,8" />
+                <CheckBox Content="{loc:Loc LabelAlwaysShowDirOnReadyPage}" IsChecked="{Binding AlwaysShowDirOnReadyPage}"
+                          Foreground="{DynamicResource Brush.TextPrimary}" Margin="0,0,0,8" />
+                <CheckBox Content="{loc:Loc LabelAlwaysShowGroupOnReadyPage}" IsChecked="{Binding AlwaysShowGroupOnReadyPage}"
+                          Foreground="{DynamicResource Brush.TextPrimary}" />
                 <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" />
             </StackPanel>
         </DataTemplate>
@@ -423,7 +529,12 @@
                         <converters:PropertyPanelTemplateSelector
                             WelcomeTemplate="{StaticResource PropertyPanelTemplate}"
                             LicenseTemplate="{StaticResource LicensePropertyPanelTemplate}"
+                            InfoBeforeTemplate="{StaticResource InfoBeforePropertyPanelTemplate}"
+                            UserInfoTemplate="{StaticResource UserInfoPropertyPanelTemplate}"
                             SelectDestinationTemplate="{StaticResource SelectDestinationPropertyPanelTemplate}"
+                            SelectProgramGroupTemplate="{StaticResource SelectProgramGroupPropertyPanelTemplate}"
+                            ReadyTemplate="{StaticResource ReadyPropertyPanelTemplate}"
+                            InfoAfterTemplate="{StaticResource InfoAfterPropertyPanelTemplate}"
                             DefaultScreenTemplate="{StaticResource DefaultScreenPropertyPanelTemplate}" />
                     </ContentControl.ContentTemplateSelector>
                 </ContentControl>

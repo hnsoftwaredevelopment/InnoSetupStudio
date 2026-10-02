@@ -280,7 +280,7 @@
     <value>Weiter &gt;</value>
   </data>
   <data name="ScreenEditorNoScreens" xml:space="preserve">
-    <value>Keine der vom Seiteneditor bereits unterstützten Seiten (Willkommen, Lizenzvereinbarung, Zielordner wählen) ist aktiviert. Aktivieren Sie sie unter Projekteinstellungen (Registerkarte Bildschirme), um sie hier zu bearbeiten.</value>
+    <value>Keine der vom Seiteneditor bereits unterstuetzten Seiten (Willkommen, Lizenzvereinbarung, Info Before, Benutzerinformationen, Zielordner waehlen, Startmenue-Ordner waehlen, Bereit zur Installation, Info After) ist aktiviert. Aktivieren Sie sie unter Projekteinstellungen (Registerkarte Bildschirme), um sie hier zu bearbeiten.</value>
   </data>
   <data name="ButtonWizardCancel" xml:space="preserve">
     <value>Abbrechen</value>
@@ -383,5 +383,53 @@
   </data>
   <data name="SectionPreview" xml:space="preserve">
     <value>Vorschau</value>
+  </data>
+  <data name="LabelInfoBeforeFilePath" xml:space="preserve">
+    <value>Infodatei (vor der Installation)</value>
+  </data>
+  <data name="LabelInfoAfterFilePath" xml:space="preserve">
+    <value>Infodatei (nach der Installation)</value>
+  </data>
+  <data name="DialogFilterInfoFiles" xml:space="preserve">
+    <value>Infodateien (*.txt;*.rtf)|*.txt;*.rtf|Alle Dateien (*.*)|*.*</value>
+  </data>
+  <data name="ScreenEditorInfoBeforeNoFile" xml:space="preserve">
+    <value>Noch keine Datei ausgewaehlt.</value>
+  </data>
+  <data name="ScreenEditorInfoAfterNoFile" xml:space="preserve">
+    <value>Noch keine Datei ausgewaehlt.</value>
+  </data>
+  <data name="LabelDefaultUserInfoName" xml:space="preserve">
+    <value>Standardname</value>
+  </data>
+  <data name="LabelDefaultUserInfoOrg" xml:space="preserve">
+    <value>Standardorganisation</value>
+  </data>
+  <data name="LabelDefaultUserInfoSerial" xml:space="preserve">
+    <value>Standard-Seriennummer</value>
+  </data>
+  <data name="LabelUsePreviousUserInfo" xml:space="preserve">
+    <value>Eingegebene Daten bei Update merken</value>
+  </data>
+  <data name="LabelDefaultGroupName" xml:space="preserve">
+    <value>Standard-Startmenueordner</value>
+  </data>
+  <data name="LabelDefaultGroupNameHint" xml:space="preserve">
+    <value>Leer = Anwendungsname</value>
+  </data>
+  <data name="LabelAppendDefaultGroupName" xml:space="preserve">
+    <value>Standardname an eigene Gruppe anhaengen</value>
+  </data>
+  <data name="LabelAlwaysUsePersonalGroup" xml:space="preserve">
+    <value>Immer im persoenlichen Startmenue (nie "Alle Benutzer")</value>
+  </data>
+  <data name="LabelDisableReadyMemo" xml:space="preserve">
+    <value>Zusammenfassung auf dieser Seite ausblenden</value>
+  </data>
+  <data name="LabelAlwaysShowDirOnReadyPage" xml:space="preserve">
+    <value>Installationsordner immer in der Zusammenfassung anzeigen</value>
+  </data>
+  <data name="LabelAlwaysShowGroupOnReadyPage" xml:space="preserve">
+    <value>Startmenueordner immer in der Zusammenfassung anzeigen</value>
   </data>
 </root>

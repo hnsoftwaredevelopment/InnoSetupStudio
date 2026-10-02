@@ -88,6 +88,11 @@ public class InstallerProjectTests
             CancelButtonEnabled = true,
             CancelButtonVisible = true,
         };
+        project.InfoBeforeScreenButtons = new WizardScreenButtonSettings { NextButtonCaption = "Doorgaan (voor)" };
+        project.UserInfoScreenButtons = new WizardScreenButtonSettings { NextButtonCaption = "Doorgaan (gebruiker)" };
+        project.SelectProgramGroupScreenButtons = new WizardScreenButtonSettings { NextButtonCaption = "Doorgaan (groep)" };
+        project.ReadyScreenButtons = new WizardScreenButtonSettings { NextButtonCaption = "Installeren" };
+        project.InfoAfterScreenButtons = new WizardScreenButtonSettings { NextButtonCaption = "Doorgaan (na)" };
         project.SelectDestinationScreenButtons = new WizardScreenButtonSettings
         {
             BackButtonCaption = "Terugkeren",
@@ -113,6 +118,23 @@ public class InstallerProjectTests
             CancelButtonVisible = false,
         };
         project.SupportedLanguageIds = [InnoLanguageCatalog.EnglishId, "german", "dutch"];
+
+        // De vijf nieuwe schermeditor-velden (Info Before/After, User Info, Select Start Menu
+        // Folder, Ready to Install): net als de "Overige instellingen" hieronder bewust op de
+        // tegenovergestelde waarde van hun standaardwaarde gezet waar dat zinvol is (de bool-
+        // velden), zodat deze test een echte round-trip bewijst.
+        project.InfoBeforeFilePath = @"C:\Source\infobefore.txt";
+        project.InfoAfterFilePath = @"C:\Source\infoafter.txt";
+        project.DefaultUserInfoName = "J. Doe";
+        project.DefaultUserInfoOrg = "ACME";
+        project.DefaultUserInfoSerial = "1234-5678";
+        project.UsePreviousUserInfo = false;
+        project.DefaultGroupName = "Mijn Applicatie";
+        project.AppendDefaultGroupName = true;
+        project.AlwaysUsePersonalGroup = true;
+        project.DisableReadyMemo = true;
+        project.AlwaysShowDirOnReadyPage = true;
+        project.AlwaysShowGroupOnReadyPage = true;
 
         // Overige instellingen (backlogitem 3, sectie 25): alle zeven hier bewust op de
         // tegenovergestelde waarde van hun standaardwaarde gezet, zodat deze test een echte
@@ -195,6 +217,23 @@ public class InstallerProjectTests
             Assert.Null(loaded.DefaultScreenButtons.CancelButtonEnabled);
             Assert.Equal(project.DefaultScreenButtons.CancelButtonVisible, loaded.DefaultScreenButtons.CancelButtonVisible);
             Assert.Equal(project.SupportedLanguageIds, loaded.SupportedLanguageIds);
+            Assert.Equal(project.InfoBeforeFilePath, loaded.InfoBeforeFilePath);
+            Assert.Equal(project.InfoAfterFilePath, loaded.InfoAfterFilePath);
+            Assert.Equal(project.DefaultUserInfoName, loaded.DefaultUserInfoName);
+            Assert.Equal(project.DefaultUserInfoOrg, loaded.DefaultUserInfoOrg);
+            Assert.Equal(project.DefaultUserInfoSerial, loaded.DefaultUserInfoSerial);
+            Assert.Equal(project.UsePreviousUserInfo, loaded.UsePreviousUserInfo);
+            Assert.Equal(project.DefaultGroupName, loaded.DefaultGroupName);
+            Assert.Equal(project.AppendDefaultGroupName, loaded.AppendDefaultGroupName);
+            Assert.Equal(project.AlwaysUsePersonalGroup, loaded.AlwaysUsePersonalGroup);
+            Assert.Equal(project.DisableReadyMemo, loaded.DisableReadyMemo);
+            Assert.Equal(project.AlwaysShowDirOnReadyPage, loaded.AlwaysShowDirOnReadyPage);
+            Assert.Equal(project.AlwaysShowGroupOnReadyPage, loaded.AlwaysShowGroupOnReadyPage);
+            Assert.Equal(project.InfoBeforeScreenButtons.NextButtonCaption, loaded.InfoBeforeScreenButtons.NextButtonCaption);
+            Assert.Equal(project.UserInfoScreenButtons.NextButtonCaption, loaded.UserInfoScreenButtons.NextButtonCaption);
+            Assert.Equal(project.SelectProgramGroupScreenButtons.NextButtonCaption, loaded.SelectProgramGroupScreenButtons.NextButtonCaption);
+            Assert.Equal(project.ReadyScreenButtons.NextButtonCaption, loaded.ReadyScreenButtons.NextButtonCaption);
+            Assert.Equal(project.InfoAfterScreenButtons.NextButtonCaption, loaded.InfoAfterScreenButtons.NextButtonCaption);
             Assert.Equal(project.CreateDesktopIcon, loaded.CreateDesktopIcon);
             Assert.Equal(project.CreateStartMenuIcon, loaded.CreateStartMenuIcon);
             Assert.Equal(project.UsePreviousAppDir, loaded.UsePreviousAppDir);
@@ -239,6 +278,45 @@ public class InstallerProjectTests
             Assert.True(loaded.UsePreviousSetupType);
             Assert.True(loaded.UsePreviousTasks);
             Assert.True(loaded.UsePreviousLanguage);
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task LoadAsyncDefaultsScreenEditorFieldsForOlderProjectFileWithoutThem()
+    {
+        // De vijf nieuwe schermen (Info Before/After, User Info, Select Start Menu Folder, Ready
+        // to Install) zijn nieuwer dan InstallerProject zelf: een ouder .issproj-bestand heeft
+        // deze velden simpelweg niet in de JSON staan. Expliciet getest zodat zo'n ouder project
+        // niet per ongeluk UsePreviousUserInfo uitschakelt (hoort op true te blijven, net als de
+        // andere UsePrevious*-vlaggen) of de twee Ready-vinkjes/AppendDefaultGroupName/
+        // AlwaysUsePersonalGroup inschakelt (horen op false te blijven).
+        var service = new JsonInstallerProjectService();
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.issproj");
+        await File.WriteAllTextAsync(path, "{\"AppName\":\"Ouder project zonder de vijf nieuwe schermen\"}");
+
+        try
+        {
+            var loaded = await service.LoadAsync(path);
+
+            Assert.Equal(string.Empty, loaded.InfoBeforeFilePath);
+            Assert.Equal(string.Empty, loaded.InfoAfterFilePath);
+            Assert.Equal(string.Empty, loaded.DefaultUserInfoName);
+            Assert.Equal(string.Empty, loaded.DefaultUserInfoOrg);
+            Assert.Equal(string.Empty, loaded.DefaultUserInfoSerial);
+            Assert.True(loaded.UsePreviousUserInfo);
+            Assert.Equal(string.Empty, loaded.DefaultGroupName);
+            Assert.False(loaded.AppendDefaultGroupName);
+            Assert.False(loaded.AlwaysUsePersonalGroup);
+            Assert.False(loaded.DisableReadyMemo);
+            Assert.False(loaded.AlwaysShowDirOnReadyPage);
+            Assert.False(loaded.AlwaysShowGroupOnReadyPage);
         }
         finally
         {
@@ -340,7 +418,9 @@ public class InstallerProjectTests
         await File.WriteAllTextAsync(
             path,
             "{\"AppName\":\"Zonder knopinstellingen\"," +
-            "\"WelcomeScreenButtons\":null,\"LicenseScreenButtons\":null,\"SelectDestinationScreenButtons\":null," +
+            "\"WelcomeScreenButtons\":null,\"LicenseScreenButtons\":null,\"InfoBeforeScreenButtons\":null," +
+            "\"UserInfoScreenButtons\":null,\"SelectDestinationScreenButtons\":null," +
+            "\"SelectProgramGroupScreenButtons\":null,\"ReadyScreenButtons\":null,\"InfoAfterScreenButtons\":null," +
             "\"DefaultScreenButtons\":null}");
 
         try
@@ -349,11 +429,21 @@ public class InstallerProjectTests
 
             Assert.NotNull(loaded.WelcomeScreenButtons);
             Assert.NotNull(loaded.LicenseScreenButtons);
+            Assert.NotNull(loaded.InfoBeforeScreenButtons);
+            Assert.NotNull(loaded.UserInfoScreenButtons);
             Assert.NotNull(loaded.SelectDestinationScreenButtons);
+            Assert.NotNull(loaded.SelectProgramGroupScreenButtons);
+            Assert.NotNull(loaded.ReadyScreenButtons);
+            Assert.NotNull(loaded.InfoAfterScreenButtons);
             Assert.NotNull(loaded.DefaultScreenButtons);
             Assert.Equal(string.Empty, loaded.WelcomeScreenButtons.NextButtonCaption);
             Assert.Equal(string.Empty, loaded.LicenseScreenButtons.NextButtonCaption);
+            Assert.Equal(string.Empty, loaded.InfoBeforeScreenButtons.NextButtonCaption);
+            Assert.Equal(string.Empty, loaded.UserInfoScreenButtons.NextButtonCaption);
             Assert.Equal(string.Empty, loaded.SelectDestinationScreenButtons.NextButtonCaption);
+            Assert.Equal(string.Empty, loaded.SelectProgramGroupScreenButtons.NextButtonCaption);
+            Assert.Equal(string.Empty, loaded.ReadyScreenButtons.NextButtonCaption);
+            Assert.Equal(string.Empty, loaded.InfoAfterScreenButtons.NextButtonCaption);
             Assert.Equal(string.Empty, loaded.DefaultScreenButtons.NextButtonCaption);
         }
         finally

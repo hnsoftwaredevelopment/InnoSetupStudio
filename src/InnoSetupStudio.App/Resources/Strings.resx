@@ -280,7 +280,7 @@
     <value>Volgende &gt;</value>
   </data>
   <data name="ScreenEditorNoScreens" xml:space="preserve">
-    <value>Geen van de schermen die de schermeditor al ondersteunt (Welkom, Licentieovereenkomst, Installatiemap kiezen) staat aan. Zet ze aan bij Projectinstellingen (tabblad Schermen) om ze hier te kunnen bewerken.</value>
+    <value>Geen van de schermen die de schermeditor al ondersteunt (Welkom, Licentieovereenkomst, Info Before, User Info, Installatiemap kiezen, Select Start Menu Folder, Klaar om te installeren, Info After) staat aan. Zet ze aan bij Projectinstellingen (tabblad Schermen) om ze hier te kunnen bewerken.</value>
   </data>
   <data name="ButtonWizardCancel" xml:space="preserve">
     <value>Annuleren</value>
@@ -383,5 +383,53 @@
   </data>
   <data name="SectionPreview" xml:space="preserve">
     <value>Voorvertoning</value>
+  </data>
+  <data name="LabelInfoBeforeFilePath" xml:space="preserve">
+    <value>Infobestand (voor installatie)</value>
+  </data>
+  <data name="LabelInfoAfterFilePath" xml:space="preserve">
+    <value>Infobestand (na installatie)</value>
+  </data>
+  <data name="DialogFilterInfoFiles" xml:space="preserve">
+    <value>Infobestanden (*.txt;*.rtf)|*.txt;*.rtf|Alle bestanden (*.*)|*.*</value>
+  </data>
+  <data name="ScreenEditorInfoBeforeNoFile" xml:space="preserve">
+    <value>Nog geen bestand gekozen.</value>
+  </data>
+  <data name="ScreenEditorInfoAfterNoFile" xml:space="preserve">
+    <value>Nog geen bestand gekozen.</value>
+  </data>
+  <data name="LabelDefaultUserInfoName" xml:space="preserve">
+    <value>Standaard naam</value>
+  </data>
+  <data name="LabelDefaultUserInfoOrg" xml:space="preserve">
+    <value>Standaard organisatie</value>
+  </data>
+  <data name="LabelDefaultUserInfoSerial" xml:space="preserve">
+    <value>Standaard serienummer</value>
+  </data>
+  <data name="LabelUsePreviousUserInfo" xml:space="preserve">
+    <value>Onthoud ingevulde gegevens bij een update</value>
+  </data>
+  <data name="LabelDefaultGroupName" xml:space="preserve">
+    <value>Standaard startmenugroep</value>
+  </data>
+  <data name="LabelDefaultGroupNameHint" xml:space="preserve">
+    <value>Leeg = naam applicatie</value>
+  </data>
+  <data name="LabelAppendDefaultGroupName" xml:space="preserve">
+    <value>Voeg standaardnaam toe aan een eigen gekozen groep</value>
+  </data>
+  <data name="LabelAlwaysUsePersonalGroup" xml:space="preserve">
+    <value>Altijd in het persoonlijke startmenu (nooit "Alle gebruikers")</value>
+  </data>
+  <data name="LabelDisableReadyMemo" xml:space="preserve">
+    <value>Verberg samenvatting op deze pagina</value>
+  </data>
+  <data name="LabelAlwaysShowDirOnReadyPage" xml:space="preserve">
+    <value>Toon installatiemap altijd in de samenvatting</value>
+  </data>
+  <data name="LabelAlwaysShowGroupOnReadyPage" xml:space="preserve">
+    <value>Toon startmenugroep altijd in de samenvatting</value>
   </data>
 </root>
