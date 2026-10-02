@@ -72,6 +72,48 @@
   <data name="TabScreens" xml:space="preserve">
     <value>Bildschirme</value>
   </data>
+  <data name="TabOtherSettings" xml:space="preserve">
+    <value>Weitere Einstellungen</value>
+  </data>
+  <data name="SectionDesktopShortcut" xml:space="preserve">
+    <value>Desktopverknüpfung</value>
+  </data>
+  <data name="HintDesktopShortcut" xml:space="preserve">
+    <value>Bietet während der Installation eine optionale Aufgabe an, um eine Verknüpfung auf dem Desktop abzulegen.</value>
+  </data>
+  <data name="LabelCreateDesktopIcon" xml:space="preserve">
+    <value>Desktopverknüpfung anbieten</value>
+  </data>
+  <data name="SectionStartMenu" xml:space="preserve">
+    <value>Startmenü</value>
+  </data>
+  <data name="HintStartMenu" xml:space="preserve">
+    <value>Bestimmt, ob dieses Installationsprogramm eine Verknüpfung im Startmenü anlegt.</value>
+  </data>
+  <data name="LabelCreateStartMenuIcon" xml:space="preserve">
+    <value>Verknüpfung im Startmenü anlegen</value>
+  </data>
+  <data name="SectionUpdateCapability" xml:space="preserve">
+    <value>Update-Fähigkeit</value>
+  </data>
+  <data name="HintUpdateCapability" xml:space="preserve">
+    <value>Merkt sich bei einem Update über eine bestehende Installation die zuvor gewählten Einstellungen, anstatt erneut danach zu fragen.</value>
+  </data>
+  <data name="LabelUsePreviousAppDir" xml:space="preserve">
+    <value>Zuvor gewählten Installationsordner merken</value>
+  </data>
+  <data name="LabelUsePreviousGroup" xml:space="preserve">
+    <value>Zuvor gewählte Startmenügruppe merken</value>
+  </data>
+  <data name="LabelUsePreviousSetupType" xml:space="preserve">
+    <value>Zuvor gewählten Installationstyp merken</value>
+  </data>
+  <data name="LabelUsePreviousTasks" xml:space="preserve">
+    <value>Zuvor angekreuzte Aufgaben merken</value>
+  </data>
+  <data name="LabelUsePreviousLanguage" xml:space="preserve">
+    <value>Zuvor gewählte Installationssprache merken</value>
+  </data>
   <data name="LabelUnsavedChanges" xml:space="preserve">
     <value>Nicht gespeicherte Änderungen</value>
   </data>

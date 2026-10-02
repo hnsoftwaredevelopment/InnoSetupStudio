@@ -125,6 +125,64 @@ public sealed class InstallerProject
     /// </summary>
     public List<string> SupportedLanguageIds { get; set; } = new() { InnoLanguageCatalog.EnglishId };
 
+    // Overige instellingen (backlogitem 3, sectie 25): instellingen die niet bij één specifiek
+    // wizardscherm horen, verzameld in een eigen tabblad in ProjectSettingsWindow. Herbert gaf als
+    // referentie een aantal schermafbeeldingen van Inno Script Studio (Kymoto Solutions) door, dat
+    // tientallen van dit soort instellingen in een boomstructuur (Appearance, Program Group,
+    // Uninstall Settings, enzovoort) aanbiedt. Voor nu dus bewust alleen de drie die Herbert zelf
+    // noemde (bureaublad-snelkoppeling, startmenu, update capability); de rest komt later, mogelijk
+    // als eigen tabbladen (Herbert, 2026-10-01: "Er zijn er veel meer, misschien ook een aantal
+    // voor een eigen tabblad, maar dat komt later allemaal wel").
+
+    /// <summary>
+    /// Biedt deze installer een optionele taak "Maak een snelkoppeling op het bureaublad" aan.
+    /// Komt overeen met de desktopicon-taak uit HNSoftwareInstallerFramework's Shortcuts.iss
+    /// (<c>CreateDesktopIcon == "yes"</c>): staat uit totdat de gebruiker het aanvinkt op de
+    /// Aanvullende-taken-pagina. Standaard <see langword="false"/>, net als dat framework
+    /// (<c>Flags: unchecked</c>) — een bureaubladpictogram is iets dat de eindgebruiker bewust
+    /// kiest, niet iets dat de installer ongevraagd neerzet.
+    /// </summary>
+    public bool CreateDesktopIcon { get; set; }
+
+    /// <summary>
+    /// Bepaalt of de (toekomstige) generator een startmenu-snelkoppeling opneemt in de
+    /// <c>[Icons]</c>-sectie. Dit is geen tegenhanger van Inno Setup's <c>AllowNoIcons</c>-
+    /// richtlijn: die richtlijn voegt alleen een "Geen Start Menu-map aanmaken"-aanvinkvakje toe
+    /// waarmee de eindgebruiker tíjdens de installatie zelf van snelkoppelingen kan afzien, terwijl
+    /// dit veld een bouwtijd-keuze is die bepaalt of de snelkoppeling-entry er überhaupt komt.
+    /// Standaard <see langword="true"/>: zowel Inno Setup zelf (zonder <c>AllowNoIcons</c>) als
+    /// HNSoftwareInstallerFramework's Base.iss maken altijd een startmenu-snelkoppeling tenzij
+    /// nadrukkelijk anders gekozen.
+    /// </summary>
+    public bool CreateStartMenuIcon { get; set; } = true;
+
+    /// <summary>
+    /// Onthoudt deze installer bij een update (een nieuwe versie over een al geïnstalleerde
+    /// versie heen) de eerder gekozen installatiemap, in plaats van die opnieuw te vragen. Komt
+    /// overeen met Inno Setup's <c>UsePreviousAppDir</c>-richtlijn, die ook zonder deze instelling
+    /// al standaard "yes" is — dit veld maakt die keuze alleen zichtbaar en per project
+    /// aanpasbaar.
+    /// </summary>
+    public bool UsePreviousAppDir { get; set; } = true;
+
+    /// <summary>Zie <see cref="UsePreviousAppDir"/>, maar dan voor de startmenugroep (Inno Setup's
+    /// <c>UsePreviousGroup</c>-richtlijn).</summary>
+    public bool UsePreviousGroup { get; set; } = true;
+
+    /// <summary>Zie <see cref="UsePreviousAppDir"/>, maar dan voor het gekozen installatietype
+    /// (Inno Setup's <c>UsePreviousSetupType</c>-richtlijn, alleen relevant zodra het project
+    /// meerdere Types/Components gebruikt — fase 5/6).</summary>
+    public bool UsePreviousSetupType { get; set; } = true;
+
+    /// <summary>Zie <see cref="UsePreviousAppDir"/>, maar dan voor de aangevinkte taken, zoals de
+    /// <see cref="CreateDesktopIcon"/>-taak hierboven (Inno Setup's <c>UsePreviousTasks</c>-
+    /// richtlijn).</summary>
+    public bool UsePreviousTasks { get; set; } = true;
+
+    /// <summary>Zie <see cref="UsePreviousAppDir"/>, maar dan voor de gekozen installertaal (Inno
+    /// Setup's <c>UsePreviousLanguage</c>-richtlijn).</summary>
+    public bool UsePreviousLanguage { get; set; } = true;
+
     /// <summary>Maakt een nieuw, leeg project met een vers gegenereerd AppId.</summary>
     public static InstallerProject CreateNew() => new()
     {

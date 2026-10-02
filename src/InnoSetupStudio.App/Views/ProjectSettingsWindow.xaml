@@ -246,6 +246,37 @@
                 </StackPanel>
             </ScrollViewer>
         </TabItem>
+
+        <!-- Overige instellingen (backlogitem 3, sectie 25): instellingen die niet bij één
+             specifiek wizardscherm horen. Bewust beperkt tot de drie groepen die Herbert zelf
+             noemde (zie InstallerProject voor de uitleg per veld) - de rest van zijn Inno Script
+             Studio-referentieschermen komt later, mogelijk als eigen tabbladen. -->
+        <TabItem Header="{loc:Loc TabOtherSettings}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="0,12,0,0">
+                    <TextBlock Text="{loc:Loc SectionDesktopShortcut}" FontSize="15" FontWeight="Bold" Margin="0,0,0,4" />
+                    <TextBlock Text="{loc:Loc HintDesktopShortcut}" TextWrapping="Wrap"
+                               Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,8" />
+                    <CheckBox Content="{loc:Loc LabelCreateDesktopIcon}" IsChecked="{Binding CreateDesktopIcon}"
+                               Margin="0,0,0,20" />
+
+                    <TextBlock Text="{loc:Loc SectionStartMenu}" FontSize="15" FontWeight="Bold" Margin="0,0,0,4" />
+                    <TextBlock Text="{loc:Loc HintStartMenu}" TextWrapping="Wrap"
+                               Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,8" />
+                    <CheckBox Content="{loc:Loc LabelCreateStartMenuIcon}" IsChecked="{Binding CreateStartMenuIcon}"
+                               Margin="0,0,0,20" />
+
+                    <TextBlock Text="{loc:Loc SectionUpdateCapability}" FontSize="15" FontWeight="Bold" Margin="0,0,0,4" />
+                    <TextBlock Text="{loc:Loc HintUpdateCapability}" TextWrapping="Wrap"
+                               Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,8" />
+                    <CheckBox Content="{loc:Loc LabelUsePreviousAppDir}" IsChecked="{Binding UsePreviousAppDir}" Margin="0,0,0,8" />
+                    <CheckBox Content="{loc:Loc LabelUsePreviousGroup}" IsChecked="{Binding UsePreviousGroup}" Margin="0,0,0,8" />
+                    <CheckBox Content="{loc:Loc LabelUsePreviousSetupType}" IsChecked="{Binding UsePreviousSetupType}" Margin="0,0,0,8" />
+                    <CheckBox Content="{loc:Loc LabelUsePreviousTasks}" IsChecked="{Binding UsePreviousTasks}" Margin="0,0,0,8" />
+                    <CheckBox Content="{loc:Loc LabelUsePreviousLanguage}" IsChecked="{Binding UsePreviousLanguage}" />
+                </StackPanel>
+            </ScrollViewer>
+        </TabItem>
         </TabControl>
     </DockPanel>
 </Window>

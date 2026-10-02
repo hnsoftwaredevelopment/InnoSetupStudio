@@ -72,6 +72,48 @@
   <data name="TabScreens" xml:space="preserve">
     <value>Schermen</value>
   </data>
+  <data name="TabOtherSettings" xml:space="preserve">
+    <value>Overige instellingen</value>
+  </data>
+  <data name="SectionDesktopShortcut" xml:space="preserve">
+    <value>Bureaublad-snelkoppeling</value>
+  </data>
+  <data name="HintDesktopShortcut" xml:space="preserve">
+    <value>Biedt tijdens de installatie een optionele taak aan om een snelkoppeling op het bureaublad te plaatsen.</value>
+  </data>
+  <data name="LabelCreateDesktopIcon" xml:space="preserve">
+    <value>Snelkoppeling op bureaublad aanbieden</value>
+  </data>
+  <data name="SectionStartMenu" xml:space="preserve">
+    <value>Startmenu</value>
+  </data>
+  <data name="HintStartMenu" xml:space="preserve">
+    <value>Bepaalt of deze installer een snelkoppeling in het startmenu aanmaakt.</value>
+  </data>
+  <data name="LabelCreateStartMenuIcon" xml:space="preserve">
+    <value>Snelkoppeling in startmenu aanmaken</value>
+  </data>
+  <data name="SectionUpdateCapability" xml:space="preserve">
+    <value>Update capability</value>
+  </data>
+  <data name="HintUpdateCapability" xml:space="preserve">
+    <value>Onthoudt bij een update over een bestaande installatie de eerder gekozen instellingen, in plaats van die opnieuw te vragen.</value>
+  </data>
+  <data name="LabelUsePreviousAppDir" xml:space="preserve">
+    <value>Eerder gekozen installatiemap onthouden</value>
+  </data>
+  <data name="LabelUsePreviousGroup" xml:space="preserve">
+    <value>Eerder gekozen startmenugroep onthouden</value>
+  </data>
+  <data name="LabelUsePreviousSetupType" xml:space="preserve">
+    <value>Eerder gekozen installatietype onthouden</value>
+  </data>
+  <data name="LabelUsePreviousTasks" xml:space="preserve">
+    <value>Eerder aangevinkte taken onthouden</value>
+  </data>
+  <data name="LabelUsePreviousLanguage" xml:space="preserve">
+    <value>Eerder gekozen installertaal onthouden</value>
+  </data>
   <data name="LabelUnsavedChanges" xml:space="preserve">
     <value>Niet-opgeslagen wijzigingen</value>
   </data>

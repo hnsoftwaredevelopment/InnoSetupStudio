@@ -114,6 +114,17 @@ public class InstallerProjectTests
         };
         project.SupportedLanguageIds = [InnoLanguageCatalog.EnglishId, "german", "dutch"];
 
+        // Overige instellingen (backlogitem 3, sectie 25): alle zeven hier bewust op de
+        // tegenovergestelde waarde van hun standaardwaarde gezet, zodat deze test een echte
+        // round-trip bewijst en niet toevallig alleen de standaardwaarden bevestigt.
+        project.CreateDesktopIcon = true;
+        project.CreateStartMenuIcon = false;
+        project.UsePreviousAppDir = false;
+        project.UsePreviousGroup = false;
+        project.UsePreviousSetupType = false;
+        project.UsePreviousTasks = false;
+        project.UsePreviousLanguage = false;
+
         var service = new JsonInstallerProjectService();
         var tempPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.issproj");
 
@@ -184,12 +195,56 @@ public class InstallerProjectTests
             Assert.Null(loaded.DefaultScreenButtons.CancelButtonEnabled);
             Assert.Equal(project.DefaultScreenButtons.CancelButtonVisible, loaded.DefaultScreenButtons.CancelButtonVisible);
             Assert.Equal(project.SupportedLanguageIds, loaded.SupportedLanguageIds);
+            Assert.Equal(project.CreateDesktopIcon, loaded.CreateDesktopIcon);
+            Assert.Equal(project.CreateStartMenuIcon, loaded.CreateStartMenuIcon);
+            Assert.Equal(project.UsePreviousAppDir, loaded.UsePreviousAppDir);
+            Assert.Equal(project.UsePreviousGroup, loaded.UsePreviousGroup);
+            Assert.Equal(project.UsePreviousSetupType, loaded.UsePreviousSetupType);
+            Assert.Equal(project.UsePreviousTasks, loaded.UsePreviousTasks);
+            Assert.Equal(project.UsePreviousLanguage, loaded.UsePreviousLanguage);
         }
         finally
         {
             if (File.Exists(tempPath))
             {
                 File.Delete(tempPath);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task LoadAsyncDefaultsOtherSettingsForOlderProjectFileWithoutThem()
+    {
+        // Overige instellingen (backlogitem 3, sectie 25) zijn nieuwer dan InstallerProject zelf:
+        // een ouder .issproj-bestand heeft deze zeven velden simpelweg niet in de JSON staan.
+        // Zelfde redenering als bij de meertalige-knopteksten-dictionaries (zie
+        // LoadAsyncDefaultsLanguageOverrideDictionariesForOlderProjectFileWithoutThem): System.
+        // Text.Json laat een ontbrekende JSON-sleutel de property-initializer-standaardwaarde
+        // onaangeroerd, dus hier is geen ??=-normalisatie in JsonInstallerProjectService voor
+        // nodig. Expliciet getest zodat een project van vóór deze feature niet per ongeluk een
+        // bureaubladpictogram aanbiedt (CreateDesktopIcon hoort op false te blijven) of de
+        // update-capability-vinkjes stilzwijgend uitschakelt (die horen op true te blijven).
+        var service = new JsonInstallerProjectService();
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.issproj");
+        await File.WriteAllTextAsync(path, "{\"AppName\":\"Ouder project zonder overige instellingen\"}");
+
+        try
+        {
+            var loaded = await service.LoadAsync(path);
+
+            Assert.False(loaded.CreateDesktopIcon);
+            Assert.True(loaded.CreateStartMenuIcon);
+            Assert.True(loaded.UsePreviousAppDir);
+            Assert.True(loaded.UsePreviousGroup);
+            Assert.True(loaded.UsePreviousSetupType);
+            Assert.True(loaded.UsePreviousTasks);
+            Assert.True(loaded.UsePreviousLanguage);
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
             }
         }
     }
