@@ -145,12 +145,14 @@ public sealed class InstallerProject
     public bool CreateDesktopIcon { get; set; }
 
     /// <summary>
-    /// Maakt deze installer een snelkoppeling in het startmenu aan. Komt overeen met Inno Setup's
-    /// <c>AllowNoIcons</c>-richtlijn (hier het omgekeerde: <see langword="true"/> betekent een
-    /// snelkoppeling wordt aangemaakt, wat ook Inno Setup's eigen standaard is als
-    /// <c>AllowNoIcons</c> wordt weggelaten). Standaard <see langword="true"/>: zowel Inno Setup
-    /// zelf als HNSoftwareInstallerFramework's Base.iss maken altijd een startmenu-snelkoppeling
-    /// tenzij nadrukkelijk anders gekozen.
+    /// Bepaalt of de (toekomstige) generator een startmenu-snelkoppeling opneemt in de
+    /// <c>[Icons]</c>-sectie. Dit is geen tegenhanger van Inno Setup's <c>AllowNoIcons</c>-
+    /// richtlijn: die richtlijn voegt alleen een "Geen Start Menu-map aanmaken"-aanvinkvakje toe
+    /// waarmee de eindgebruiker tíjdens de installatie zelf van snelkoppelingen kan afzien, terwijl
+    /// dit veld een bouwtijd-keuze is die bepaalt of de snelkoppeling-entry er überhaupt komt.
+    /// Standaard <see langword="true"/>: zowel Inno Setup zelf (zonder <c>AllowNoIcons</c>) als
+    /// HNSoftwareInstallerFramework's Base.iss maken altijd een startmenu-snelkoppeling tenzij
+    /// nadrukkelijk anders gekozen.
     /// </summary>
     public bool CreateStartMenuIcon { get; set; } = true;
 

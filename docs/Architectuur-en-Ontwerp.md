@@ -2212,9 +2212,12 @@ Zeven nieuwe `bool`-eigenschappen, elk met een directe tegenhanger in een Inno S
   HNSoftwareInstallerFramework's `Shortcuts.iss` (`CreateDesktopIcon == "yes"`, `Flags:
   unchecked`): staat standaard uit, de eindgebruiker kiest het bewust aan op de
   Aanvullende-taken-pagina.
-- **`CreateStartMenuIcon`** (standaard `true`) — of er een snelkoppeling in het startmenu komt.
-  Omgekeerde van Inno Setup's `AllowNoIcons`-richtlijn; `true` is zowel Inno Setup's eigen
-  standaard als wat `Base.iss` altijd doet.
+- **`CreateStartMenuIcon`** (standaard `true`) — of de generator een startmenu-snelkoppeling
+  opneemt in de `[Icons]`-sectie. Geen tegenhanger van Inno Setup's `AllowNoIcons`-richtlijn: die
+  voegt alleen een aanvinkvakje toe waarmee de eindgebruiker tijdens de installatie zelf van
+  snelkoppelingen kan afzien, terwijl dit veld een bouwtijd-keuze is die bepaalt of de
+  snelkoppeling-entry er is. `true` is zowel Inno Setup's eigen standaard (zonder
+  `AllowNoIcons`) als wat `Base.iss` altijd doet.
 - **`UsePreviousAppDir`**, **`UsePreviousGroup`**, **`UsePreviousSetupType`**,
   **`UsePreviousTasks`**, **`UsePreviousLanguage`** (allemaal standaard `true`) — "update
   capability": onthoudt bij een update over een bestaande installatie de eerder gekozen
@@ -2254,6 +2257,8 @@ velden, elk bewust op de tegenovergestelde waarde van hun standaardwaarde gezet)
   Program-Group-naam/DisableProgramGroupPage-pagina, enzovoort) zijn nog niet gebouwd. Mogelijk
   eigen tabbladen, te plannen zodra Herbert dat oppakt.
 - De generator (fase 5/6, nog niet gebouwd) moet deze zeven velden straks vertalen naar de
-  juiste `[Setup]`-richtlijnen (`AllowNoIcons`, de vijf `UsePrevious*`-richtlijnen) en de
-  `[Tasks]`/`[Icons]`-secties voor de bureaublad-snelkoppeling, naar het patroon van
-  HNSoftwareInstallerFramework's `Shortcuts.iss`.
+  juiste `[Setup]`-richtlijnen (de vijf `UsePrevious*`-richtlijnen) en de
+  `[Tasks]`/`[Icons]`-secties voor de bureaublad- en startmenu-snelkoppeling, naar het patroon
+  van HNSoftwareInstallerFramework's `Shortcuts.iss`/`Base.iss`. `CreateStartMenuIcon` wordt dus
+  vertaald naar het al dan niet aanwezig zijn van een Start Menu-`[Icons]`-regel, niet naar
+  `AllowNoIcons`.
