@@ -228,17 +228,30 @@
              bestandskeuze of eigen knop (zie UserInfoPageEditorViewModel). -->
         <DataTemplate DataType="{x:Type vm:UserInfoPageEditorViewModel}" x:Key="UserInfoPropertyPanelTemplate">
             <StackPanel>
+                <!-- Hint-teksten onder deze drie velden (2026-10-02, Herberts vraag): deze velden
+                     accepteren niet alleen letterlijke tekst maar ook Inno Setup-constants (bijv.
+                     {sysuserinfoname}, {reg:...}, {param:...}) - zie
+                     docs/Gebruikersdocumentatie/Inno-Setup-Constants.md voor de volledige
+                     referentie. Bewust een vrij tekstveld met alleen een hint eronder, geen
+                     keuzelijst: de gebruiker moet elke constant-syntax met eigen parameters kunnen
+                     intypen, niet beperkt worden tot een vaste lijst. -->
                 <TextBlock x:Name="DefaultUserInfoNameLabel" Text="{loc:Loc LabelDefaultUserInfoName}" Margin="0,0,0,6" />
-                <TextBox Text="{Binding DefaultUserInfoName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"
+                <TextBox Text="{Binding DefaultUserInfoName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"
                          AutomationProperties.LabeledBy="{Binding ElementName=DefaultUserInfoNameLabel}" />
+                <TextBlock Text="{loc:Loc HintDefaultUserInfoName}" FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,12" />
 
                 <TextBlock x:Name="DefaultUserInfoOrgLabel" Text="{loc:Loc LabelDefaultUserInfoOrg}" Margin="0,0,0,6" />
-                <TextBox Text="{Binding DefaultUserInfoOrg, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"
+                <TextBox Text="{Binding DefaultUserInfoOrg, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"
                          AutomationProperties.LabeledBy="{Binding ElementName=DefaultUserInfoOrgLabel}" />
+                <TextBlock Text="{loc:Loc HintDefaultUserInfoOrg}" FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,12" />
 
                 <TextBlock x:Name="DefaultUserInfoSerialLabel" Text="{loc:Loc LabelDefaultUserInfoSerial}" Margin="0,0,0,6" />
-                <TextBox Text="{Binding DefaultUserInfoSerial, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"
+                <TextBox Text="{Binding DefaultUserInfoSerial, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"
                          AutomationProperties.LabeledBy="{Binding ElementName=DefaultUserInfoSerialLabel}" />
+                <TextBlock Text="{loc:Loc HintDefaultUserInfoSerial}" FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,12" />
 
                 <CheckBox Content="{loc:Loc LabelUsePreviousUserInfo}" IsChecked="{Binding UsePreviousUserInfo}"
                           Foreground="{DynamicResource Brush.TextPrimary}" />

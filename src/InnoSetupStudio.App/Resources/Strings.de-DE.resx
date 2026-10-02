@@ -417,11 +417,20 @@
   <data name="LabelDefaultUserInfoName" xml:space="preserve">
     <value>Standardname</value>
   </data>
+  <data name="HintDefaultUserInfoName" xml:space="preserve">
+    <value>Leer = {sysuserinfoname} (Name, auf den Windows registriert ist). Unterstützt auch andere Inno Setup-Konstanten, z. B. {username} oder {reg:HKxx\Unterschlüssel,Wert|Standard}.</value>
+  </data>
   <data name="LabelDefaultUserInfoOrg" xml:space="preserve">
     <value>Standardorganisation</value>
   </data>
+  <data name="HintDefaultUserInfoOrg" xml:space="preserve">
+    <value>Leer = {sysuserinfoorg} (Organisation, auf die Windows registriert ist). Unterstützt auch andere Konstanten.</value>
+  </data>
   <data name="LabelDefaultUserInfoSerial" xml:space="preserve">
     <value>Standard-Seriennummer</value>
+  </data>
+  <data name="HintDefaultUserInfoSerial" xml:space="preserve">
+    <value>Unterstützt Inno Setup-Konstanten, z. B. {reg:HKxx\Unterschlüssel,Wert|Standard} oder {param:Name|Standard}. Kein eingebauter Standardwert: leer, sofern hier nichts eingetragen wird.</value>
   </data>
   <data name="LabelUsePreviousUserInfo" xml:space="preserve">
     <value>Eingegebene Daten bei Update merken</value>

@@ -417,11 +417,20 @@
   <data name="LabelDefaultUserInfoName" xml:space="preserve">
     <value>Standaard naam</value>
   </data>
+  <data name="HintDefaultUserInfoName" xml:space="preserve">
+    <value>Leeg = {sysuserinfoname} (naam waarop Windows geregistreerd staat). Ondersteunt ook andere Inno Setup-constants, zoals {username} of {reg:HKxx\Sleutel,Waarde|Standaard}.</value>
+  </data>
   <data name="LabelDefaultUserInfoOrg" xml:space="preserve">
     <value>Standaard organisatie</value>
   </data>
+  <data name="HintDefaultUserInfoOrg" xml:space="preserve">
+    <value>Leeg = {sysuserinfoorg} (organisatie waarop Windows geregistreerd staat). Ondersteunt ook andere constants.</value>
+  </data>
   <data name="LabelDefaultUserInfoSerial" xml:space="preserve">
     <value>Standaard serienummer</value>
+  </data>
+  <data name="HintDefaultUserInfoSerial" xml:space="preserve">
+    <value>Ondersteunt Inno Setup-constants, bijvoorbeeld {reg:HKxx\Sleutel,Waarde|Standaard} of {param:Naam|Standaard}. Geen ingebouwde standaardwaarde: leeg tenzij je hier zelf iets invult.</value>
   </data>
   <data name="LabelUsePreviousUserInfo" xml:space="preserve">
     <value>Onthoud ingevulde gegevens bij een update</value>

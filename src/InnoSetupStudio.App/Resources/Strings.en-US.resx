@@ -417,11 +417,20 @@
   <data name="LabelDefaultUserInfoName" xml:space="preserve">
     <value>Default name</value>
   </data>
+  <data name="HintDefaultUserInfoName" xml:space="preserve">
+    <value>Empty = {sysuserinfoname} (the name Windows is registered to). Also supports other Inno Setup constants, such as {username} or {reg:HKxx\Subkey,Value|Default}.</value>
+  </data>
   <data name="LabelDefaultUserInfoOrg" xml:space="preserve">
     <value>Default organization</value>
   </data>
+  <data name="HintDefaultUserInfoOrg" xml:space="preserve">
+    <value>Empty = {sysuserinfoorg} (the organization Windows is registered to). Also supports other constants.</value>
+  </data>
   <data name="LabelDefaultUserInfoSerial" xml:space="preserve">
     <value>Default serial number</value>
+  </data>
+  <data name="HintDefaultUserInfoSerial" xml:space="preserve">
+    <value>Supports Inno Setup constants, for example {reg:HKxx\Subkey,Value|Default} or {param:Name|Default}. No built-in default: empty unless you fill in something here.</value>
   </data>
   <data name="LabelUsePreviousUserInfo" xml:space="preserve">
     <value>Remember entered details on update</value>
