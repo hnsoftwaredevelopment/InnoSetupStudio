@@ -113,7 +113,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
         // Group en Ready sluiten hier rechtstreeks aan op Select Destination.
         if (project.WizardScreens.ShowSelectProgramGroupPage)
         {
-            _screens.Add(new SelectProgramGroupPageEditorViewModel(project.DefaultGroupName, project.AppendDefaultGroupName, project.AlwaysUsePersonalGroup)
+            _screens.Add(new SelectProgramGroupPageEditorViewModel(project.AppName, project.DefaultGroupName, project.AppendDefaultGroupName, project.AlwaysUsePersonalGroup)
             {
                 ButtonSettings = project.SelectProgramGroupScreenButtons,
                 Defaults = _defaultScreen,

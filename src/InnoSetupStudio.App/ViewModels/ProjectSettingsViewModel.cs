@@ -54,6 +54,30 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
     private readonly BrowseButtonSettings _selectDestinationBrowseButton;
     private readonly WizardScreenButtonSettings _defaultScreenButtons;
 
+    // De veertien velden en vijf knopinstellingen van de vijf schermeditors uit sectie 26
+    // (Info Before/After, User Info, Select Start Menu Folder, Ready to Install) ontbraken hier
+    // aanvankelijk (CodeRabbit, PR #23): exact dezelfde pass-through-bug als hierboven bij
+    // LicenseFilePath e.a. — zonder deze velden zette Opslaan vanuit dit scherm de in de
+    // schermeditor ingevulde User Info/Start Menu-instellingen stilzwijgend terug naar hun
+    // standaardwaarden.
+    private readonly string _infoBeforeFilePath;
+    private readonly string _infoAfterFilePath;
+    private readonly string _defaultUserInfoName;
+    private readonly string _defaultUserInfoOrg;
+    private readonly string _defaultUserInfoSerial;
+    private readonly bool _usePreviousUserInfo;
+    private readonly string _defaultGroupName;
+    private readonly bool _appendDefaultGroupName;
+    private readonly bool _alwaysUsePersonalGroup;
+    private readonly bool _disableReadyMemo;
+    private readonly bool _alwaysShowDirOnReadyPage;
+    private readonly bool _alwaysShowGroupOnReadyPage;
+    private readonly WizardScreenButtonSettings _infoBeforeScreenButtons;
+    private readonly WizardScreenButtonSettings _userInfoScreenButtons;
+    private readonly WizardScreenButtonSettings _selectProgramGroupScreenButtons;
+    private readonly WizardScreenButtonSettings _readyScreenButtons;
+    private readonly WizardScreenButtonSettings _infoAfterScreenButtons;
+
     public ProjectSettingsViewModel(InstallerProject project, IInstallerProjectService projectService, string? projectFilePath)
     {
         _projectService = projectService;
@@ -75,6 +99,23 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
         _selectDestinationScreenButtons = project.SelectDestinationScreenButtons;
         _selectDestinationBrowseButton = project.SelectDestinationBrowseButton;
         _defaultScreenButtons = project.DefaultScreenButtons;
+        _infoBeforeFilePath = project.InfoBeforeFilePath;
+        _infoAfterFilePath = project.InfoAfterFilePath;
+        _defaultUserInfoName = project.DefaultUserInfoName;
+        _defaultUserInfoOrg = project.DefaultUserInfoOrg;
+        _defaultUserInfoSerial = project.DefaultUserInfoSerial;
+        _usePreviousUserInfo = project.UsePreviousUserInfo;
+        _defaultGroupName = project.DefaultGroupName;
+        _appendDefaultGroupName = project.AppendDefaultGroupName;
+        _alwaysUsePersonalGroup = project.AlwaysUsePersonalGroup;
+        _disableReadyMemo = project.DisableReadyMemo;
+        _alwaysShowDirOnReadyPage = project.AlwaysShowDirOnReadyPage;
+        _alwaysShowGroupOnReadyPage = project.AlwaysShowGroupOnReadyPage;
+        _infoBeforeScreenButtons = project.InfoBeforeScreenButtons;
+        _userInfoScreenButtons = project.UserInfoScreenButtons;
+        _selectProgramGroupScreenButtons = project.SelectProgramGroupScreenButtons;
+        _readyScreenButtons = project.ReadyScreenButtons;
+        _infoAfterScreenButtons = project.InfoAfterScreenButtons;
 
         AppId = project.AppId;
         AppName = project.AppName;
@@ -351,6 +392,23 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
             SelectDestinationScreenButtons = _selectDestinationScreenButtons,
             SelectDestinationBrowseButton = _selectDestinationBrowseButton,
             DefaultScreenButtons = _defaultScreenButtons,
+            InfoBeforeFilePath = _infoBeforeFilePath,
+            InfoAfterFilePath = _infoAfterFilePath,
+            DefaultUserInfoName = _defaultUserInfoName,
+            DefaultUserInfoOrg = _defaultUserInfoOrg,
+            DefaultUserInfoSerial = _defaultUserInfoSerial,
+            UsePreviousUserInfo = _usePreviousUserInfo,
+            DefaultGroupName = _defaultGroupName,
+            AppendDefaultGroupName = _appendDefaultGroupName,
+            AlwaysUsePersonalGroup = _alwaysUsePersonalGroup,
+            DisableReadyMemo = _disableReadyMemo,
+            AlwaysShowDirOnReadyPage = _alwaysShowDirOnReadyPage,
+            AlwaysShowGroupOnReadyPage = _alwaysShowGroupOnReadyPage,
+            InfoBeforeScreenButtons = _infoBeforeScreenButtons,
+            UserInfoScreenButtons = _userInfoScreenButtons,
+            SelectProgramGroupScreenButtons = _selectProgramGroupScreenButtons,
+            ReadyScreenButtons = _readyScreenButtons,
+            InfoAfterScreenButtons = _infoAfterScreenButtons,
             CreateDesktopIcon = CreateDesktopIcon,
             CreateStartMenuIcon = CreateStartMenuIcon,
             UsePreviousAppDir = UsePreviousAppDir,

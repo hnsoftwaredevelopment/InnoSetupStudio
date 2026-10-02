@@ -10,8 +10,18 @@
          geen eigen zichtbaar element op de echte Inno Setup-pagina (het zijn bouwtijd-gedrags-
          keuzes, geen aanvinkvakjes voor de eindgebruiker), dus die velden worden hier niet
          getoond — alleen het "Geen Start Menu-map aanmaken"-vinkje hieronder is decoratief, dat
-         is Inno Setup's eigen AllowNoIcons-aanvinkvakje, geen projectinstelling van dit scherm. -->
-    <DockPanel Background="White" Margin="20,16,20,20">
+         is Inno Setup's eigen AllowNoIcons-aanvinkvakje, geen projectinstelling van dit scherm.
+
+         LastChildFill="False" hieronder: zonder deze instelling negeert DockPanel het eigen
+         Dock="Top" van de LAATSTE kindelement en rekt dat element uit over alle resterende
+         verticale ruimte — WPF's standaardgedrag (LastChildFill="True"), ongeacht welke
+         Dock-waarde dat kind zelf meekrijgt. Bij SelectDestinationPagePreview viel dat niet op
+         omdat het laatste kind daar toevallig een korte toelichtende TextBlock is (die rekt
+         onzichtbaar mee); hier was het laatste kind de map-rij zelf (Border+Bladeren-knop), die
+         daardoor de hele hoogte van de pagina vulde — Herberts melding dat dat veld en de knop
+         "veel te hoog" waren (2026-10-02). LastChildFill="False" laat elk kind gewoon zijn eigen
+         Dock-zijde en natuurlijke hoogte houden, zoals Installatiemap kiezen. -->
+    <DockPanel Background="White" Margin="20,16,20,20" LastChildFill="False">
         <Grid DockPanel.Dock="Top" Margin="0,0,0,20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -36,7 +46,7 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Border Grid.Column="0" BorderBrush="#FFACA899" BorderThickness="1" Background="#FFF0F0F0" Margin="0,0,8,0">
-                <TextBlock Text="{Binding DefaultGroupName}" Foreground="Black" Margin="6,4" TextTrimming="CharacterEllipsis" />
+                <TextBlock Text="{Binding EffectiveGroupName}" Foreground="Black" Margin="6,4" TextTrimming="CharacterEllipsis" />
             </Border>
             <Button Grid.Column="1" Content="Browse..." Padding="10,3"
                     IsHitTestVisible="False" Focusable="False" IsTabStop="False" />

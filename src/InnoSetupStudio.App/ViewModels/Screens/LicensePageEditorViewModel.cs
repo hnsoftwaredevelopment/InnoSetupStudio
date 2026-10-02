@@ -86,6 +86,10 @@ public sealed partial class LicensePageEditorViewModel : WizardScreenEditorViewM
     // rechtstreeks uit een geladen .issproj-projectbestand. Zonder deze check zou het openen van
     // een projectbestand met een UNC-pad (\\host\share\...) hier automatisch, zonder verdere
     // gebruikersactie, een SMB-verbinding naar die host opzetten. Blokkeer daarom UNC- en
-    // apparaatpaden (die beginnen alle met "\\") vóór elke bestandstoegang.
-    private static bool IsUncOrDevicePath(string path) => path.StartsWith(@"\\", StringComparison.Ordinal);
+    // apparaatpaden (die beginnen alle met "\\") vóór elke bestandstoegang. Normaliseert eerst "/"
+    // naar "\": zonder deze normalisatie glipte "//host/share/bestand.txt" langs de "\\"-check
+    // heen (CodeRabbit, PR #23) — Windows interpreteert voorwaartse schuine strepen in een pad net
+    // zo goed als UNC-pad als backslashes.
+    private static bool IsUncOrDevicePath(string path) =>
+        path.Replace('/', '\\').StartsWith(@"\\", StringComparison.Ordinal);
 }

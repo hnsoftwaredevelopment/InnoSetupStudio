@@ -72,5 +72,9 @@ public sealed partial class InfoAfterPageEditorViewModel : WizardScreenEditorVie
     }
 
     // Zelfde beveiliging als LicensePageEditorViewModel.IsUncOrDevicePath / InfoBeforePageEditorViewModel.
-    private static bool IsUncOrDevicePath(string path) => path.StartsWith(@"\\", StringComparison.Ordinal);
+    // Normaliseert eerst "/" naar "\": zonder deze normalisatie glipte "//host/share/bestand.txt"
+    // langs de "\\"-check heen (CodeRabbit, PR #23) — Windows interpreteert voorwaartse schuine
+    // strepen in een pad net zo goed als UNC-pad als backslashes.
+    private static bool IsUncOrDevicePath(string path) =>
+        path.Replace('/', '\\').StartsWith(@"\\", StringComparison.Ordinal);
 }

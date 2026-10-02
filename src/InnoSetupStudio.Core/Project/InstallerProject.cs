@@ -96,18 +96,29 @@ public sealed class InstallerProject
     public string DefaultGroupName { get; set; } = string.Empty;
 
     /// <summary>
-    /// Voegt <see cref="DefaultGroupName"/> toe als de gebruiker op de Select Start Menu
-    /// Folder-pagina zelf een andere groepsnaam kiest, in plaats van die te vervangen. Komt
-    /// overeen met Inno Setup's <c>AppendDefaultGroupName</c>-richtlijn, standaard
-    /// <see langword="false"/> net als Inno Setup zelf.
+    /// Stuurt specifiek Inno Setup's eigen Bladeren-dialoog op de Select Start Menu
+    /// Folder-pagina (een boomweergave van bestaande startmenu-mappen, niet het tekstveld
+    /// zelf): kiest de gebruiker daar bijvoorbeeld de bestaande map "Accessoires", dan plakt
+    /// Inno Setup (bij <see langword="true"/>, de standaard) automatisch de laatste component
+    /// van <see cref="DefaultGroupName"/> erachter (dus "Accessoires\AppName"). Bij
+    /// <see langword="false"/> gebruikt Setup precies de gekozen map, en krijgt die
+    /// Bladeren-dialoog er zelf een "Nieuwe map maken"-knop bij. Komt overeen met Inno Setup's
+    /// <c>AppendDefaultGroupName</c>-richtlijn, standaard <see langword="true"/> net als Inno
+    /// Setup zelf — geverifieerd via de officiële Inno Setup-documentatie (2026-10-02, n.a.v.
+    /// Herberts vraag of dit niet gewoon ging om het combineren van een getypte naam met de
+    /// standaardnaam: dat is het dus niet, het gaat specifiek om deze Bladeren-dialoog).
     /// </summary>
-    public bool AppendDefaultGroupName { get; set; }
+    public bool AppendDefaultGroupName { get; set; } = true;
 
     /// <summary>
-    /// Plaatst de startmenugroep altijd in het persoonlijke startmenu van de huidige gebruiker,
-    /// nooit in "Alle gebruikers", ongeacht of de installatie voor alle gebruikers is. Komt overeen met
-    /// Inno Setup's <c>AlwaysUsePersonalGroup</c>-richtlijn, standaard <see langword="false"/>
-    /// net als Inno Setup zelf.
+    /// Laat Inno Setup's <c>{group}</c>-constante altijd naar het persoonlijke startmenu van de
+    /// huidige gebruiker wijzen, ook als de installatie "voor alle gebruikers" is (normaal wijst
+    /// <c>{group}</c> dan naar het Alle-gebruikers-startmenu). Komt overeen met Inno Setup's
+    /// <c>AlwaysUsePersonalGroup</c>-richtlijn, standaard <see langword="false"/> net als Inno
+    /// Setup zelf. Inno Setup's eigen documentatie waarschuwt dat dit "mogelijk niet het beoogde
+    /// effect heeft" en de compiler geeft er een waarschuwing bij (tenzij
+    /// <c>UsedUserAreasWarning</c> is uitgezet) — nog niet vertaald naar een eigen
+    /// waarschuwing in deze IDE, generatorwerk voor fase 5/6.
     /// </summary>
     public bool AlwaysUsePersonalGroup { get; set; }
 

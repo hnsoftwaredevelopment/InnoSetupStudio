@@ -130,7 +130,7 @@ public class InstallerProjectTests
         project.DefaultUserInfoSerial = "1234-5678";
         project.UsePreviousUserInfo = false;
         project.DefaultGroupName = "Mijn Applicatie";
-        project.AppendDefaultGroupName = true;
+        project.AppendDefaultGroupName = false;
         project.AlwaysUsePersonalGroup = true;
         project.DisableReadyMemo = true;
         project.AlwaysShowDirOnReadyPage = true;
@@ -295,8 +295,11 @@ public class InstallerProjectTests
         // to Install) zijn nieuwer dan InstallerProject zelf: een ouder .issproj-bestand heeft
         // deze velden simpelweg niet in de JSON staan. Expliciet getest zodat zo'n ouder project
         // niet per ongeluk UsePreviousUserInfo uitschakelt (hoort op true te blijven, net als de
-        // andere UsePrevious*-vlaggen) of de twee Ready-vinkjes/AppendDefaultGroupName/
-        // AlwaysUsePersonalGroup inschakelt (horen op false te blijven).
+        // andere UsePrevious*-vlaggen) of de twee Ready-vinkjes/AlwaysUsePersonalGroup inschakelt
+        // (horen op false te blijven). AppendDefaultGroupName is hierop de uitzondering: Inno
+        // Setup's eigen standaard voor AppendDefaultGroupName is "yes" (geverifieerd via de
+        // officiële documentatie, 2026-10-02), dus een ouder project zonder dit veld hoort na het
+        // laden AppendDefaultGroupName op true te hebben staan, niet op false.
         var service = new JsonInstallerProjectService();
         var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.issproj");
         await File.WriteAllTextAsync(path, "{\"AppName\":\"Ouder project zonder de vijf nieuwe schermen\"}");
@@ -312,7 +315,7 @@ public class InstallerProjectTests
             Assert.Equal(string.Empty, loaded.DefaultUserInfoSerial);
             Assert.True(loaded.UsePreviousUserInfo);
             Assert.Equal(string.Empty, loaded.DefaultGroupName);
-            Assert.False(loaded.AppendDefaultGroupName);
+            Assert.True(loaded.AppendDefaultGroupName);
             Assert.False(loaded.AlwaysUsePersonalGroup);
             Assert.False(loaded.DisableReadyMemo);
             Assert.False(loaded.AlwaysShowDirOnReadyPage);

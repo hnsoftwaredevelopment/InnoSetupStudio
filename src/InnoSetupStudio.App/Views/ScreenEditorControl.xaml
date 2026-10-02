@@ -184,15 +184,17 @@
              "akkoord"-keuzerondjes (zie InfoBeforePagePreview/InfoAfterPagePreview). -->
         <DataTemplate DataType="{x:Type vm:InfoBeforePageEditorViewModel}" x:Key="InfoBeforePropertyPanelTemplate">
             <StackPanel>
-                <TextBlock Text="{loc:Loc LabelInfoBeforeFilePath}" Margin="0,0,0,6" />
+                <TextBlock x:Name="InfoBeforeFilePathLabel" Text="{loc:Loc LabelInfoBeforeFilePath}" Margin="0,0,0,6" />
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBox Grid.Column="0" Text="{Binding InfoFilePath, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0" />
+                    <TextBox Grid.Column="0" Text="{Binding InfoFilePath, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0"
+                             AutomationProperties.LabeledBy="{Binding ElementName=InfoBeforeFilePathLabel}" />
                     <Button Grid.Column="1" Command="{Binding BrowseCommand}" ToolTip="{loc:Loc ButtonBrowse}"
-                            AutomationProperties.Name="{loc:Loc ButtonBrowse}">
+                            AutomationProperties.Name="{loc:Loc ButtonBrowse}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=InfoBeforeFilePathLabel}">
                         <Path Data="{StaticResource Folder}" Fill="{DynamicResource Brush.TextPrimary}"
                               Stretch="Uniform" Width="16" Height="16" />
                     </Button>
@@ -203,15 +205,17 @@
 
         <DataTemplate DataType="{x:Type vm:InfoAfterPageEditorViewModel}" x:Key="InfoAfterPropertyPanelTemplate">
             <StackPanel>
-                <TextBlock Text="{loc:Loc LabelInfoAfterFilePath}" Margin="0,0,0,6" />
+                <TextBlock x:Name="InfoAfterFilePathLabel" Text="{loc:Loc LabelInfoAfterFilePath}" Margin="0,0,0,6" />
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBox Grid.Column="0" Text="{Binding InfoFilePath, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0" />
+                    <TextBox Grid.Column="0" Text="{Binding InfoFilePath, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0"
+                             AutomationProperties.LabeledBy="{Binding ElementName=InfoAfterFilePathLabel}" />
                     <Button Grid.Column="1" Command="{Binding BrowseCommand}" ToolTip="{loc:Loc ButtonBrowse}"
-                            AutomationProperties.Name="{loc:Loc ButtonBrowse}">
+                            AutomationProperties.Name="{loc:Loc ButtonBrowse}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=InfoAfterFilePathLabel}">
                         <Path Data="{StaticResource Folder}" Fill="{DynamicResource Brush.TextPrimary}"
                               Stretch="Uniform" Width="16" Height="16" />
                     </Button>
@@ -224,14 +228,17 @@
              bestandskeuze of eigen knop (zie UserInfoPageEditorViewModel). -->
         <DataTemplate DataType="{x:Type vm:UserInfoPageEditorViewModel}" x:Key="UserInfoPropertyPanelTemplate">
             <StackPanel>
-                <TextBlock Text="{loc:Loc LabelDefaultUserInfoName}" Margin="0,0,0,6" />
-                <TextBox Text="{Binding DefaultUserInfoName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12" />
+                <TextBlock x:Name="DefaultUserInfoNameLabel" Text="{loc:Loc LabelDefaultUserInfoName}" Margin="0,0,0,6" />
+                <TextBox Text="{Binding DefaultUserInfoName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"
+                         AutomationProperties.LabeledBy="{Binding ElementName=DefaultUserInfoNameLabel}" />
 
-                <TextBlock Text="{loc:Loc LabelDefaultUserInfoOrg}" Margin="0,0,0,6" />
-                <TextBox Text="{Binding DefaultUserInfoOrg, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12" />
+                <TextBlock x:Name="DefaultUserInfoOrgLabel" Text="{loc:Loc LabelDefaultUserInfoOrg}" Margin="0,0,0,6" />
+                <TextBox Text="{Binding DefaultUserInfoOrg, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"
+                         AutomationProperties.LabeledBy="{Binding ElementName=DefaultUserInfoOrgLabel}" />
 
-                <TextBlock Text="{loc:Loc LabelDefaultUserInfoSerial}" Margin="0,0,0,6" />
-                <TextBox Text="{Binding DefaultUserInfoSerial, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12" />
+                <TextBlock x:Name="DefaultUserInfoSerialLabel" Text="{loc:Loc LabelDefaultUserInfoSerial}" Margin="0,0,0,6" />
+                <TextBox Text="{Binding DefaultUserInfoSerial, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"
+                         AutomationProperties.LabeledBy="{Binding ElementName=DefaultUserInfoSerialLabel}" />
 
                 <CheckBox Content="{loc:Loc LabelUsePreviousUserInfo}" IsChecked="{Binding UsePreviousUserInfo}"
                           Foreground="{DynamicResource Brush.TextPrimary}" />
@@ -244,8 +251,9 @@
              bestemmingspagina, dit scherm heeft geen eigen aanpasbare knop). -->
         <DataTemplate DataType="{x:Type vm:SelectProgramGroupPageEditorViewModel}" x:Key="SelectProgramGroupPropertyPanelTemplate">
             <StackPanel>
-                <TextBlock Text="{loc:Loc LabelDefaultGroupName}" Margin="0,0,0,6" />
-                <TextBox Text="{Binding DefaultGroupName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4" />
+                <TextBlock x:Name="DefaultGroupNameLabel" Text="{loc:Loc LabelDefaultGroupName}" Margin="0,0,0,6" />
+                <TextBox Text="{Binding DefaultGroupName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"
+                         AutomationProperties.LabeledBy="{Binding ElementName=DefaultGroupNameLabel}" />
                 <TextBlock Text="{loc:Loc LabelDefaultGroupNameHint}" FontSize="11"
                            Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,16" />
                 <CheckBox Content="{loc:Loc LabelAppendDefaultGroupName}" IsChecked="{Binding AppendDefaultGroupName}"

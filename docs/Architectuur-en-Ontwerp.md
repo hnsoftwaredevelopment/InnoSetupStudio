@@ -2302,9 +2302,22 @@ categorie 2 van de Feature-Checklist):
   scherm op één plek, in de schermeditor.
 - **`DefaultGroupName`** (`string`, standaard leeg) — voorgestelde startmenugroep
   (`DefaultGroupName`); leeg valt terug op `AppName`, net als `DefaultDirName`.
-- **`AppendDefaultGroupName`**, **`AlwaysUsePersonalGroup`** (`bool`, standaard `false`) —
-  gedragskeuzes zonder eigen aanvinkvakje voor de eindgebruiker (`AppendDefaultGroupName`/
-  `AlwaysUsePersonalGroup`).
+- **`AppendDefaultGroupName`** (`bool`, standaard `true` — zelfde standaard als Inno Setup zelf,
+  geverifieerd via de officiële documentatie op 2026-10-02) — stuurt specifiek Inno Setup's eigen
+  Bladeren-dialoog op de Select Start Menu Folder-pagina (een boomweergave van bestaande
+  startmenu-mappen, niet het tekstveld zelf): kiest de gebruiker daar een bestaande map, dan plakt
+  Setup bij `true` automatisch de laatste component van `DefaultGroupName` erachter; bij `false`
+  gebruikt Setup precies de gekozen map en krijgt die Bladeren-dialoog zelf een "Nieuwe map
+  maken"-knop. Gaat dus niet over het combineren van een getypte naam met de standaardnaam (de
+  oorspronkelijke, te korte omschrijving in de Feature-Checklist suggereerde dat en klopte niet —
+  zie Herberts vraag hierover, backlogitem hieronder).
+- **`AlwaysUsePersonalGroup`** (`bool`, standaard `false`, zelfde standaard als Inno Setup zelf) —
+  laat de `{group}`-constante altijd naar het persoonlijke startmenu van de huidige gebruiker
+  wijzen, ook bij een "voor alle gebruikers"-installatie (die wijst anders naar het
+  Alle-gebruikers-startmenu). Inno Setup's eigen documentatie waarschuwt dat dit "mogelijk niet
+  het beoogde effect heeft" en de compiler geeft er een waarschuwing bij (tenzij
+  `UsedUserAreasWarning` is uitgezet) — nog niet vertaald naar een eigen waarschuwing in deze IDE,
+  generatorwerk voor fase 5/6.
 - **`DisableReadyMemo`**, **`AlwaysShowDirOnReadyPage`**, **`AlwaysShowGroupOnReadyPage`**
   (`bool`, standaard `false`) — bepalen wat de samenvatting op de Klaar-om-te-installeren-pagina
   toont (`DisableReadyMemo`/`AlwaysShowDirOnReadyPage`/`AlwaysShowGroupOnReadyPage`).
@@ -2381,3 +2394,48 @@ explicite-JSON-`null`-test voor knopinstellingen is uitgebreid met de vijf nieuw
 - Setup Completed/Finished-scherm zijn enige openstaande veld, `AlwaysRestart`, hoort bij een
   toekomstig "Herstart en lopende applicaties"-tabblad (categorie 20 van de Feature-Checklist),
   niet bij dit scherm zelf.
+
+
+### Correcties na Herberts handmatige UI-test (2026-10-02)
+
+Herbert testte de vijf nieuwe schermen in de UI en meldde vier punten. Twee waren concrete fouten
+in deze eerste versie, inmiddels gefixt op dezelfde branch:
+
+- **Layoutfout op Select Start Menu Folder**: het invoerveld en de Bladeren-knop waren veel te
+  hoog. Oorzaak: `SelectProgramGroupPagePreview.xaml`'s buitenste `DockPanel` had geen
+  `LastChildFill="False"` staan, waardoor WPF het laatste kind (de map-rij) liet uitrekken over
+  alle resterende ruimte in plaats van zijn eigen `Dock="Top"`-hoogte aan te houden —
+  Installatiemap kiezen viel dit niet op omdat diens laatste kind toevallig een korte TextBlock
+  is. Gefixt door `LastChildFill="False"` toe te voegen, net als bij Installatiemap kiezen. Build
+  opnieuw gecontroleerd: 0 waarschuwingen, 0 fouten.
+- **`AppendDefaultGroupName` had de verkeerde standaardwaarde**: stond in de code op `false`,
+  terwijl Inno Setup's eigen documentatie (jrsoftware.org/ishelp, geverifieerd 2026-10-02)
+  "Default value: yes" vermeldt. Gefixt naar `true`, inclusief de bijbehorende round-trip- en
+  backward-compatibility-tests hierboven in dit document.
+
+De overige twee punten van Herbert vragen om echt nieuw ontwerpwerk, nog niet gebouwd:
+
+- **User Info-scherm voelt aan als invullen in plaats van bewerken**: de voorvertoning toont de
+  waarde van `DefaultUserInfoName`/`Org`/`Serial` live in het invoerveld zelf, zonder dat de
+  veldlabels ("Full Name", "Organization", "Serial Number") apart aan te passen zijn. Herbert wil
+  per veld kunnen aan/uitvinken of het getoond wordt, en mogelijk de labels zelf (meertalig)
+  kunnen aanpassen. Uitgezocht via de officiële documentatie: Full Name/Organization hebben geen
+  eigen aan/uitvinkvakje in Inno Setup zonder Pascal Script; het Serial Number-veld wordt alleen
+  getoond als het script een `CheckSerial`-event-functie bevat (fase 6-werk, nog niet gebouwd). De
+  labels zelf komen uit Inno Setup's eigen, per taal overschrijfbare `[CustomMessages]`-sleutels
+  (`UserInfoName`/`UserInfoOrg`/`UserInfoSerial`), dus een meertalige-captioneditor zou dezelfde
+  `Dictionary<string,string> XxxCaptionByLanguage`-aanpak kunnen volgen als de bestaande
+  knoplabels (sectie 20/24).
+- **Bladeren-knop op Select Start Menu Folder nog niet volledig aanpasbaar**: Herbert wil daar
+  dezelfde volledige aanpasbaarheid (caption/enabled/visible/tekstkleur/lettertype/tooltip, plus
+  per-taal-varianten) als bij Installatiemap kiezen (`SelectDestinationPageEditorViewModel`). Nog
+  niet gebouwd.
+- **Verwarring over `AppendDefaultGroupName`**: Herbert vroeg zich af wat dit vinkje eigenlijk
+  doet, en verwachtte eerder een optie om aan te geven of de gebruiker de voorgestelde map mag
+  wijzigen. Dat laatste bestaat al wel in Inno Setup, als `DisableProgramGroupPage` — de directe
+  tegenhanger van `AllowUserToChangeDir`/`DisableDirPage` bij Installatiemap kiezen — maar is nog
+  niet als project-veld gebouwd. Voorstel: een nieuwe `AllowUserToChangeGroup`-eigenschap
+  toevoegen die dit omkeert, naar exact hetzelfde patroon als `AllowUserToChangeDir`.
+
+Scope en volgorde van deze drie laatste punten zijn met Herbert afgestemd voordat ze gebouwd
+worden.
