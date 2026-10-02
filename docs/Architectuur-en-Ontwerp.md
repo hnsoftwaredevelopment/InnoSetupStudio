@@ -2559,3 +2559,98 @@ parametrische gevallen voor de boolean-naar-enum-migratie).
 - Nog te testen door Herbert in de UI: de keuzelijst zelf (alle drie waarden selecteerbaar,
   hint-tekst wisselt correct), en dat een bestaand project met het oude boolean-veld nog gewoon
   opent.
+
+## 28. Bladeren-knop op Select Start Menu Folder volledig aanpasbaar (2026-10-02)
+
+### Aanleiding
+
+Herbert testte de vijf nieuwe schermeditors uit sectie 26/27 in de UI en bevestigde dat de rest
+van de functionaliteit goed werkt, op één concreet gemis na: de Bladeren-knop op Select Start Menu
+Folder kon nog niet bewerkt worden zoals de Bladeren-knop op Installatiemap kiezen (caption/
+enabled/visible/tekstkleur/lettertype/vet/tooltip, plus per-taal-varianten via
+`ButtonPropertiesWindow`). Dit was het nog openstaande backlogpunt uit sectie 26 ("Bladeren-knop
+op Select Start Menu Folder nog niet volledig aanpasbaar") en wordt hiermee opgelost.
+
+**Verificatie.** Voordat dit gebouwd werd, is tegen Inno Setup's eigen broncode gecontroleerd
+(`Setup.WizardForm.pas`, `jrsoftware/issrc` op GitHub) dat deze knop ook daadwerkelijk bestaat als
+een losse `TNewButton`, net als `DirBrowseButton` op Installatiemap kiezen:
+`FGroupBrowseButton: TNewButton` / `property GroupBrowseButton: TNewButton read FGroupBrowseButton;`
+op `TWizardForm`. Dat bevestigt dat deze knop een legitiem, bestaand bewerkingsdoel is en niet een
+verzonnen eigenschap.
+
+### Datamodel: hergebruik van `BrowseButtonSettings`, geen nieuwe klasse
+
+Nieuwe eigenschap `InstallerProject.SelectProgramGroupBrowseButton` (`BrowseButtonSettings`,
+standaard `new()`), rechtstreeks naast `GroupPageMode` geplaatst. Hergebruikt bewust hetzelfde
+`BrowseButtonSettings`-model als `SelectDestinationBrowseButton` in plaats van een tweede, bijna
+identieke klasse: de velden en hun betekenis (leeg/null laat Inno Setup's eigen standaardgedrag
+intact, geen drielaagse Effective*-cascade via het Standaardscherm omdat deze knop maar op één
+scherm voorkomt) zijn voor beide knoppen exact hetzelfde. `BrowseButtonSettings`'s klasse-
+doccomment is bijgewerkt om dit gedeelde gebruik te weerspiegelen.
+
+### ViewModel: exacte mirror van `SelectDestinationPageEditorViewModel`
+
+`SelectProgramGroupPageEditorViewModel` kreeg dezelfde Bladerknop-laag als
+`SelectDestinationPageEditorViewModel` al had: een zesde constructorparameter
+(`BrowseButtonSettings browseButtonSettings`), de acht scalaire velden
+(`BrowseButtonCaption`/`Enabled`/`Visible`/`TextColor`/`FontFamily`/`FontSize`/`FontBold`/
+`Tooltip`) plus de twee per-taal-dictionaries, `PickBrowseButtonTextColor`,
+`DefaultBrowseButtonCaption`/`EffectiveBrowseButtonCaption`, `IsBrowseButtonVisible`/
+`IsBrowseButtonEnabled`, en `ReadBrowseButtonSettings()`. Enige inhoudelijke verschil met de
+Bestemmingspagina: `IsBrowseButtonEnabledInPreview` combineert hier Inno Setup's eigen ingebouwde
+gedrag met `GroupPageMode != DisablePageMode.NeverShow` in plaats van `DirPageMode` — elk scherm
+gebruikt zijn eigen paginazichtbaarheidsveld (sectie 27) om te bepalen of de knop in de
+voorvertoning ook daadwerkelijk bewerkbaar lijkt.
+
+### Wiring, UI en voorvertoning
+
+`WizardEditorViewModel`'s constructor geeft `project.SelectProgramGroupBrowseButton` nu als zesde
+argument mee, en de `ApplyTo`-switch schrijft `programGroup.ReadBrowseButtonSettings()` terug —
+zelfde patroon als bij `SelectDestinationPageEditorViewModel`. `ScreenEditorControl.xaml` kreeg
+een nieuwe "Bladerknop"-sectie onderaan `SelectProgramGroupPropertyPanelTemplate` (tekstveld +
+eigenschappenknopje), met een eigen, kleine `ProgramGroupBrowseButtonProperties_Click`-handler en
+`BuildForProgramGroupBrowseButton`-fabrieksmethode in `ScreenEditorControl.xaml.cs` — exacte
+mirrors van `BrowseButtonProperties_Click`/`BuildForBrowseButton`, maar getypeerd op
+`SelectProgramGroupPageEditorViewModel`. `SelectProgramGroupPagePreview.xaml`'s Bladeren-knop was
+voorheen volledig decoratief (`Content="Browse..."`, geen enkele binding); deze is nu volledig
+gebonden (Content/IsEnabled/Visibility/Foreground/FontFamily/FontSize/FontWeight/ToolTip), met
+dezelfde vier converters als `SelectDestinationPagePreview.xaml` toegevoegd aan
+`UserControl.Resources` — en blijft, net als die andere voorvertoning, niet-interactief
+(`IsHitTestVisible="False" Focusable="False" IsTabStop="False"`: bewerken gebeurt in het
+instellingenpaneel, niet in de voorvertoning zelf).
+
+Geen nieuwe resx-sleutels nodig: `SectionBrowseButton` en `ButtonWizardBrowse` waren al generiek/
+gedeeld tussen beide schermen.
+
+### Doorgeefveld in `ProjectSettingsViewModel`
+
+Zelfde reden als bij elk eerder doorgeefveld in dit document (secties 16/26/27): een veld dat
+alleen in de schermeditor bewerkt wordt, moet bij het opslaan vanuit het algemene
+Projectinstellingenscherm ongewijzigd worden teruggeschreven, anders zet een gewone naam-/
+padwijziging het stilzwijgend terug naar de standaardwaarde. Nieuw doorgeefveld
+`_selectProgramGroupBrowseButton`, naast het bestaande `_selectDestinationBrowseButton`.
+
+### Testdekking
+
+`InstallerProjectTests.JsonInstallerProjectServiceRoundTripsAllFields` zet
+`SelectProgramGroupBrowseButton` nu op niet-standaardwaarden voor alle acht velden plus beide
+per-taal-dictionaries, en controleert de volledige round-trip na opslaan/laden — dezelfde
+dekkingsgraad die `SelectDestinationBrowseButton` zelf tot nu toe niet had (dat blijft zo; deze
+sessie breidde alleen de nieuwe eigenschap uit). De bestaande
+`LoadAsyncDefaultsLanguageOverrideDictionariesForOlderProjectFileWithoutThem`-test kreeg twee
+extra assertions voor `SelectProgramGroupBrowseButton`'s per-taal-dictionaries, naast de al
+bestaande assertions voor `SelectDestinationBrowseButton`.
+
+### Build- en testresultaat
+
+`dotnet build`: 0 waarschuwingen, 0 fouten. `dotnet test`: 26/26 geslaagd (geen nieuwe
+testmethoden, wel uitgebreide assertions in twee bestaande tests).
+
+### Backlog
+
+- De twee overige, nog niet gebouwde punten uit sectie 26 (User Info per-veld/meertalige
+  captions) blijven open.
+- Nog te testen door Herbert in de UI, samen met de rest van PR #23: de nieuwe
+  eigenschappenknop bij de Start Menu-Bladerknop (caption/kleur/lettertype/tooltip/per-taal), en
+  dat de knop in de voorvertoning uitgeschakeld raakt zodra `GroupPageMode` op "Nooit tonen"
+  staat.

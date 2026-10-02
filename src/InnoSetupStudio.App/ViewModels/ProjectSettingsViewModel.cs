@@ -76,6 +76,7 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
     private readonly WizardScreenButtonSettings _infoBeforeScreenButtons;
     private readonly WizardScreenButtonSettings _userInfoScreenButtons;
     private readonly WizardScreenButtonSettings _selectProgramGroupScreenButtons;
+    private readonly BrowseButtonSettings _selectProgramGroupBrowseButton;
     private readonly WizardScreenButtonSettings _readyScreenButtons;
     private readonly WizardScreenButtonSettings _infoAfterScreenButtons;
 
@@ -116,6 +117,7 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
         _infoBeforeScreenButtons = project.InfoBeforeScreenButtons;
         _userInfoScreenButtons = project.UserInfoScreenButtons;
         _selectProgramGroupScreenButtons = project.SelectProgramGroupScreenButtons;
+        _selectProgramGroupBrowseButton = project.SelectProgramGroupBrowseButton;
         _readyScreenButtons = project.ReadyScreenButtons;
         _infoAfterScreenButtons = project.InfoAfterScreenButtons;
 
@@ -410,6 +412,7 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
             InfoBeforeScreenButtons = _infoBeforeScreenButtons,
             UserInfoScreenButtons = _userInfoScreenButtons,
             SelectProgramGroupScreenButtons = _selectProgramGroupScreenButtons,
+            SelectProgramGroupBrowseButton = _selectProgramGroupBrowseButton,
             ReadyScreenButtons = _readyScreenButtons,
             InfoAfterScreenButtons = _infoAfterScreenButtons,
             CreateDesktopIcon = CreateDesktopIcon,

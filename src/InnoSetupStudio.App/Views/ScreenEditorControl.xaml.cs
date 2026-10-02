@@ -118,6 +118,17 @@ public partial class ScreenEditorControl : UserControl
         }
     }
 
+    // Bladerknop (SelectProgramGroupPageEditorViewModel): zelfde reden als BrowseButtonProperties_Click
+    // hierboven, eigen kleine Click-handler voor deze ene knop (Herberts verzoek, 2026-10-02:
+    // dezelfde bewerkingsmogelijkheden als de Bestemmingspagina).
+    private void ProgramGroupBrowseButtonProperties_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: SelectProgramGroupPageEditorViewModel browseVm })
+        {
+            ShowButtonPropertiesDialog(BuildForProgramGroupBrowseButton(browseVm));
+        }
+    }
+
     private void ShowButtonPropertiesDialog(ButtonPropertiesViewModel viewModel)
     {
         var window = new ButtonPropertiesWindow(viewModel) { Owner = Window.GetWindow(this) };
@@ -229,6 +240,21 @@ public partial class ScreenEditorControl : UserControl
     };
 
     private static ButtonPropertiesViewModel BuildForBrowseButton(SelectDestinationPageEditorViewModel vm) => new(
+        BuildDialogTitle("SectionBrowseButton"), hasCaption: true,
+        LocalizationManager.Instance["HintButtonTriStateDefaultScreen"],
+        () => vm.BrowseButtonCaption, v => vm.BrowseButtonCaption = v, vm.EffectiveBrowseButtonCaption,
+        () => vm.BrowseButtonEnabled, v => vm.BrowseButtonEnabled = v,
+        () => vm.BrowseButtonVisible, v => vm.BrowseButtonVisible = v,
+        () => vm.BrowseButtonTextColor, v => vm.BrowseButtonTextColor = v, string.Empty,
+        () => vm.BrowseButtonFontFamily, v => vm.BrowseButtonFontFamily = v, string.Empty,
+        () => vm.BrowseButtonFontSize, v => vm.BrowseButtonFontSize = v, null,
+        () => vm.BrowseButtonFontBold, v => vm.BrowseButtonFontBold = v, null,
+        () => vm.BrowseButtonTooltip, v => vm.BrowseButtonTooltip = v, string.Empty,
+        vm.NonEnglishLanguageIds,
+        () => vm.BrowseButtonCaptionByLanguage, v => vm.BrowseButtonCaptionByLanguage = v,
+        () => vm.BrowseButtonTooltipByLanguage, v => vm.BrowseButtonTooltipByLanguage = v);
+
+    private static ButtonPropertiesViewModel BuildForProgramGroupBrowseButton(SelectProgramGroupPageEditorViewModel vm) => new(
         BuildDialogTitle("SectionBrowseButton"), hasCaption: true,
         LocalizationManager.Instance["HintButtonTriStateDefaultScreen"],
         () => vm.BrowseButtonCaption, v => vm.BrowseButtonCaption = v, vm.EffectiveBrowseButtonCaption,

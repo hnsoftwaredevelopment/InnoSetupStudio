@@ -260,8 +260,9 @@
         </DataTemplate>
 
         <!-- Select Start Menu Folder: vooringevulde groepsnaam + twee gedragsvinkjes (zie
-             SelectProgramGroupPageEditorViewModel; geen eigen Bladeren-knopstijl zoals de
-             bestemmingspagina, dit scherm heeft geen eigen aanpasbare knop). -->
+             SelectProgramGroupPageEditorViewModel). Sinds 2026-10-02 (Herberts verzoek) ook een
+             eigen aanpasbare Bladeren-knop, net als de bestemmingspagina — zie de sectie onderaan
+             deze template. -->
         <DataTemplate DataType="{x:Type vm:SelectProgramGroupPageEditorViewModel}" x:Key="SelectProgramGroupPropertyPanelTemplate">
             <StackPanel>
                 <TextBlock x:Name="DefaultGroupNameLabel" Text="{loc:Loc LabelDefaultGroupName}" Margin="0,0,0,6" />
@@ -296,6 +297,29 @@
                            Visibility="{Binding IsAutoSkipHintVisible}" />
 
                 <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" Margin="0,16,0,0" />
+
+                <!-- Schermspecifieke "Bladeren"-knop (Inno Setup's WizardForm.GroupBrowseButton,
+                     zie BrowseButtonSettings): zelfde opzet als de Bladerknop-sectie onderaan
+                     SelectDestinationPropertyPanelTemplate hierboven (Herberts verzoek,
+                     2026-10-02: dezelfde bewerkingsmogelijkheden als de bestemmingspagina). -->
+                <TextBlock Text="{loc:Loc SectionBrowseButton}" FontWeight="Bold" Margin="0,20,0,8" />
+                <Grid Margin="0,0,0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="224" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="ProgramGroupBrowseButtonCaptionBox" Grid.Column="0" Width="220" HorizontalAlignment="Left"
+                             MaxLength="30"
+                             Text="{Binding BrowseButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"
+                             Foreground="{Binding BrowseButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
+                             controls:Placeholder.Text="{Binding EffectiveBrowseButtonCaption}" />
+                    <Button Grid.Column="1" Click="ProgramGroupBrowseButtonProperties_Click"
+                            ToolTip="{loc:Loc ButtonOpenProperties}" AutomationProperties.Name="{loc:Loc ButtonOpenProperties}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=ProgramGroupBrowseButtonCaptionBox}">
+                        <Path Data="{StaticResource Properties}" Fill="{DynamicResource Brush.TextPrimary}"
+                              Stretch="Uniform" Width="16" Height="16" />
+                    </Button>
+                </Grid>
             </StackPanel>
         </DataTemplate>
 

@@ -113,7 +113,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
         // Group en Ready sluiten hier rechtstreeks aan op Select Destination.
         if (project.WizardScreens.ShowSelectProgramGroupPage)
         {
-            _screens.Add(new SelectProgramGroupPageEditorViewModel(project.AppName, project.DefaultGroupName, project.AppendDefaultGroupName, project.AlwaysUsePersonalGroup, project.GroupPageMode)
+            _screens.Add(new SelectProgramGroupPageEditorViewModel(project.AppName, project.DefaultGroupName, project.AppendDefaultGroupName, project.AlwaysUsePersonalGroup, project.GroupPageMode, project.SelectProgramGroupBrowseButton)
             {
                 ButtonSettings = project.SelectProgramGroupScreenButtons,
                 Defaults = _defaultScreen,
@@ -272,6 +272,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
                     project.AlwaysUsePersonalGroup = programGroup.AlwaysUsePersonalGroup;
                     project.GroupPageMode = programGroup.GroupPageMode;
                     project.SelectProgramGroupScreenButtons = programGroup.ReadButtonSettings();
+                    project.SelectProgramGroupBrowseButton = programGroup.ReadBrowseButtonSettings();
                     break;
                 case ReadyPageEditorViewModel ready:
                     project.DisableReadyMemo = ready.DisableReadyMemo;

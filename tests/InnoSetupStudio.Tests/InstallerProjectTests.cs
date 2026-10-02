@@ -91,6 +91,22 @@ public class InstallerProjectTests
         project.InfoBeforeScreenButtons = new WizardScreenButtonSettings { NextButtonCaption = "Doorgaan (voor)" };
         project.UserInfoScreenButtons = new WizardScreenButtonSettings { NextButtonCaption = "Doorgaan (gebruiker)" };
         project.SelectProgramGroupScreenButtons = new WizardScreenButtonSettings { NextButtonCaption = "Doorgaan (groep)" };
+        // SelectProgramGroupBrowseButton (2026-10-02, Herberts verzoek): dezelfde bewerkings-
+        // mogelijkheden als SelectDestinationBrowseButton, hier met niet-standaardwaarden gezet
+        // zodat deze test een echte round-trip van BrowseButtonSettings bewijst.
+        project.SelectProgramGroupBrowseButton = new BrowseButtonSettings
+        {
+            Caption = "Kiezen...",
+            Enabled = false,
+            Visible = true,
+            TextColor = "#FF0000",
+            FontFamily = "Segoe UI",
+            FontSize = 10,
+            FontBold = true,
+            Tooltip = "Kies een andere Start Menu-map",
+            CaptionByLanguage = new Dictionary<string, string> { ["german"] = "Auswählen..." },
+            TooltipByLanguage = new Dictionary<string, string> { ["dutch"] = "Kies een andere Start Menu-map" },
+        };
         project.ReadyScreenButtons = new WizardScreenButtonSettings { NextButtonCaption = "Installeren" };
         project.InfoAfterScreenButtons = new WizardScreenButtonSettings { NextButtonCaption = "Doorgaan (na)" };
         project.SelectDestinationScreenButtons = new WizardScreenButtonSettings
@@ -239,6 +255,16 @@ public class InstallerProjectTests
             Assert.Equal(project.InfoBeforeScreenButtons.NextButtonCaption, loaded.InfoBeforeScreenButtons.NextButtonCaption);
             Assert.Equal(project.UserInfoScreenButtons.NextButtonCaption, loaded.UserInfoScreenButtons.NextButtonCaption);
             Assert.Equal(project.SelectProgramGroupScreenButtons.NextButtonCaption, loaded.SelectProgramGroupScreenButtons.NextButtonCaption);
+            Assert.Equal(project.SelectProgramGroupBrowseButton.Caption, loaded.SelectProgramGroupBrowseButton.Caption);
+            Assert.Equal(project.SelectProgramGroupBrowseButton.Enabled, loaded.SelectProgramGroupBrowseButton.Enabled);
+            Assert.Equal(project.SelectProgramGroupBrowseButton.Visible, loaded.SelectProgramGroupBrowseButton.Visible);
+            Assert.Equal(project.SelectProgramGroupBrowseButton.TextColor, loaded.SelectProgramGroupBrowseButton.TextColor);
+            Assert.Equal(project.SelectProgramGroupBrowseButton.FontFamily, loaded.SelectProgramGroupBrowseButton.FontFamily);
+            Assert.Equal(project.SelectProgramGroupBrowseButton.FontSize, loaded.SelectProgramGroupBrowseButton.FontSize);
+            Assert.Equal(project.SelectProgramGroupBrowseButton.FontBold, loaded.SelectProgramGroupBrowseButton.FontBold);
+            Assert.Equal(project.SelectProgramGroupBrowseButton.Tooltip, loaded.SelectProgramGroupBrowseButton.Tooltip);
+            Assert.Equal(project.SelectProgramGroupBrowseButton.CaptionByLanguage, loaded.SelectProgramGroupBrowseButton.CaptionByLanguage);
+            Assert.Equal(project.SelectProgramGroupBrowseButton.TooltipByLanguage, loaded.SelectProgramGroupBrowseButton.TooltipByLanguage);
             Assert.Equal(project.ReadyScreenButtons.NextButtonCaption, loaded.ReadyScreenButtons.NextButtonCaption);
             Assert.Equal(project.InfoAfterScreenButtons.NextButtonCaption, loaded.InfoAfterScreenButtons.NextButtonCaption);
             Assert.Equal(project.CreateDesktopIcon, loaded.CreateDesktopIcon);
@@ -590,6 +616,8 @@ public class InstallerProjectTests
             Assert.Empty(loaded.WelcomeScreenButtons.CancelButtonTooltipByLanguage);
             Assert.Empty(loaded.SelectDestinationBrowseButton.CaptionByLanguage);
             Assert.Empty(loaded.SelectDestinationBrowseButton.TooltipByLanguage);
+            Assert.Empty(loaded.SelectProgramGroupBrowseButton.CaptionByLanguage);
+            Assert.Empty(loaded.SelectProgramGroupBrowseButton.TooltipByLanguage);
         }
         finally
         {

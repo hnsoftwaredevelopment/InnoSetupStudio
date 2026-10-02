@@ -3,7 +3,15 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:converters="clr-namespace:InnoSetupStudio.Wizard.Converters"
              mc:Ignorable="d" d:DesignWidth="455" d:DesignHeight="290">
+    <UserControl.Resources>
+        <converters:HexColorToBrushConverter x:Key="HexColorToBrushConverter" />
+        <converters:FontFamilyOrUnsetConverter x:Key="FontFamilyOrUnsetConverter" />
+        <converters:FontSizeOrUnsetConverter x:Key="FontSizeOrUnsetConverter" />
+        <converters:NullableBoolToFontWeightConverter x:Key="NullableBoolToFontWeightConverter" />
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </UserControl.Resources>
     <!-- Zelfde vaste wit/zwart-kleurstelling als WelcomePagePreview, zie de toelichting daar.
          Vormgeving leunt op SelectDestinationPagePreview (kop + map-weergave + Bladeren-knop),
          maar dan voor de startmenugroep. AppendDefaultGroupName/AlwaysUsePersonalGroup hebben
@@ -11,6 +19,8 @@
          keuzes, geen aanvinkvakjes voor de eindgebruiker), dus die velden worden hier niet
          getoond — alleen het "Geen Start Menu-map aanmaken"-vinkje hieronder is decoratief, dat
          is Inno Setup's eigen AllowNoIcons-aanvinkvakje, geen projectinstelling van dit scherm.
+         De Bladeren-knop hieronder is sinds 2026-10-02 wél volledig gebonden (Herberts verzoek),
+         zelfde aanpak als SelectDestinationPagePreview's Bladeren-knop, zie de toelichting daar.
 
          LastChildFill="False" hieronder: zonder deze instelling negeert DockPanel het eigen
          Dock="Top" van de LAATSTE kindelement en rekt dat element uit over alle resterende
@@ -58,8 +68,24 @@
             <Border Grid.Column="0" BorderBrush="#FFACA899" BorderThickness="1" Background="#FFF0F0F0" Margin="0,0,8,0">
                 <TextBlock Text="{Binding EffectiveGroupName}" Foreground="Black" Margin="6,4" TextTrimming="CharacterEllipsis" />
             </Border>
-            <Button Grid.Column="1" Content="Browse..." Padding="10,3"
-                    IsHitTestVisible="False" Focusable="False" IsTabStop="False" />
+            <!-- Volledig gebonden sinds 2026-10-02 (Herberts verzoek), exacte tegenhanger van
+                 SelectDestinationPagePreview's Bladeren-knop hierboven aangehaald — zie die
+                 toelichting voor waarom IsEnabled Inno Setup's eigen ingebouwde gedrag combineert
+                 met de knop-eigen Enabled-instelling (IsBrowseButtonEnabledInPreview), en waarom
+                 Content een expliciete TextBlock met eigen Foreground-binding is in plaats van een
+                 gewoon Content="...". -->
+            <Button Grid.Column="1"
+                    IsEnabled="{Binding IsBrowseButtonEnabledInPreview}"
+                    Visibility="{Binding IsBrowseButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    Foreground="{Binding BrowseButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
+                    FontFamily="{Binding BrowseButtonFontFamily, Converter={StaticResource FontFamilyOrUnsetConverter}}"
+                    FontSize="{Binding BrowseButtonFontSize, Converter={StaticResource FontSizeOrUnsetConverter}}"
+                    FontWeight="{Binding BrowseButtonFontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"
+                    ToolTip="{Binding BrowseButtonTooltip}"
+                    IsHitTestVisible="False" Focusable="False" IsTabStop="False" Padding="10,3">
+                <TextBlock Text="{Binding EffectiveBrowseButtonCaption}"
+                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+            </Button>
         </Grid>
     </DockPanel>
 </UserControl>

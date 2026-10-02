@@ -141,6 +141,17 @@ public sealed class InstallerProject
     public DisablePageMode GroupPageMode { get; set; } = DisablePageMode.AutoSkipIfKnown;
 
     /// <summary>
+    /// Aanpassingen van de schermspecifieke "Bladeren"-knop op de Select Start Menu
+    /// Folder-pagina (Inno Setup's WizardForm.GroupBrowseButton, net als DirBrowseButton een
+    /// TNewButton). Zie <see cref="BrowseButtonSettings"/> voor waarom dit een apart model is,
+    /// los van <see cref="SelectProgramGroupScreenButtons"/> — hetzelfde model als
+    /// <see cref="SelectDestinationBrowseButton"/>, hergebruikt in plaats van een tweede, bijna
+    /// identieke klasse (Herberts verzoek, 2026-10-02: dezelfde bewerkingsmogelijkheden als de
+    /// bestemmingspagina).
+    /// </summary>
+    public BrowseButtonSettings SelectProgramGroupBrowseButton { get; set; } = new();
+
+    /// <summary>
     /// Verbergt de samenvattingstekst (memo) op de Klaar-om-te-installeren-pagina. Komt overeen
     /// met Inno Setup's <c>DisableReadyMemo</c>-richtlijn, standaard <see langword="false"/>
     /// (de samenvatting staat dus standaard aan) net als Inno Setup zelf.
