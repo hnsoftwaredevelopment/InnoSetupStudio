@@ -261,8 +261,23 @@
   <data name="LabelDefaultDirNameHint" xml:space="preserve">
     <value>Leer = {autopf}\&lt;Anwendungsname&gt;</value>
   </data>
-  <data name="LabelAllowUserToChangeDir" xml:space="preserve">
-    <value>Benutzer darf Ordner ändern</value>
+  <data name="LabelDirPageMode" xml:space="preserve">
+    <value>Sichtbarkeit dieser Seite</value>
+  </data>
+  <data name="LabelDisablePageModeAlwaysShow" xml:space="preserve">
+    <value>Immer anzeigen</value>
+  </data>
+  <data name="LabelDisablePageModeNeverShow" xml:space="preserve">
+    <value>Nie anzeigen</value>
+  </data>
+  <data name="LabelDisablePageModeAuto" xml:space="preserve">
+    <value>Automatisch überspringen, wenn bereits bekannt</value>
+  </data>
+  <data name="HintDirPageModeNeverShow" xml:space="preserve">
+    <value>Setup erlaubt dem Benutzer nicht, den Installationsordner zu ändern.</value>
+  </data>
+  <data name="HintDirPageModeAuto" xml:space="preserve">
+    <value>Bei einem Update überspringt Setup diese Seite, wenn der Installationsordner bereits bekannt ist.</value>
   </data>
   <data name="DialogFilterLicenseFiles" xml:space="preserve">
     <value>Lizenzdateien (*.txt;*.rtf)|*.txt;*.rtf|Alle Dateien (*.*)|*.*</value>
@@ -422,6 +437,15 @@
   </data>
   <data name="LabelAlwaysUsePersonalGroup" xml:space="preserve">
     <value>Immer im persönlichen Startmenü (nie "Alle Benutzer")</value>
+  </data>
+  <data name="LabelGroupPageMode" xml:space="preserve">
+    <value>Sichtbarkeit dieser Seite</value>
+  </data>
+  <data name="HintGroupPageModeNeverShow" xml:space="preserve">
+    <value>Setup erlaubt dem Benutzer nicht, den Startmenüordner zu ändern.</value>
+  </data>
+  <data name="HintGroupPageModeAuto" xml:space="preserve">
+    <value>Bei einem Update überspringt Setup diese Seite, wenn der Startmenüordner bereits bekannt ist.</value>
   </data>
   <data name="LabelDisableReadyMemo" xml:space="preserve">
     <value>Zusammenfassung auf dieser Seite ausblenden</value>

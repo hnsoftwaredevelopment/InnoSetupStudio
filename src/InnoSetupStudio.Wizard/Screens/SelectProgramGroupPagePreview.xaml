@@ -40,6 +40,16 @@
         <CheckBox DockPanel.Dock="Bottom" Content="Don't create a Start Menu folder" Margin="0,16,0,0"
                   Foreground="Black" IsHitTestVisible="False" Focusable="False" IsTabStop="False" />
 
+        <!-- Nieuw sinds 2026-10-02 (DisablePageMode, Herberts verzoek): letterlijke Engelse tekst
+             net als bij SelectDestinationPagePreview's ChangeDirHintVisibility-hint hierboven -
+             deze voorvertoning simuleert Inno Setup's eigen pagina, niet de editor-UI-taal. -->
+        <TextBlock DockPanel.Dock="Bottom" Margin="0,16,0,0" Foreground="#FF666666" FontSize="11"
+                   TextWrapping="Wrap" Visibility="{Binding IsNeverShowHintVisible}"
+                   Text="Setup does not allow the user to change this folder during installation." />
+        <TextBlock DockPanel.Dock="Bottom" Margin="0,16,0,0" Foreground="#FF666666" FontSize="11"
+                   TextWrapping="Wrap" Visibility="{Binding IsAutoSkipHintVisible}"
+                   Text="During an update, Setup will skip this page if the Start Menu folder is already known." />
+
         <Grid DockPanel.Dock="Top">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />

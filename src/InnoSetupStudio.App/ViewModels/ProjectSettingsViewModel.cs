@@ -45,7 +45,7 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
     private readonly LanguagesViewModel _languagesSubViewModel;
     private readonly string _licenseFilePath;
     private readonly string _defaultDirName;
-    private readonly bool _allowUserToChangeDir;
+    private readonly DisablePageMode _dirPageMode;
     private readonly string _wizardImageFile;
     private readonly string _wizardSmallImageFile;
     private readonly WizardScreenButtonSettings _welcomeScreenButtons;
@@ -69,6 +69,7 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
     private readonly string _defaultGroupName;
     private readonly bool _appendDefaultGroupName;
     private readonly bool _alwaysUsePersonalGroup;
+    private readonly DisablePageMode _groupPageMode;
     private readonly bool _disableReadyMemo;
     private readonly bool _alwaysShowDirOnReadyPage;
     private readonly bool _alwaysShowGroupOnReadyPage;
@@ -91,7 +92,7 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
 
         _licenseFilePath = project.LicenseFilePath;
         _defaultDirName = project.DefaultDirName;
-        _allowUserToChangeDir = project.AllowUserToChangeDir;
+        _dirPageMode = project.DirPageMode;
         _wizardImageFile = project.WizardImageFile;
         _wizardSmallImageFile = project.WizardSmallImageFile;
         _welcomeScreenButtons = project.WelcomeScreenButtons;
@@ -108,6 +109,7 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
         _defaultGroupName = project.DefaultGroupName;
         _appendDefaultGroupName = project.AppendDefaultGroupName;
         _alwaysUsePersonalGroup = project.AlwaysUsePersonalGroup;
+        _groupPageMode = project.GroupPageMode;
         _disableReadyMemo = project.DisableReadyMemo;
         _alwaysShowDirOnReadyPage = project.AlwaysShowDirOnReadyPage;
         _alwaysShowGroupOnReadyPage = project.AlwaysShowGroupOnReadyPage;
@@ -386,7 +388,7 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
             SupportedLanguageIds = _languagesSubViewModel.ToSelection(),
             LicenseFilePath = _licenseFilePath,
             DefaultDirName = _defaultDirName,
-            AllowUserToChangeDir = _allowUserToChangeDir,
+            DirPageMode = _dirPageMode,
             WelcomeScreenButtons = _welcomeScreenButtons,
             LicenseScreenButtons = _licenseScreenButtons,
             SelectDestinationScreenButtons = _selectDestinationScreenButtons,
@@ -401,6 +403,7 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
             DefaultGroupName = _defaultGroupName,
             AppendDefaultGroupName = _appendDefaultGroupName,
             AlwaysUsePersonalGroup = _alwaysUsePersonalGroup,
+            GroupPageMode = _groupPageMode,
             DisableReadyMemo = _disableReadyMemo,
             AlwaysShowDirOnReadyPage = _alwaysShowDirOnReadyPage,
             AlwaysShowGroupOnReadyPage = _alwaysShowGroupOnReadyPage,

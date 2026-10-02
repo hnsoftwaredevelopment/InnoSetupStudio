@@ -261,8 +261,23 @@
   <data name="LabelDefaultDirNameHint" xml:space="preserve">
     <value>Leeg = {autopf}\&lt;Naam applicatie&gt;</value>
   </data>
-  <data name="LabelAllowUserToChangeDir" xml:space="preserve">
-    <value>Gebruiker mag map wijzigen</value>
+  <data name="LabelDirPageMode" xml:space="preserve">
+    <value>Zichtbaarheid van deze pagina</value>
+  </data>
+  <data name="LabelDisablePageModeAlwaysShow" xml:space="preserve">
+    <value>Altijd tonen</value>
+  </data>
+  <data name="LabelDisablePageModeNeverShow" xml:space="preserve">
+    <value>Nooit tonen</value>
+  </data>
+  <data name="LabelDisablePageModeAuto" xml:space="preserve">
+    <value>Automatisch overslaan indien al bekend</value>
+  </data>
+  <data name="HintDirPageModeNeverShow" xml:space="preserve">
+    <value>Setup laat de gebruiker de installatiemap niet wijzigen.</value>
+  </data>
+  <data name="HintDirPageModeAuto" xml:space="preserve">
+    <value>Bij een update slaat Setup deze pagina over als de installatiemap al bekend is.</value>
   </data>
   <data name="DialogFilterLicenseFiles" xml:space="preserve">
     <value>Licentiebestanden (*.txt;*.rtf)|*.txt;*.rtf|Alle bestanden (*.*)|*.*</value>
@@ -422,6 +437,15 @@
   </data>
   <data name="LabelAlwaysUsePersonalGroup" xml:space="preserve">
     <value>Altijd in het persoonlijke startmenu (nooit "Alle gebruikers")</value>
+  </data>
+  <data name="LabelGroupPageMode" xml:space="preserve">
+    <value>Zichtbaarheid van deze pagina</value>
+  </data>
+  <data name="HintGroupPageModeNeverShow" xml:space="preserve">
+    <value>Setup laat de gebruiker de startmenugroep niet wijzigen.</value>
+  </data>
+  <data name="HintGroupPageModeAuto" xml:space="preserve">
+    <value>Bij een update slaat Setup deze pagina over als de startmenugroep al bekend is.</value>
   </data>
   <data name="LabelDisableReadyMemo" xml:space="preserve">
     <value>Verberg samenvatting op deze pagina</value>

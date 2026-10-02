@@ -81,5 +81,14 @@
         <TextBlock DockPanel.Dock="Bottom" Margin="0,16,0,0" Foreground="#FF666666" FontSize="11"
                     TextWrapping="Wrap" Visibility="{Binding ChangeDirHintVisibility}"
                     Text="Setup does not allow the user to change this folder during installation." />
+        <!-- Nieuw sinds 2026-10-02 (DisablePageMode.AutoSkipIfKnown, Herberts verzoek): net als de
+             hint hierboven een letterlijke Engelse tekst, geen resx-binding - deze voorvertoning
+             simuleert wat Inno Setup zelf tijdens de installatie toont, niet de taal van deze
+             editor-UI. Qua tekst zelf wordt dit scherm bij "auto" alleen overgeslagen als Setup
+             vooraf al een eerdere installatie detecteert, dus de voorvertoning toont de pagina
+             hier gewoon (zie DisablePageMode's doccomment) met alleen deze toelichting erbij. -->
+        <TextBlock DockPanel.Dock="Bottom" Margin="0,16,0,0" Foreground="#FF666666" FontSize="11"
+                    TextWrapping="Wrap" Visibility="{Binding IsAutoSkipHintVisible}"
+                    Text="During an update, Setup will skip this page if the destination folder is already known." />
     </DockPanel>
 </UserControl>

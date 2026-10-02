@@ -259,8 +259,30 @@
                 <CheckBox Content="{loc:Loc LabelAppendDefaultGroupName}" IsChecked="{Binding AppendDefaultGroupName}"
                           Foreground="{DynamicResource Brush.TextPrimary}" Margin="0,0,0,8" />
                 <CheckBox Content="{loc:Loc LabelAlwaysUsePersonalGroup}" IsChecked="{Binding AlwaysUsePersonalGroup}"
-                          Foreground="{DynamicResource Brush.TextPrimary}" />
-                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" />
+                          Foreground="{DynamicResource Brush.TextPrimary}" Margin="0,0,0,16" />
+
+                <!-- Drie-waardige paginazichtbaarheid (sinds 2026-10-02, Herberts verzoek): komt
+                     overeen met Inno Setup's DisableProgramGroupPage=no/yes/auto, zie
+                     DisablePageMode. Eén dropdown i.p.v. een vinkje, zoals Herbert koos via
+                     AskUserQuestion. SelectedValuePath="Tag" + SelectedValue op de enum-property
+                     laat WPF's ingebouwde EnumConverter de Tag-tekst naar DisablePageMode omzetten,
+                     dus geen eigen IValueConverter nodig. -->
+                <TextBlock x:Name="GroupPageModeLabel" Text="{loc:Loc LabelGroupPageMode}" Margin="0,0,0,6" />
+                <ComboBox x:Name="GroupPageModeCombo" SelectedValuePath="Tag" SelectedValue="{Binding GroupPageMode}"
+                          HorizontalAlignment="Left" MinWidth="240"
+                          AutomationProperties.LabeledBy="{Binding ElementName=GroupPageModeLabel}">
+                    <ComboBoxItem Tag="AlwaysShow" Content="{loc:Loc LabelDisablePageModeAlwaysShow}" />
+                    <ComboBoxItem Tag="NeverShow" Content="{loc:Loc LabelDisablePageModeNeverShow}" />
+                    <ComboBoxItem Tag="AutoSkipIfKnown" Content="{loc:Loc LabelDisablePageModeAuto}" />
+                </ComboBox>
+                <TextBlock Text="{loc:Loc HintGroupPageModeNeverShow}" FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,4,0,0"
+                           Visibility="{Binding IsNeverShowHintVisible}" />
+                <TextBlock Text="{loc:Loc HintGroupPageModeAuto}" FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,4,0,0"
+                           Visibility="{Binding IsAutoSkipHintVisible}" />
+
+                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" Margin="0,16,0,0" />
             </StackPanel>
         </DataTemplate>
 
@@ -295,9 +317,26 @@
                 </Grid>
                 <TextBlock Text="{loc:Loc LabelDefaultDirNameHint}" FontSize="11"
                            Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,16" />
-                <CheckBox Content="{loc:Loc LabelAllowUserToChangeDir}" IsChecked="{Binding AllowUserToChangeDir}"
-                          Foreground="{DynamicResource Brush.TextPrimary}" />
-                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" />
+                <!-- Drie-waardige paginazichtbaarheid (sinds 2026-10-02, Herberts verzoek): komt
+                     overeen met Inno Setup's DisableDirPage=no/yes/auto, zie DisablePageMode.
+                     Vervangt het vinkje van vóór 2026-10-02 (AllowUserToChangeDir, alleen
+                     true/false) — zie ScreenEditorControl.xaml's SelectProgramGroupPropertyPanelTemplate
+                     voor dezelfde ComboBox-opzet bij de Start Menu-pagina. -->
+                <TextBlock x:Name="DirPageModeLabel" Text="{loc:Loc LabelDirPageMode}" Margin="0,0,0,6" />
+                <ComboBox x:Name="DirPageModeCombo" SelectedValuePath="Tag" SelectedValue="{Binding DirPageMode}"
+                          HorizontalAlignment="Left" MinWidth="240"
+                          AutomationProperties.LabeledBy="{Binding ElementName=DirPageModeLabel}">
+                    <ComboBoxItem Tag="AlwaysShow" Content="{loc:Loc LabelDisablePageModeAlwaysShow}" />
+                    <ComboBoxItem Tag="NeverShow" Content="{loc:Loc LabelDisablePageModeNeverShow}" />
+                    <ComboBoxItem Tag="AutoSkipIfKnown" Content="{loc:Loc LabelDisablePageModeAuto}" />
+                </ComboBox>
+                <TextBlock Text="{loc:Loc HintDirPageModeNeverShow}" FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,4,0,0"
+                           Visibility="{Binding ChangeDirHintVisibility}" />
+                <TextBlock Text="{loc:Loc HintDirPageModeAuto}" FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,4,0,0"
+                           Visibility="{Binding IsAutoSkipHintVisible}" />
+                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" Margin="0,16,0,0" />
 
                 <!-- Schermspecifieke "Bladeren"-knop (Inno Setup's WizardForm.DirBrowseButton,
                      zie BrowseButtonSettings): bewust een eigen sectie, los van

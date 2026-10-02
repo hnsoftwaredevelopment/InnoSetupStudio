@@ -132,6 +132,11 @@ public class InstallerProjectTests
         project.DefaultGroupName = "Mijn Applicatie";
         project.AppendDefaultGroupName = false;
         project.AlwaysUsePersonalGroup = true;
+        // DirPageMode/GroupPageMode (sectie 2026-10-02, Herberts Auto-verzoek): bewust allebei op
+        // een niet-standaardwaarde gezet, zoals de andere velden in deze test, zodat de round-trip
+        // ook de nieuwe DisablePageModeJsonConverter (als tekstwaarde, niet als de oude bool) dekt.
+        project.DirPageMode = DisablePageMode.NeverShow;
+        project.GroupPageMode = DisablePageMode.AlwaysShow;
         project.DisableReadyMemo = true;
         project.AlwaysShowDirOnReadyPage = true;
         project.AlwaysShowGroupOnReadyPage = true;
@@ -226,6 +231,8 @@ public class InstallerProjectTests
             Assert.Equal(project.DefaultGroupName, loaded.DefaultGroupName);
             Assert.Equal(project.AppendDefaultGroupName, loaded.AppendDefaultGroupName);
             Assert.Equal(project.AlwaysUsePersonalGroup, loaded.AlwaysUsePersonalGroup);
+            Assert.Equal(project.DirPageMode, loaded.DirPageMode);
+            Assert.Equal(project.GroupPageMode, loaded.GroupPageMode);
             Assert.Equal(project.DisableReadyMemo, loaded.DisableReadyMemo);
             Assert.Equal(project.AlwaysShowDirOnReadyPage, loaded.AlwaysShowDirOnReadyPage);
             Assert.Equal(project.AlwaysShowGroupOnReadyPage, loaded.AlwaysShowGroupOnReadyPage);
@@ -300,6 +307,13 @@ public class InstallerProjectTests
         // Setup's eigen standaard voor AppendDefaultGroupName is "yes" (geverifieerd via de
         // officiële documentatie, 2026-10-02), dus een ouder project zonder dit veld hoort na het
         // laden AppendDefaultGroupName op true te hebben staan, niet op false.
+        // DirPageMode/GroupPageMode zijn een tweede uitzondering, om dezelfde reden als
+        // AppendDefaultGroupName hierboven: Inno Setup's eigen DisableDirPage- en
+        // DisableProgramGroupPage-richtlijnen hebben een verschillende standaardwaarde
+        // (respectievelijk "no" en "auto", geverifieerd via de officiële documentatie en
+        // onafhankelijk bevestigd door Herberts eigen documentatiecitaat, 2026-10-02), dus een
+        // ouder project zonder deze velden hoort DirPageMode op AlwaysShow en GroupPageMode op
+        // AutoSkipIfKnown te hebben staan.
         var service = new JsonInstallerProjectService();
         var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.issproj");
         await File.WriteAllTextAsync(path, "{\"AppName\":\"Ouder project zonder de vijf nieuwe schermen\"}");
@@ -317,9 +331,41 @@ public class InstallerProjectTests
             Assert.Equal(string.Empty, loaded.DefaultGroupName);
             Assert.True(loaded.AppendDefaultGroupName);
             Assert.False(loaded.AlwaysUsePersonalGroup);
+            Assert.Equal(DisablePageMode.AlwaysShow, loaded.DirPageMode);
+            Assert.Equal(DisablePageMode.AutoSkipIfKnown, loaded.GroupPageMode);
             Assert.False(loaded.DisableReadyMemo);
             Assert.False(loaded.AlwaysShowDirOnReadyPage);
             Assert.False(loaded.AlwaysShowGroupOnReadyPage);
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData("true", DisablePageMode.AlwaysShow)]
+    [InlineData("false", DisablePageMode.NeverShow)]
+    public async Task LoadAsyncMigratesLegacyBooleanAllowUserToChangeDirToDirPageMode(string legacyBoolJson, DisablePageMode expected)
+    {
+        // DirPageMode verving vóór 2026-10-02 een bool-veld (AllowUserToChangeDir), met exact
+        // dezelfde JSON-sleutel (via [JsonPropertyName], zie InstallerProject.DirPageMode) zodat
+        // een ouder .issproj-bestand met "AllowUserToChangeDir": true/false blijft laden zonder
+        // handmatige migratie. DisablePageModeJsonConverter.Read doet de omzetting: true werd
+        // altijd "de gebruiker mag de map wijzigen" (nu AlwaysShow), false "de map ligt vast" (nu
+        // NeverShow) — nooit automatisch Auto, want dat bestond in het oude bool-model niet.
+        var service = new JsonInstallerProjectService();
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.issproj");
+        await File.WriteAllTextAsync(path, $"{{\"AppName\":\"Ouder project met boolean AllowUserToChangeDir\",\"AllowUserToChangeDir\":{legacyBoolJson}}}");
+
+        try
+        {
+            var loaded = await service.LoadAsync(path);
+
+            Assert.Equal(expected, loaded.DirPageMode);
         }
         finally
         {

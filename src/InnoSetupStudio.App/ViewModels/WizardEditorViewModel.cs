@@ -100,7 +100,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
 
         if (project.WizardScreens.ShowSelectDestinationPage)
         {
-            _screens.Add(new SelectDestinationPageEditorViewModel(project.AppName, project.DefaultDirName, project.AllowUserToChangeDir, project.SelectDestinationBrowseButton)
+            _screens.Add(new SelectDestinationPageEditorViewModel(project.AppName, project.DefaultDirName, project.DirPageMode, project.SelectDestinationBrowseButton)
             {
                 ButtonSettings = project.SelectDestinationScreenButtons,
                 Defaults = _defaultScreen,
@@ -113,7 +113,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
         // Group en Ready sluiten hier rechtstreeks aan op Select Destination.
         if (project.WizardScreens.ShowSelectProgramGroupPage)
         {
-            _screens.Add(new SelectProgramGroupPageEditorViewModel(project.AppName, project.DefaultGroupName, project.AppendDefaultGroupName, project.AlwaysUsePersonalGroup)
+            _screens.Add(new SelectProgramGroupPageEditorViewModel(project.AppName, project.DefaultGroupName, project.AppendDefaultGroupName, project.AlwaysUsePersonalGroup, project.GroupPageMode)
             {
                 ButtonSettings = project.SelectProgramGroupScreenButtons,
                 Defaults = _defaultScreen,
@@ -262,7 +262,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
                     break;
                 case SelectDestinationPageEditorViewModel destination:
                     project.DefaultDirName = destination.DefaultDirName;
-                    project.AllowUserToChangeDir = destination.AllowUserToChangeDir;
+                    project.DirPageMode = destination.DirPageMode;
                     project.SelectDestinationScreenButtons = destination.ReadButtonSettings();
                     project.SelectDestinationBrowseButton = destination.ReadBrowseButtonSettings();
                     break;
@@ -270,6 +270,7 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
                     project.DefaultGroupName = programGroup.DefaultGroupName;
                     project.AppendDefaultGroupName = programGroup.AppendDefaultGroupName;
                     project.AlwaysUsePersonalGroup = programGroup.AlwaysUsePersonalGroup;
+                    project.GroupPageMode = programGroup.GroupPageMode;
                     project.SelectProgramGroupScreenButtons = programGroup.ReadButtonSettings();
                     break;
                 case ReadyPageEditorViewModel ready:

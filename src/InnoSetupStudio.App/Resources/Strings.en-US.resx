@@ -261,8 +261,23 @@
   <data name="LabelDefaultDirNameHint" xml:space="preserve">
     <value>Empty = {autopf}\&lt;Application name&gt;</value>
   </data>
-  <data name="LabelAllowUserToChangeDir" xml:space="preserve">
-    <value>User may change the folder</value>
+  <data name="LabelDirPageMode" xml:space="preserve">
+    <value>Page visibility</value>
+  </data>
+  <data name="LabelDisablePageModeAlwaysShow" xml:space="preserve">
+    <value>Always show</value>
+  </data>
+  <data name="LabelDisablePageModeNeverShow" xml:space="preserve">
+    <value>Never show</value>
+  </data>
+  <data name="LabelDisablePageModeAuto" xml:space="preserve">
+    <value>Automatically skip if already known</value>
+  </data>
+  <data name="HintDirPageModeNeverShow" xml:space="preserve">
+    <value>Setup does not allow the user to change the installation folder.</value>
+  </data>
+  <data name="HintDirPageModeAuto" xml:space="preserve">
+    <value>During an update, Setup skips this page if the installation folder is already known.</value>
   </data>
   <data name="DialogFilterLicenseFiles" xml:space="preserve">
     <value>License files (*.txt;*.rtf)|*.txt;*.rtf|All files (*.*)|*.*</value>
@@ -422,6 +437,15 @@
   </data>
   <data name="LabelAlwaysUsePersonalGroup" xml:space="preserve">
     <value>Always in the personal Start Menu (never "All users")</value>
+  </data>
+  <data name="LabelGroupPageMode" xml:space="preserve">
+    <value>Page visibility</value>
+  </data>
+  <data name="HintGroupPageModeNeverShow" xml:space="preserve">
+    <value>Setup does not allow the user to change the Start Menu folder.</value>
+  </data>
+  <data name="HintGroupPageModeAuto" xml:space="preserve">
+    <value>During an update, Setup skips this page if the Start Menu folder is already known.</value>
   </data>
   <data name="LabelDisableReadyMemo" xml:space="preserve">
     <value>Hide summary on this page</value>

@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace InnoSetupStudio.Core.Project;
 
 /// <summary>
@@ -123,6 +125,22 @@ public sealed class InstallerProject
     public bool AlwaysUsePersonalGroup { get; set; }
 
     /// <summary>
+    /// Hoe de Start Menu-map-pagina (Select Start Menu Folder) zich gedraagt: altijd tonen
+    /// (bewerkbaar), nooit tonen (vast), of automatisch overslaan bij een update (zie
+    /// <see cref="DisablePageMode"/> voor de volledige toelichting). Komt overeen met Inno Setup's
+    /// <c>DisableProgramGroupPage</c>-richtlijn. Standaard <see cref="DisablePageMode.AutoSkipIfKnown"/>
+    /// — Inno Setup's eigen standaard voor <c>DisableProgramGroupPage</c> is namelijk al
+    /// <c>auto</c>, anders dan <see cref="DirPageMode"/> hierboven (die standaard
+    /// <see cref="DisablePageMode.AlwaysShow"/> is, Inno Setup's eigen <c>DisableDirPage</c>-
+    /// standaard is <c>no</c>) — geverifieerd via de officiele documentatie en door Herbert zelf
+    /// aangeleverd (2026-10-02). Nieuw veld, geen oudere JSON-sleutel om achterwaarts compatibel
+    /// mee te blijven (in tegenstelling tot DirPageMode): dit scherm had nog geen eigen
+    /// bewerkbaar-vinkje.
+    /// </summary>
+    [JsonConverter(typeof(DisablePageModeJsonConverter))]
+    public DisablePageMode GroupPageMode { get; set; } = DisablePageMode.AutoSkipIfKnown;
+
+    /// <summary>
     /// Verbergt de samenvattingstekst (memo) op de Klaar-om-te-installeren-pagina. Komt overeen
     /// met Inno Setup's <c>DisableReadyMemo</c>-richtlijn, standaard <see langword="false"/>
     /// (de samenvatting staat dus standaard aan) net als Inno Setup zelf.
@@ -149,11 +167,22 @@ public sealed class InstallerProject
     public string DefaultDirName { get; set; } = string.Empty;
 
     /// <summary>
-    /// Mag de gebruiker op de bestemmingspagina een andere map kiezen dan het voorstel, of ligt
-    /// die vast. Komt overeen met Inno Setup's <c>DisableDirPage</c>-richtlijn (omgekeerd: hier
-    /// betekent <see langword="true"/> dat de pagina bewerkbaar is, wat de standaard is).
+    /// Hoe de bestemmingspagina (Select Destination Location) zich gedraagt: altijd tonen
+    /// (bewerkbaar), nooit tonen (vast), of automatisch overslaan bij een update (zie
+    /// <see cref="DisablePageMode"/> voor de volledige toelichting). Komt overeen met Inno Setup's
+    /// <c>DisableDirPage</c>-richtlijn, standaard <see cref="DisablePageMode.AlwaysShow"/> — Inno
+    /// Setup's eigen standaard voor <c>DisableDirPage</c> is <c>no</c>, wat hetzelfde is.
+    ///
+    /// Was tot 2026-10-02 een <see langword="bool"/> onder dezelfde JSON-sleutel
+    /// (<c>AllowUserToChangeDir</c>, <see langword="true"/> = bewerkbaar): de
+    /// <c>[JsonPropertyName]</c> hieronder houdt die oude sleutelnaam aan zodat een bestaand
+    /// projectbestand niet hoeft te worden aangepast, en <see cref="DisablePageModeJsonConverter"/>
+    /// leest zowel die oude <c>true</c>/<c>false</c>-waarde als de nieuwe tekstwaarden (Herberts
+    /// verzoek om een Auto-optie, net als bij <see cref="GroupPageMode"/> hieronder).
     /// </summary>
-    public bool AllowUserToChangeDir { get; set; } = true;
+    [JsonPropertyName("AllowUserToChangeDir")]
+    [JsonConverter(typeof(DisablePageModeJsonConverter))]
+    public DisablePageMode DirPageMode { get; set; } = DisablePageMode.AlwaysShow;
 
     /// <summary>
     /// Aanpassingen van de schermspecifieke "Bladeren"-knop op de bestemmingspagina (Inno Setup's

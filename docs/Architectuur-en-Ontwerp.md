@@ -2439,3 +2439,123 @@ De overige twee punten van Herbert vragen om echt nieuw ontwerpwerk, nog niet ge
 
 Scope en volgorde van deze drie laatste punten zijn met Herbert afgestemd voordat ze gebouwd
 worden.
+
+
+## 27. Drie-waardige paginazichtbaarheid: "Auto" slaat de pagina over bij een bekende update (2026-10-02)
+
+### Aanleiding en verificatie
+
+Herbert vroeg om een derde optie naast "altijd tonen"/"nooit tonen" voor zowel Installatiemap
+kiezen als Select Start Menu Folder: bij een update van een al geïnstalleerde applicatie moet
+Setup de pagina automatisch overslaan wanneer de map/groep al uit een eerdere installatie bekend
+is (via het register). Herbert noemde hiervoor aanvankelijk `AlwaysShowDirOnReadyPage=auto`/
+`AlwaysShowGroupOnReadyPage=auto` — die twee bestaande velden (sectie 25) ondersteunen echter
+alleen `yes`/`no` en gaan over een heel ander scherm (de samenvatting op de Ready-pagina, niet
+Installatiemap kiezen/Select Start Menu Folder zelf). Uitgezocht via de officiële Inno
+Setup-documentatie (jrsoftware.org/ishelp, 2026-10-02) en onafhankelijk bevestigd door Herberts
+eigen documentatiecitaat: de juiste richtlijnen zijn `DisableDirPage`/`DisableProgramGroupPage`,
+allebei met drie waarden (`no`/`yes`/`auto`), maar met een **verschillende standaardwaarde per
+richtlijn** — `DisableDirPage` staat standaard op `no` (pagina altijd tonen), terwijl
+`DisableProgramGroupPage` al standaard op `auto` staat. Dit lost tegelijk het laatste backlogpunt
+van sectie 26 op ("Verwarring over `AppendDefaultGroupName`"): in plaats van het voorgestelde
+`AllowUserToChangeGroup`-veld is het nu `GroupPageMode` geworden, naar hetzelfde patroon als
+Installatiemap kiezen.
+
+### Datamodel: nieuwe `DisablePageMode`-enum, niet twee losse bool's
+
+Nieuw bestand `DisablePageMode.cs` (`InnoSetupStudio.Core.Project`, zelfde één-bestand-per-type-
+conventie als de rest van die map): een enum met drie waarden, `AlwaysShow`/`NeverShow`/
+`AutoSkipIfKnown`, die rechtstreeks overeenkomen met Inno Setup's `no`/`yes`/`auto`. Eén
+gedeelde enum voor beide pagina's (in plaats van twee aparte types) omdat de drie waarden en hun
+betekenis identiek zijn; alleen de **standaardwaarde** verschilt per gebruiksplek.
+
+`InstallerProject` kreeg:
+
+- `DirPageMode` (vervangt de oude `AllowUserToChangeDir`-bool), standaard `AlwaysShow` —
+  overeenkomstig `DisableDirPage`'s eigen standaard (`no`).
+- `GroupPageMode` (nieuw veld, geen eerdere bool-tegenhanger), standaard `AutoSkipIfKnown` —
+  overeenkomstig `DisableProgramGroupPage`'s eigen standaard (`auto`).
+
+Beide zijn `[JsonConverter(typeof(DisablePageModeJsonConverter))]`. `DirPageMode` draagt
+daarnaast `[JsonPropertyName("AllowUserToChangeDir")]`: de eigenschap heet in C# nu anders (het
+is geen simpel vinkje meer), maar bewaart bewust de oude JSON-sleutel, zodat een bestaand
+.issproj-bestand zonder enige migratiecode blijft laden.
+
+### Backward-compatible migratie via een eigen `JsonConverter`
+
+Nieuw bestand `DisablePageModeJsonConverter.cs`: een `JsonConverter<DisablePageMode>` die bij het
+lezen drie gevallen onderscheidt — een JSON-`true`/`false` (het oude bool-formaat, voor
+`DirPageMode`'s `AllowUserToChangeDir`-sleutel: `true`→`AlwaysShow`, `false`→`NeverShow`, nooit
+automatisch `AutoSkipIfKnown`, want die waarde bestond in het oude model niet), een tekstwaarde
+die met `Enum.TryParse` naar een van de drie enum-namen wordt omgezet (het nieuwe formaat), of
+anders een `JsonException` (bewust hard falen in plaats van stilzwijgend een gok te doen bij een
+echt onverwachte waarde). Schrijven gebeurt altijd als tekstwaarde. Dit is dezelfde
+"doorgeef + converter doet het vertaalwerk"-aanpak als elders in dit project, maar dan voor een
+type-wijziging (bool → enum) in plaats van een simpele `??=`-normalisatie zoals bij
+WizardScreens/SupportedLanguageIds (sectie 14).
+
+Nieuwe tests in `InstallerProjectTests.cs`: een parametrische test
+(`LoadAsyncMigratesLegacyBooleanAllowUserToChangeDirToDirPageMode`) voor beide boolean-waarden,
+plus uitgebreide assertions in de bestaande round-trip- en ouder-projectbestand-tests voor de
+tekstwaarde-vorm en de twee verschillende standaardwaarden.
+
+### UI: één dropdown per pagina, Herberts expliciete keuze
+
+Gevraagd via `AskUserQuestion` hoe de derde toestand in de UI te tonen (een los vinkje naast de
+bestaande twee, of één keuzelijst met drie opties); Herbert koos de keuzelijst. Het bestaande
+vinkje "Gebruiker mag map wijzigen" op Installatiemap kiezen is vervangen door een `ComboBox`
+(`ScreenEditorControl.xaml`, `SelectDestinationPropertyPanelTemplate`); Select Start Menu Folder
+kreeg een nieuwe, identiek opgebouwde `ComboBox` (`SelectProgramGroupPropertyPanelTemplate`, had
+voorheen geen enkele zichtbaarheidsinstelling). Beide gebruiken `SelectedValuePath="Tag"` met
+`ComboBoxItem Tag="AlwaysShow"` etc.: WPF's ingebouwde `EnumConverter` zet de Tag-tekst vanzelf om
+naar de `DisablePageMode`-eigenschap, dus geen eigen `IValueConverter` nodig. Onder elke keuzelijst
+staat een toelichtende hint-tekst die wisselt met de gekozen waarde (`IsNeverShowHintVisible`/
+`IsAutoSkipHintVisible` op `SelectProgramGroupPageEditorViewModel`, `ChangeDirHintVisibility`/
+`IsAutoSkipHintVisible` op `SelectDestinationPageEditorViewModel` — de eerste twee namen zijn
+bewust verschillend gebleven, `ChangeDirHintVisibility` bestond al vóór deze feature).
+
+**Voorvertoning bij "Auto"**: Inno Setup's auto-overslaan-gedrag hangt af van het register op het
+moment van installeren, iets wat de ontwerptijd-voorvertoning niet kan nabootsen. Gekozen
+conventie: `AutoSkipIfKnown` wordt in de voorvertoning behandeld als een eerste installatie (het
+scherm blijft dus net als bij `AlwaysShow` bewerkbaar/zichtbaar), met alleen een aparte,
+onderscheidende hint-tekst erbij (letterlijk Engels, net als de bestaande
+`ChangeDirHintVisibility`-hint in `SelectDestinationPagePreview.xaml` — deze voorvertoning
+simuleert Inno Setup's eigen paginatekst, niet de taal van de editor-UI zelf, dus geen
+resx-binding voor deze twee specifieke `TextBlock`-elementen in de voorvertoningen).
+
+### Lokalisatie
+
+Nieuwe resx-sleutels (NL/EN/DE, alle drie bijgewerkt): `LabelDirPageMode`/`LabelGroupPageMode`
+(de koptekst boven elke keuzelijst), de gedeelde `LabelDisablePageModeAlwaysShow`/
+`LabelDisablePageModeNeverShow`/`LabelDisablePageModeAuto` (de drie keuzelijst-opties, hergebruikt
+op beide pagina's omdat de tekst identiek is), en de vier schermspecifieke hint-teksten
+`HintDirPageModeNeverShow`/`HintDirPageModeAuto`/`HintGroupPageModeNeverShow`/
+`HintGroupPageModeAuto`. De oude `LabelAllowUserToChangeDir`-sleutel is verwijderd uit alle drie
+de resx-bestanden (nergens meer naar verwezen). XML-validatie van alle drie de resx-bestanden na
+bewerking: geen fouten, geen dubbele sleutels, gelijk aantal items in elk bestand.
+
+### Wiring (`WizardEditorViewModel`, `ProjectSettingsViewModel`)
+
+`WizardEditorViewModel`'s constructor en `ApplyTo`-switch zijn bijgewerkt voor beide
+eigenschappen (`DirPageMode` i.p.v. `AllowUserToChangeDir`, `GroupPageMode` nieuw). Daarnaast is
+`ProjectSettingsViewModel`'s bestaande doorgeef-patroon (zie sectie 16/26: velden die elders — in
+de schermeditor — bewerkt worden, moeten hier ongewijzigd worden meegenomen bij Opslaan, anders
+zet een algemene naam-/padwijziging ze stilzwijgend terug) aangevuld: het bestaande
+`_allowUserToChangeDir`-veld is omgezet naar `_dirPageMode` (`DisablePageMode`), en er is een
+nieuw `_groupPageMode`-doorgeefveld toegevoegd — zonder dat laatste zou Opslaan vanuit het
+algemene projectinstellingenscherm de in de schermeditor gekozen Start Menu-paginazichtbaarheid
+stilzwijgend hebben teruggezet naar de standaardwaarde, exact dezelfde bugklasse als CodeRabbit's
+bevinding in sectie 26.
+
+### Build- en testresultaat
+
+`dotnet build`: 0 waarschuwingen, 0 fouten. `dotnet test`: 26/26 geslaagd (24 bestaand + 2 nieuwe
+parametrische gevallen voor de boolean-naar-enum-migratie).
+
+### Backlog
+
+- De drie overige, nog niet gebouwde punten uit sectie 26 (User Info per-veld/meertalige
+  captions, volledige Bladeren-knop-aanpasbaarheid op Select Start Menu Folder) blijven open.
+- Nog te testen door Herbert in de UI: de keuzelijst zelf (alle drie waarden selecteerbaar,
+  hint-tekst wisselt correct), en dat een bestaand project met het oude boolean-veld nog gewoon
+  opent.

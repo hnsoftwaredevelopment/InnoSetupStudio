@@ -9,19 +9,20 @@ using Microsoft.Win32;
 namespace InnoSetupStudio.App.ViewModels.Screens;
 
 /// <summary>
-/// Bestemmingspagina: de standaard installatiemap die Inno Setup voorstelt, en of de gebruiker
-/// die mag wijzigen. Komt overeen met InstallerProject.DefaultDirName/AllowUserToChangeDir.
+/// Bestemmingspagina: de standaard installatiemap die Inno Setup voorstelt, en hoe de pagina
+/// zich gedraagt (altijd tonen, nooit tonen, of automatisch overslaan bij een update). Komt
+/// overeen met InstallerProject.DefaultDirName/DirPageMode.
 /// </summary>
 public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenEditorViewModel
 {
     private readonly string _appName;
 
-    public SelectDestinationPageEditorViewModel(string appName, string defaultDirName, bool allowUserToChangeDir, BrowseButtonSettings browseButtonSettings)
+    public SelectDestinationPageEditorViewModel(string appName, string defaultDirName, DisablePageMode dirPageMode, BrowseButtonSettings browseButtonSettings)
         : base("ShowSelectDestinationPage", LocalizationManager.Instance["WizardScreenSelectDestination"], "Folder")
     {
         _appName = appName;
         _defaultDirName = defaultDirName;
-        _allowUserToChangeDir = allowUserToChangeDir;
+        _dirPageMode = dirPageMode;
         _browseButtonCaption = browseButtonSettings.Caption;
         _browseButtonEnabled = browseButtonSettings.Enabled;
         _browseButtonVisible = browseButtonSettings.Visible;
@@ -38,7 +39,7 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
     private string _defaultDirName;
 
     [ObservableProperty]
-    private bool _allowUserToChangeDir;
+    private DisablePageMode _dirPageMode;
 
     /// <summary>Voorvertoningstekst boven het map-veld, met de echte projectnaam erin.</summary>
     public string InstallIntroText =>
@@ -51,14 +52,24 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
         : DefaultDirName;
 
     /// <summary>Toont een toelichting in de voorvertoning zodra de gebruiker de map niet meer mag
-    /// wijzigen tijdens de installatie, zodat duidelijk is waarom de Bladeren-knop daar uitstaat.</summary>
-    public Visibility ChangeDirHintVisibility => AllowUserToChangeDir ? Visibility.Collapsed : Visibility.Visible;
+    /// wijzigen tijdens de installatie, zodat duidelijk is waarom de Bladeren-knop daar uitstaat.
+    /// Alleen voor <see cref="DisablePageMode.NeverShow"/> — zie <see cref="DisablePageMode"/>
+    /// voor waarom <see cref="DisablePageMode.AutoSkipIfKnown"/> hier geen "nooit bewerkbaar"-
+    /// waarschuwing krijgt, maar <see cref="IsAutoSkipHintVisible"/> hieronder.</summary>
+    public Visibility ChangeDirHintVisibility => DirPageMode == DisablePageMode.NeverShow ? Visibility.Visible : Visibility.Collapsed;
+
+    /// <summary>Toont een toelichting zodra deze pagina bij een update automatisch wordt
+    /// overgeslagen (Herberts verzoek, 2026-10-02): de voorvertoning zelf kan dit runtime-gedrag
+    /// niet daadwerkelijk simuleren (zie <see cref="DisablePageMode.AutoSkipIfKnown"/>), dus een
+    /// korte tekst in plaats daarvan.</summary>
+    public Visibility IsAutoSkipHintVisible => DirPageMode == DisablePageMode.AutoSkipIfKnown ? Visibility.Visible : Visibility.Collapsed;
 
     partial void OnDefaultDirNameChanged(string value) => OnPropertyChanged(nameof(DisplayDirName));
 
-    partial void OnAllowUserToChangeDirChanged(bool value)
+    partial void OnDirPageModeChanged(DisablePageMode value)
     {
         OnPropertyChanged(nameof(ChangeDirHintVisibility));
+        OnPropertyChanged(nameof(IsAutoSkipHintVisible));
         OnPropertyChanged(nameof(IsBrowseButtonEnabledInPreview));
     }
 
@@ -173,10 +184,11 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
     public bool IsBrowseButtonEnabled => BrowseButtonEnabled ?? true;
 
     /// <summary>Wat de voorvertoning daadwerkelijk als IsEnabled van de Bladeren-knop gebruikt:
-    /// zowel Inno Setup's eigen ingebouwde gedrag (de knop gaat sowieso uit zodra de gebruiker de
-    /// map niet mag wijzigen, zie AllowUserToChangeDir/ChangeDirHintVisibility) als de knop-eigen
+    /// zowel Inno Setup's eigen ingebouwde gedrag (de knop gaat uit zodra de gebruiker de map
+    /// nooit mag wijzigen, zie DirPageMode/ChangeDirHintVisibility — bij AutoSkipIfKnown toont de
+    /// voorvertoning bewust het eerste-installatie-scenario, dus bewerkbaar) als de knop-eigen
     /// Enabled-instelling moeten allebei "aan" staan.</summary>
-    public bool IsBrowseButtonEnabledInPreview => AllowUserToChangeDir && IsBrowseButtonEnabled;
+    public bool IsBrowseButtonEnabledInPreview => DirPageMode != DisablePageMode.NeverShow && IsBrowseButtonEnabled;
 
     partial void OnBrowseButtonVisibleChanged(bool? value) => OnPropertyChanged(nameof(IsBrowseButtonVisible));
 
