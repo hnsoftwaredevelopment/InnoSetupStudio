@@ -1,0 +1,91 @@
+<UserControl x:Class="InnoSetupStudio.Wizard.Screens.SelectProgramGroupPagePreview"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:converters="clr-namespace:InnoSetupStudio.Wizard.Converters"
+             mc:Ignorable="d" d:DesignWidth="455" d:DesignHeight="290">
+    <UserControl.Resources>
+        <converters:HexColorToBrushConverter x:Key="HexColorToBrushConverter" />
+        <converters:FontFamilyOrUnsetConverter x:Key="FontFamilyOrUnsetConverter" />
+        <converters:FontSizeOrUnsetConverter x:Key="FontSizeOrUnsetConverter" />
+        <converters:NullableBoolToFontWeightConverter x:Key="NullableBoolToFontWeightConverter" />
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </UserControl.Resources>
+    <!-- Zelfde vaste wit/zwart-kleurstelling als WelcomePagePreview, zie de toelichting daar.
+         Vormgeving leunt op SelectDestinationPagePreview (kop + map-weergave + Bladeren-knop),
+         maar dan voor de startmenugroep. AppendDefaultGroupName/AlwaysUsePersonalGroup hebben
+         geen eigen zichtbaar element op de echte Inno Setup-pagina (het zijn bouwtijd-gedrags-
+         keuzes, geen aanvinkvakjes voor de eindgebruiker), dus die velden worden hier niet
+         getoond — alleen het "Geen Start Menu-map aanmaken"-vinkje hieronder is decoratief, dat
+         is Inno Setup's eigen AllowNoIcons-aanvinkvakje, geen projectinstelling van dit scherm.
+         De Bladeren-knop hieronder is sinds 2026-10-02 wél volledig gebonden (Herberts verzoek),
+         zelfde aanpak als SelectDestinationPagePreview's Bladeren-knop, zie de toelichting daar.
+
+         LastChildFill="False" hieronder: zonder deze instelling negeert DockPanel het eigen
+         Dock="Top" van de LAATSTE kindelement en rekt dat element uit over alle resterende
+         verticale ruimte — WPF's standaardgedrag (LastChildFill="True"), ongeacht welke
+         Dock-waarde dat kind zelf meekrijgt. Bij SelectDestinationPagePreview viel dat niet op
+         omdat het laatste kind daar toevallig een korte toelichtende TextBlock is (die rekt
+         onzichtbaar mee); hier was het laatste kind de map-rij zelf (Border+Bladeren-knop), die
+         daardoor de hele hoogte van de pagina vulde — Herberts melding dat dat veld en de knop
+         "veel te hoog" waren (2026-10-02). LastChildFill="False" laat elk kind gewoon zijn eigen
+         Dock-zijde en natuurlijke hoogte houden, zoals Installatiemap kiezen. -->
+    <DockPanel Background="White" Margin="20,16,20,20" LastChildFill="False">
+        <Grid DockPanel.Dock="Top" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <TextBlock Text="Select Start Menu Folder" FontWeight="Bold" FontSize="13" Foreground="Black" />
+                <TextBlock Margin="0,4,0,0" Foreground="Black" TextWrapping="Wrap"
+                           Text="Setup will create the program's shortcuts in the following Start Menu folder." />
+            </StackPanel>
+            <Image Grid.Column="1" Source="{Binding WizardSmallImage}" Stretch="Uniform"
+                   Width="55" Height="55" Margin="12,0,0,0" VerticalAlignment="Top" />
+        </Grid>
+        <Border DockPanel.Dock="Top" Height="1" Background="#FFACA899" Margin="0,0,0,20" />
+
+        <CheckBox DockPanel.Dock="Bottom" Content="Don't create a Start Menu folder" Margin="0,16,0,0"
+                  Foreground="Black" IsHitTestVisible="False" Focusable="False" IsTabStop="False" />
+
+        <!-- Nieuw sinds 2026-10-02 (DisablePageMode, Herberts verzoek): letterlijke Engelse tekst
+             net als bij SelectDestinationPagePreview's ChangeDirHintVisibility-hint hierboven -
+             deze voorvertoning simuleert Inno Setup's eigen pagina, niet de editor-UI-taal. -->
+        <TextBlock DockPanel.Dock="Bottom" Margin="0,16,0,0" Foreground="#FF666666" FontSize="11"
+                   TextWrapping="Wrap" Visibility="{Binding IsNeverShowHintVisible}"
+                   Text="Setup does not allow the user to change this folder during installation." />
+        <TextBlock DockPanel.Dock="Bottom" Margin="0,16,0,0" Foreground="#FF666666" FontSize="11"
+                   TextWrapping="Wrap" Visibility="{Binding IsAutoSkipHintVisible}"
+                   Text="During an update, Setup will skip this page if the Start Menu folder is already known." />
+
+        <Grid DockPanel.Dock="Top">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" BorderBrush="#FFACA899" BorderThickness="1" Background="#FFF0F0F0" Margin="0,0,8,0">
+                <TextBlock Text="{Binding EffectiveGroupName}" Foreground="Black" Margin="6,4" TextTrimming="CharacterEllipsis" />
+            </Border>
+            <!-- Volledig gebonden sinds 2026-10-02 (Herberts verzoek), exacte tegenhanger van
+                 SelectDestinationPagePreview's Bladeren-knop hierboven aangehaald — zie die
+                 toelichting voor waarom IsEnabled Inno Setup's eigen ingebouwde gedrag combineert
+                 met de knop-eigen Enabled-instelling (IsBrowseButtonEnabledInPreview), en waarom
+                 Content een expliciete TextBlock met eigen Foreground-binding is in plaats van een
+                 gewoon Content="...". -->
+            <Button Grid.Column="1"
+                    IsEnabled="{Binding IsBrowseButtonEnabledInPreview}"
+                    Visibility="{Binding IsBrowseButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    Foreground="{Binding BrowseButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
+                    FontFamily="{Binding BrowseButtonFontFamily, Converter={StaticResource FontFamilyOrUnsetConverter}}"
+                    FontSize="{Binding BrowseButtonFontSize, Converter={StaticResource FontSizeOrUnsetConverter}}"
+                    FontWeight="{Binding BrowseButtonFontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"
+                    ToolTip="{Binding BrowseButtonTooltip}"
+                    IsHitTestVisible="False" Focusable="False" IsTabStop="False" Padding="10,3">
+                <TextBlock Text="{Binding EffectiveBrowseButtonCaption}"
+                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+            </Button>
+        </Grid>
+    </DockPanel>
+</UserControl>

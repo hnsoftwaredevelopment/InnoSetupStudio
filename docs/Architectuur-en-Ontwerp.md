@@ -2262,3 +2262,395 @@ velden, elk bewust op de tegenovergestelde waarde van hun standaardwaarde gezet)
   van HNSoftwareInstallerFramework's `Shortcuts.iss`/`Base.iss`. `CreateStartMenuIcon` wordt dus
   vertaald naar het al dan niet aanwezig zijn van een Start Menu-`[Icons]`-regel, niet naar
   `AllowNoIcons`.
+
+## 26. Vijf nieuwe schermeditors: Info Before, User Info, Select Start Menu Folder, Ready to Install, Info After (2026-10-02)
+
+Roadmapitem 4 (vervolg op fase 4): dedicated schermeditors voor de vijf resterende "eenvoudige"
+wizardschermen die nog geen editor hadden, bepaald aan de hand van de Feature-Checklist
+(`docs/Feature-Checklist.md`, sectie 1): elk scherm waarvoor categorie 2 van die checklist nog
+onbeantwoorde (`?`) velden toonde, behalve Setup Completed (dat heeft voor nu geen nieuwe velden
+nodig — zijn enige open punt, `AlwaysRestart`, hoort bij een toekomstig "Herstart en lopende
+applicaties"-tabblad, niet bij dit scherm zelf). Herbert koos er bewust voor om alle vijf in één
+branch/PR te bouwen in plaats van incrementeel.
+
+### Volgorde in de schermeditor
+
+De vijf nieuwe schermen zijn ingevoegd op hun eigen plek in Inno Setup's vaste paginavolgorde,
+niet achteraan: Welkom → Licentie → **Info Before** → **User Info** → Installatiemap kiezen →
+**Select Start Menu Folder** → **Klaar om te installeren** → **Info After**. Select Components en
+Select Tasks ontbreken nog in deze volgorde (geen editor), dus Select Start Menu Folder sluit in
+de lijst rechtstreeks aan op Installatiemap kiezen, en Klaar-om-te-installeren rechtstreeks op
+Select Start Menu Folder — zie de toelichting in `WizardEditorViewModel`'s constructor. Dit is
+belangrijk voor Terug/Volgende-navigatie binnen de schermeditor: die navigeert simpelweg door de
+`_screens`-lijst in volgorde van toevoegen.
+
+### Datamodel (`InstallerProject`)
+
+Veertien nieuwe eigenschappen, elk met een directe tegenhanger in een Inno Setup-richtlijn (zie
+categorie 2 van de Feature-Checklist):
+
+- **`InfoBeforeFilePath`** / **`InfoAfterFilePath`** (`string`, standaard leeg) — pad naar het
+  leesmij-/infobestand vóór/na de bestemmingspagina (`InfoBeforeFile`/`InfoAfterFile`). Zelfde
+  patroon als `LicenseFilePath`: leeg totdat de gebruiker een bestand kiest.
+- **`DefaultUserInfoName`**, **`DefaultUserInfoOrg`**, **`DefaultUserInfoSerial`** (`string`,
+  standaard leeg) — vooringevulde velden op de User Info-pagina (`DefaultUserInfoName/Org/
+  Serial`).
+- **`UsePreviousUserInfo`** (`bool`, standaard `true`) — onthoudt bij een update de eerder
+  ingevulde User Info-gegevens (`UsePreviousUserInfo`). Zelfde conventie als de vijf
+  `UsePrevious*`-vlaggen uit sectie 25, maar hier bewust bij de User Info-velden zelf gehouden
+  (niet toegevoegd aan het tabblad Overige instellingen): de gebruiker bewerkt alles over dit
+  scherm op één plek, in de schermeditor.
+- **`DefaultGroupName`** (`string`, standaard leeg) — voorgestelde startmenugroep
+  (`DefaultGroupName`); leeg valt terug op `AppName`, net als `DefaultDirName`.
+- **`AppendDefaultGroupName`** (`bool`, standaard `true` — zelfde standaard als Inno Setup zelf,
+  geverifieerd via de officiële documentatie op 2026-10-02) — stuurt specifiek Inno Setup's eigen
+  Bladeren-dialoog op de Select Start Menu Folder-pagina (een boomweergave van bestaande
+  startmenu-mappen, niet het tekstveld zelf): kiest de gebruiker daar een bestaande map, dan plakt
+  Setup bij `true` automatisch de laatste component van `DefaultGroupName` erachter; bij `false`
+  gebruikt Setup precies de gekozen map en krijgt die Bladeren-dialoog zelf een "Nieuwe map
+  maken"-knop. Gaat dus niet over het combineren van een getypte naam met de standaardnaam (de
+  oorspronkelijke, te korte omschrijving in de Feature-Checklist suggereerde dat en klopte niet —
+  zie Herberts vraag hierover, backlogitem hieronder).
+- **`AlwaysUsePersonalGroup`** (`bool`, standaard `false`, zelfde standaard als Inno Setup zelf) —
+  laat de `{group}`-constante altijd naar het persoonlijke startmenu van de huidige gebruiker
+  wijzen, ook bij een "voor alle gebruikers"-installatie (die wijst anders naar het
+  Alle-gebruikers-startmenu). Inno Setup's eigen documentatie waarschuwt dat dit "mogelijk niet
+  het beoogde effect heeft" en de compiler geeft er een waarschuwing bij (tenzij
+  `UsedUserAreasWarning` is uitgezet) — nog niet vertaald naar een eigen waarschuwing in deze IDE,
+  generatorwerk voor fase 5/6.
+- **`DisableReadyMemo`**, **`AlwaysShowDirOnReadyPage`**, **`AlwaysShowGroupOnReadyPage`**
+  (`bool`, standaard `false`) — bepalen wat de samenvatting op de Klaar-om-te-installeren-pagina
+  toont (`DisableReadyMemo`/`AlwaysShowDirOnReadyPage`/`AlwaysShowGroupOnReadyPage`).
+
+Plus vijf nieuwe `WizardScreenButtonSettings`-eigenschappen (`InfoBeforeScreenButtons`,
+`UserInfoScreenButtons`, `SelectProgramGroupScreenButtons`, `ReadyScreenButtons`,
+`InfoAfterScreenButtons`), zelfde patroon als `WelcomeScreenButtons` — elk met een `??=`-
+normalisatie in `JsonInstallerProjectService` voor een expliciete JSON-`null`. De veertien
+scalaire velden hierboven hebben geen normalisatie nodig: `string`-velden hebben een
+niet-`null`-initializer en `bool`-velden kunnen sowieso geen JSON-`null` zijn, zelfde redenering
+als sectie 25.
+
+### ViewModels en voorvertoning
+
+Vijf nieuwe `WizardScreenEditorViewModel`-subklassen in
+`InnoSetupStudio.App.ViewModels.Screens`, elk naar het dichtstbijzijnde bestaande patroon:
+
+- **`InfoBeforePageEditorViewModel`** / **`InfoAfterPageEditorViewModel`** — kopie van
+  `LicensePageEditorViewModel`'s bestandskeuze-patroon (inclusief de `IsUncOrDevicePath`-
+  beveiliging tegen automatische SMB-toegang vanuit een geladen projectbestand), zonder de
+  "akkoord"-keuzerondjes van de licentiepagina.
+- **`UserInfoPageEditorViewModel`**, **`SelectProgramGroupPageEditorViewModel`**,
+  **`ReadyPageEditorViewModel`** — kopie van `WelcomePageEditorViewModel`'s eenvoudige patroon:
+  alleen `[ObservableProperty]`-velden, geen bestandsdialoog of eigen knop.
+
+Vijf nieuwe voorvertoning-`UserControl`s in `InnoSetupStudio.Wizard.Screens`
+(`InfoBeforePagePreview`, `UserInfoPagePreview`, `SelectProgramGroupPagePreview`,
+`ReadyPagePreview`, `InfoAfterPagePreview`), met Inno Setup's eigen (vaste, niet-thema-
+afhankelijke) Engelstalige paginateksten, zelfde aanpak als de drie bestaande voorvertoningen.
+De Klaar-om-te-installeren-voorvertoning toont een illustratieve, statische samenvattingstekst
+(geen live gegenereerde tekst — dat is generatorwerk, fase 5/6) puur om te laten zien dat
+`DisableReadyMemo` het hele memo-vak verbergt (via een `DataTrigger` op `Border.Visibility`, geen
+nieuwe inverse-boolean-converter nodig). `AppendDefaultGroupName`/`AlwaysUsePersonalGroup`/
+`AlwaysShowDirOnReadyPage`/`AlwaysShowGroupOnReadyPage` hebben geen eigen zichtbaar element in de
+voorvertoning: het zijn bouwtijd-gedragskeuzes zonder een eigen aanvinkvakje op de echte
+Inno Setup-pagina.
+
+`ScreenEditorControl.xaml` kreeg vijf nieuwe keyless preview-`DataTemplate`s en vijf nieuwe
+`x:Key`'d `PropertyPanelTemplate`s (instellingenpaneel rechts), en `PropertyPanelTemplateSelector`
+vijf nieuwe `DataTemplate`-eigenschappen — exact dezelfde twee-lagen-aanpak (keyless voor de
+voorvertoning, `x:Key` + expliciete selector voor het instellingenpaneel) als de drie bestaande
+schermen, zie sectie 21.
+
+### Wiring (`WizardEditorViewModel`)
+
+Vijf nieuwe conditionele `_screens.Add(...)`-blokken in de constructor (op hun plek in Inno
+Setup's volgorde, zie hierboven) en vijf nieuwe `case`-blokken in `ApplyTo`, naar het bestaande
+patroon van Welkom/Licentie/Installatiemap kiezen.
+
+### Lokalisatie
+
+Zestien nieuwe resourcesleutels (NL/EN/DE) voor labels, dialoogfilters en toelichtende teksten
+van de vijf nieuwe instellingenpanelen. De vijf schermnamen zelf (`WizardScreenInfoBefore`,
+`WizardScreenUserInfo`, `WizardScreenSelectProgramGroup`, `WizardScreenReady`,
+`WizardScreenInfoAfter`) bestonden al (fase 3, wizardschermen-overzicht) en zijn hergebruikt.
+`ScreenEditorNoScreens` (de toelichting die verschijnt als geen van de door de schermeditor
+ondersteunde schermen aan staat) is bijgewerkt om alle acht nu ondersteunde schermen te noemen in
+plaats van alleen de oorspronkelijke drie.
+
+### Build- en testresultaat
+
+`dotnet build`: 0 waarschuwingen, 0 fouten. `dotnet test`: 24/24 geslaagd (23 bestaand + 1 nieuwe
+backward-compatibility-test voor de veertien nieuwe scalaire velden; de bestaande round-trip-test
+is uitgebreid met alle veertien velden plus de vijf nieuwe knopinstellingen, en de bestaande
+explicite-JSON-`null`-test voor knopinstellingen is uitgebreid met de vijf nieuwe
+`WizardScreenButtonSettings`-eigenschappen).
+
+### Backlog
+
+- Select Components en Select Tasks (roadmapitem 5) hebben nog geen editor; volgen in een latere
+  PR.
+- De generator (fase 5/6, nog niet gebouwd) moet deze veertien velden vertalen naar de
+  bijbehorende `[Setup]`-richtlijnen.
+- Setup Completed/Finished-scherm zijn enige openstaande veld, `AlwaysRestart`, hoort bij een
+  toekomstig "Herstart en lopende applicaties"-tabblad (categorie 20 van de Feature-Checklist),
+  niet bij dit scherm zelf.
+
+
+### Correcties na Herberts handmatige UI-test (2026-10-02)
+
+Herbert testte de vijf nieuwe schermen in de UI en meldde vier punten. Twee waren concrete fouten
+in deze eerste versie, inmiddels gefixt op dezelfde branch:
+
+- **Layoutfout op Select Start Menu Folder**: het invoerveld en de Bladeren-knop waren veel te
+  hoog. Oorzaak: `SelectProgramGroupPagePreview.xaml`'s buitenste `DockPanel` had geen
+  `LastChildFill="False"` staan, waardoor WPF het laatste kind (de map-rij) liet uitrekken over
+  alle resterende ruimte in plaats van zijn eigen `Dock="Top"`-hoogte aan te houden —
+  Installatiemap kiezen viel dit niet op omdat diens laatste kind toevallig een korte TextBlock
+  is. Gefixt door `LastChildFill="False"` toe te voegen, net als bij Installatiemap kiezen. Build
+  opnieuw gecontroleerd: 0 waarschuwingen, 0 fouten.
+- **`AppendDefaultGroupName` had de verkeerde standaardwaarde**: stond in de code op `false`,
+  terwijl Inno Setup's eigen documentatie (jrsoftware.org/ishelp, geverifieerd 2026-10-02)
+  "Default value: yes" vermeldt. Gefixt naar `true`, inclusief de bijbehorende round-trip- en
+  backward-compatibility-tests hierboven in dit document.
+
+De overige twee punten van Herbert vragen om echt nieuw ontwerpwerk, nog niet gebouwd:
+
+- **User Info-scherm voelt aan als invullen in plaats van bewerken**: de voorvertoning toont de
+  waarde van `DefaultUserInfoName`/`Org`/`Serial` live in het invoerveld zelf, zonder dat de
+  veldlabels ("Full Name", "Organization", "Serial Number") apart aan te passen zijn. Herbert wil
+  per veld kunnen aan/uitvinken of het getoond wordt, en mogelijk de labels zelf (meertalig)
+  kunnen aanpassen. Uitgezocht via de officiële documentatie: Full Name/Organization hebben geen
+  eigen aan/uitvinkvakje in Inno Setup zonder Pascal Script; het Serial Number-veld wordt alleen
+  getoond als het script een `CheckSerial`-event-functie bevat (fase 6-werk, nog niet gebouwd). De
+  labels zelf komen uit Inno Setup's eigen, per taal overschrijfbare `[CustomMessages]`-sleutels
+  (`UserInfoName`/`UserInfoOrg`/`UserInfoSerial`), dus een meertalige-captioneditor zou dezelfde
+  `Dictionary<string,string> XxxCaptionByLanguage`-aanpak kunnen volgen als de bestaande
+  knoplabels (sectie 20/24).
+- **Bladeren-knop op Select Start Menu Folder nog niet volledig aanpasbaar**: Herbert wil daar
+  dezelfde volledige aanpasbaarheid (caption/enabled/visible/tekstkleur/lettertype/tooltip, plus
+  per-taal-varianten) als bij Installatiemap kiezen (`SelectDestinationPageEditorViewModel`). Nog
+  niet gebouwd.
+- **Verwarring over `AppendDefaultGroupName`**: Herbert vroeg zich af wat dit vinkje eigenlijk
+  doet, en verwachtte eerder een optie om aan te geven of de gebruiker de voorgestelde map mag
+  wijzigen. Dat laatste bestaat al wel in Inno Setup, als `DisableProgramGroupPage` — de directe
+  tegenhanger van `AllowUserToChangeDir`/`DisableDirPage` bij Installatiemap kiezen — maar is nog
+  niet als project-veld gebouwd. Voorstel: een nieuwe `AllowUserToChangeGroup`-eigenschap
+  toevoegen die dit omkeert, naar exact hetzelfde patroon als `AllowUserToChangeDir`.
+
+Scope en volgorde van deze drie laatste punten zijn met Herbert afgestemd voordat ze gebouwd
+worden.
+
+
+## 27. Drie-waardige paginazichtbaarheid: "Auto" slaat de pagina over bij een bekende update (2026-10-02)
+
+### Aanleiding en verificatie
+
+Herbert vroeg om een derde optie naast "altijd tonen"/"nooit tonen" voor zowel Installatiemap
+kiezen als Select Start Menu Folder: bij een update van een al geïnstalleerde applicatie moet
+Setup de pagina automatisch overslaan wanneer de map/groep al uit een eerdere installatie bekend
+is (via het register). Herbert noemde hiervoor aanvankelijk `AlwaysShowDirOnReadyPage=auto`/
+`AlwaysShowGroupOnReadyPage=auto` — die twee bestaande velden (sectie 25) ondersteunen echter
+alleen `yes`/`no` en gaan over een heel ander scherm (de samenvatting op de Ready-pagina, niet
+Installatiemap kiezen/Select Start Menu Folder zelf). Uitgezocht via de officiële Inno
+Setup-documentatie (jrsoftware.org/ishelp, 2026-10-02) en onafhankelijk bevestigd door Herberts
+eigen documentatiecitaat: de juiste richtlijnen zijn `DisableDirPage`/`DisableProgramGroupPage`,
+allebei met drie waarden (`no`/`yes`/`auto`), maar met een **verschillende standaardwaarde per
+richtlijn** — `DisableDirPage` staat standaard op `no` (pagina altijd tonen), terwijl
+`DisableProgramGroupPage` al standaard op `auto` staat. Dit lost tegelijk het laatste backlogpunt
+van sectie 26 op ("Verwarring over `AppendDefaultGroupName`"): in plaats van het voorgestelde
+`AllowUserToChangeGroup`-veld is het nu `GroupPageMode` geworden, naar hetzelfde patroon als
+Installatiemap kiezen.
+
+### Datamodel: nieuwe `DisablePageMode`-enum, niet twee losse bool's
+
+Nieuw bestand `DisablePageMode.cs` (`InnoSetupStudio.Core.Project`, zelfde één-bestand-per-type-
+conventie als de rest van die map): een enum met drie waarden, `AlwaysShow`/`NeverShow`/
+`AutoSkipIfKnown`, die rechtstreeks overeenkomen met Inno Setup's `no`/`yes`/`auto`. Eén
+gedeelde enum voor beide pagina's (in plaats van twee aparte types) omdat de drie waarden en hun
+betekenis identiek zijn; alleen de **standaardwaarde** verschilt per gebruiksplek.
+
+`InstallerProject` kreeg:
+
+- `DirPageMode` (vervangt de oude `AllowUserToChangeDir`-bool), standaard `AlwaysShow` —
+  overeenkomstig `DisableDirPage`'s eigen standaard (`no`).
+- `GroupPageMode` (nieuw veld, geen eerdere bool-tegenhanger), standaard `AutoSkipIfKnown` —
+  overeenkomstig `DisableProgramGroupPage`'s eigen standaard (`auto`).
+
+Beide zijn `[JsonConverter(typeof(DisablePageModeJsonConverter))]`. `DirPageMode` draagt
+daarnaast `[JsonPropertyName("AllowUserToChangeDir")]`: de eigenschap heet in C# nu anders (het
+is geen simpel vinkje meer), maar bewaart bewust de oude JSON-sleutel, zodat een bestaand
+.issproj-bestand zonder enige migratiecode blijft laden.
+
+### Backward-compatible migratie via een eigen `JsonConverter`
+
+Nieuw bestand `DisablePageModeJsonConverter.cs`: een `JsonConverter<DisablePageMode>` die bij het
+lezen drie gevallen onderscheidt — een JSON-`true`/`false` (het oude bool-formaat, voor
+`DirPageMode`'s `AllowUserToChangeDir`-sleutel: `true`→`AlwaysShow`, `false`→`NeverShow`, nooit
+automatisch `AutoSkipIfKnown`, want die waarde bestond in het oude model niet), een tekstwaarde
+die met `Enum.TryParse` naar een van de drie enum-namen wordt omgezet (het nieuwe formaat), of
+anders een `JsonException` (bewust hard falen in plaats van stilzwijgend een gok te doen bij een
+echt onverwachte waarde). Schrijven gebeurt altijd als tekstwaarde. Dit is dezelfde
+"doorgeef + converter doet het vertaalwerk"-aanpak als elders in dit project, maar dan voor een
+type-wijziging (bool → enum) in plaats van een simpele `??=`-normalisatie zoals bij
+WizardScreens/SupportedLanguageIds (sectie 14).
+
+Nieuwe tests in `InstallerProjectTests.cs`: een parametrische test
+(`LoadAsyncMigratesLegacyBooleanAllowUserToChangeDirToDirPageMode`) voor beide boolean-waarden,
+plus uitgebreide assertions in de bestaande round-trip- en ouder-projectbestand-tests voor de
+tekstwaarde-vorm en de twee verschillende standaardwaarden.
+
+### UI: één dropdown per pagina, Herberts expliciete keuze
+
+Gevraagd via `AskUserQuestion` hoe de derde toestand in de UI te tonen (een los vinkje naast de
+bestaande twee, of één keuzelijst met drie opties); Herbert koos de keuzelijst. Het bestaande
+vinkje "Gebruiker mag map wijzigen" op Installatiemap kiezen is vervangen door een `ComboBox`
+(`ScreenEditorControl.xaml`, `SelectDestinationPropertyPanelTemplate`); Select Start Menu Folder
+kreeg een nieuwe, identiek opgebouwde `ComboBox` (`SelectProgramGroupPropertyPanelTemplate`, had
+voorheen geen enkele zichtbaarheidsinstelling). Beide gebruiken `SelectedValuePath="Tag"` met
+`ComboBoxItem Tag="AlwaysShow"` etc.: WPF's ingebouwde `EnumConverter` zet de Tag-tekst vanzelf om
+naar de `DisablePageMode`-eigenschap, dus geen eigen `IValueConverter` nodig. Onder elke keuzelijst
+staat een toelichtende hint-tekst die wisselt met de gekozen waarde (`IsNeverShowHintVisible`/
+`IsAutoSkipHintVisible` op `SelectProgramGroupPageEditorViewModel`, `ChangeDirHintVisibility`/
+`IsAutoSkipHintVisible` op `SelectDestinationPageEditorViewModel` — de eerste twee namen zijn
+bewust verschillend gebleven, `ChangeDirHintVisibility` bestond al vóór deze feature).
+
+**Voorvertoning bij "Auto"**: Inno Setup's auto-overslaan-gedrag hangt af van het register op het
+moment van installeren, iets wat de ontwerptijd-voorvertoning niet kan nabootsen. Gekozen
+conventie: `AutoSkipIfKnown` wordt in de voorvertoning behandeld als een eerste installatie (het
+scherm blijft dus net als bij `AlwaysShow` bewerkbaar/zichtbaar), met alleen een aparte,
+onderscheidende hint-tekst erbij (letterlijk Engels, net als de bestaande
+`ChangeDirHintVisibility`-hint in `SelectDestinationPagePreview.xaml` — deze voorvertoning
+simuleert Inno Setup's eigen paginatekst, niet de taal van de editor-UI zelf, dus geen
+resx-binding voor deze twee specifieke `TextBlock`-elementen in de voorvertoningen).
+
+### Lokalisatie
+
+Nieuwe resx-sleutels (NL/EN/DE, alle drie bijgewerkt): `LabelDirPageMode`/`LabelGroupPageMode`
+(de koptekst boven elke keuzelijst), de gedeelde `LabelDisablePageModeAlwaysShow`/
+`LabelDisablePageModeNeverShow`/`LabelDisablePageModeAuto` (de drie keuzelijst-opties, hergebruikt
+op beide pagina's omdat de tekst identiek is), en de vier schermspecifieke hint-teksten
+`HintDirPageModeNeverShow`/`HintDirPageModeAuto`/`HintGroupPageModeNeverShow`/
+`HintGroupPageModeAuto`. De oude `LabelAllowUserToChangeDir`-sleutel is verwijderd uit alle drie
+de resx-bestanden (nergens meer naar verwezen). XML-validatie van alle drie de resx-bestanden na
+bewerking: geen fouten, geen dubbele sleutels, gelijk aantal items in elk bestand.
+
+### Wiring (`WizardEditorViewModel`, `ProjectSettingsViewModel`)
+
+`WizardEditorViewModel`'s constructor en `ApplyTo`-switch zijn bijgewerkt voor beide
+eigenschappen (`DirPageMode` i.p.v. `AllowUserToChangeDir`, `GroupPageMode` nieuw). Daarnaast is
+`ProjectSettingsViewModel`'s bestaande doorgeef-patroon (zie sectie 16/26: velden die elders — in
+de schermeditor — bewerkt worden, moeten hier ongewijzigd worden meegenomen bij Opslaan, anders
+zet een algemene naam-/padwijziging ze stilzwijgend terug) aangevuld: het bestaande
+`_allowUserToChangeDir`-veld is omgezet naar `_dirPageMode` (`DisablePageMode`), en er is een
+nieuw `_groupPageMode`-doorgeefveld toegevoegd — zonder dat laatste zou Opslaan vanuit het
+algemene projectinstellingenscherm de in de schermeditor gekozen Start Menu-paginazichtbaarheid
+stilzwijgend hebben teruggezet naar de standaardwaarde, exact dezelfde bugklasse als CodeRabbit's
+bevinding in sectie 26.
+
+### Build- en testresultaat
+
+`dotnet build`: 0 waarschuwingen, 0 fouten. `dotnet test`: 26/26 geslaagd (24 bestaand + 2 nieuwe
+parametrische gevallen voor de boolean-naar-enum-migratie).
+
+### Backlog
+
+- De drie overige, nog niet gebouwde punten uit sectie 26 (User Info per-veld/meertalige
+  captions, volledige Bladeren-knop-aanpasbaarheid op Select Start Menu Folder) blijven open.
+- Nog te testen door Herbert in de UI: de keuzelijst zelf (alle drie waarden selecteerbaar,
+  hint-tekst wisselt correct), en dat een bestaand project met het oude boolean-veld nog gewoon
+  opent.
+
+## 28. Bladeren-knop op Select Start Menu Folder volledig aanpasbaar (2026-10-02)
+
+### Aanleiding
+
+Herbert testte de vijf nieuwe schermeditors uit sectie 26/27 in de UI en bevestigde dat de rest
+van de functionaliteit goed werkt, op één concreet gemis na: de Bladeren-knop op Select Start Menu
+Folder kon nog niet bewerkt worden zoals de Bladeren-knop op Installatiemap kiezen (caption/
+enabled/visible/tekstkleur/lettertype/vet/tooltip, plus per-taal-varianten via
+`ButtonPropertiesWindow`). Dit was het nog openstaande backlogpunt uit sectie 26 ("Bladeren-knop
+op Select Start Menu Folder nog niet volledig aanpasbaar") en wordt hiermee opgelost.
+
+**Verificatie.** Voordat dit gebouwd werd, is tegen Inno Setup's eigen broncode gecontroleerd
+(`Setup.WizardForm.pas`, `jrsoftware/issrc` op GitHub) dat deze knop ook daadwerkelijk bestaat als
+een losse `TNewButton`, net als `DirBrowseButton` op Installatiemap kiezen:
+`FGroupBrowseButton: TNewButton` / `property GroupBrowseButton: TNewButton read FGroupBrowseButton;`
+op `TWizardForm`. Dat bevestigt dat deze knop een legitiem, bestaand bewerkingsdoel is en niet een
+verzonnen eigenschap.
+
+### Datamodel: hergebruik van `BrowseButtonSettings`, geen nieuwe klasse
+
+Nieuwe eigenschap `InstallerProject.SelectProgramGroupBrowseButton` (`BrowseButtonSettings`,
+standaard `new()`), rechtstreeks naast `GroupPageMode` geplaatst. Hergebruikt bewust hetzelfde
+`BrowseButtonSettings`-model als `SelectDestinationBrowseButton` in plaats van een tweede, bijna
+identieke klasse: de velden en hun betekenis (leeg/null laat Inno Setup's eigen standaardgedrag
+intact, geen drielaagse Effective*-cascade via het Standaardscherm omdat deze knop maar op één
+scherm voorkomt) zijn voor beide knoppen exact hetzelfde. `BrowseButtonSettings`'s klasse-
+doccomment is bijgewerkt om dit gedeelde gebruik te weerspiegelen.
+
+### ViewModel: exacte mirror van `SelectDestinationPageEditorViewModel`
+
+`SelectProgramGroupPageEditorViewModel` kreeg dezelfde Bladerknop-laag als
+`SelectDestinationPageEditorViewModel` al had: een zesde constructorparameter
+(`BrowseButtonSettings browseButtonSettings`), de acht scalaire velden
+(`BrowseButtonCaption`/`Enabled`/`Visible`/`TextColor`/`FontFamily`/`FontSize`/`FontBold`/
+`Tooltip`) plus de twee per-taal-dictionaries, `PickBrowseButtonTextColor`,
+`DefaultBrowseButtonCaption`/`EffectiveBrowseButtonCaption`, `IsBrowseButtonVisible`/
+`IsBrowseButtonEnabled`, en `ReadBrowseButtonSettings()`. Enige inhoudelijke verschil met de
+Bestemmingspagina: `IsBrowseButtonEnabledInPreview` combineert hier Inno Setup's eigen ingebouwde
+gedrag met `GroupPageMode != DisablePageMode.NeverShow` in plaats van `DirPageMode` — elk scherm
+gebruikt zijn eigen paginazichtbaarheidsveld (sectie 27) om te bepalen of de knop in de
+voorvertoning ook daadwerkelijk bewerkbaar lijkt.
+
+### Wiring, UI en voorvertoning
+
+`WizardEditorViewModel`'s constructor geeft `project.SelectProgramGroupBrowseButton` nu als zesde
+argument mee, en de `ApplyTo`-switch schrijft `programGroup.ReadBrowseButtonSettings()` terug —
+zelfde patroon als bij `SelectDestinationPageEditorViewModel`. `ScreenEditorControl.xaml` kreeg
+een nieuwe "Bladerknop"-sectie onderaan `SelectProgramGroupPropertyPanelTemplate` (tekstveld +
+eigenschappenknopje), met een eigen, kleine `ProgramGroupBrowseButtonProperties_Click`-handler en
+`BuildForProgramGroupBrowseButton`-fabrieksmethode in `ScreenEditorControl.xaml.cs` — exacte
+mirrors van `BrowseButtonProperties_Click`/`BuildForBrowseButton`, maar getypeerd op
+`SelectProgramGroupPageEditorViewModel`. `SelectProgramGroupPagePreview.xaml`'s Bladeren-knop was
+voorheen volledig decoratief (`Content="Browse..."`, geen enkele binding); deze is nu volledig
+gebonden (Content/IsEnabled/Visibility/Foreground/FontFamily/FontSize/FontWeight/ToolTip), met
+dezelfde vier converters als `SelectDestinationPagePreview.xaml` toegevoegd aan
+`UserControl.Resources` — en blijft, net als die andere voorvertoning, niet-interactief
+(`IsHitTestVisible="False" Focusable="False" IsTabStop="False"`: bewerken gebeurt in het
+instellingenpaneel, niet in de voorvertoning zelf).
+
+Geen nieuwe resx-sleutels nodig: `SectionBrowseButton` en `ButtonWizardBrowse` waren al generiek/
+gedeeld tussen beide schermen.
+
+### Doorgeefveld in `ProjectSettingsViewModel`
+
+Zelfde reden als bij elk eerder doorgeefveld in dit document (secties 16/26/27): een veld dat
+alleen in de schermeditor bewerkt wordt, moet bij het opslaan vanuit het algemene
+Projectinstellingenscherm ongewijzigd worden teruggeschreven, anders zet een gewone naam-/
+padwijziging het stilzwijgend terug naar de standaardwaarde. Nieuw doorgeefveld
+`_selectProgramGroupBrowseButton`, naast het bestaande `_selectDestinationBrowseButton`.
+
+### Testdekking
+
+`InstallerProjectTests.JsonInstallerProjectServiceRoundTripsAllFields` zet
+`SelectProgramGroupBrowseButton` nu op niet-standaardwaarden voor alle acht velden plus beide
+per-taal-dictionaries, en controleert de volledige round-trip na opslaan/laden — dezelfde
+dekkingsgraad die `SelectDestinationBrowseButton` zelf tot nu toe niet had (dat blijft zo; deze
+sessie breidde alleen de nieuwe eigenschap uit). De bestaande
+`LoadAsyncDefaultsLanguageOverrideDictionariesForOlderProjectFileWithoutThem`-test kreeg twee
+extra assertions voor `SelectProgramGroupBrowseButton`'s per-taal-dictionaries, naast de al
+bestaande assertions voor `SelectDestinationBrowseButton`.
+
+### Build- en testresultaat
+
+`dotnet build`: 0 waarschuwingen, 0 fouten. `dotnet test`: 26/26 geslaagd (geen nieuwe
+testmethoden, wel uitgebreide assertions in twee bestaande tests).
+
+### Backlog
+
+- De twee overige, nog niet gebouwde punten uit sectie 26 (User Info per-veld/meertalige
+  captions) blijven open.
+- Nog te testen door Herbert in de UI, samen met de rest van PR #23: de nieuwe
+  eigenschappenknop bij de Start Menu-Bladerknop (caption/kleur/lettertype/tooltip/per-taal), en
+  dat de knop in de voorvertoning uitgeschakeld raakt zodra `GroupPageMode` op "Nooit tonen"
+  staat.

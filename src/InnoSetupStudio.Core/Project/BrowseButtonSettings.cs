@@ -1,14 +1,20 @@
 namespace InnoSetupStudio.Core.Project;
 
 /// <summary>
-/// Aanpassingen van de "Bladeren"-knop op het Bestemmingspagina-scherm (Select Destination). In
-/// Inno Setup is dit een schermspecifieke knop (WizardForm.DirBrowseButton, ook een TNewButton),
-/// niet één van de drie gedeelde Terug-/Volgende-/Annuleren-knoppen — vandaar een eigen, apart
-/// model in plaats van een uitbreiding van <see cref="WizardScreenButtonSettings"/>.
+/// Aanpassingen van een schermspecifieke "Bladeren"-knop. Oorspronkelijk (2026-09-04) alleen voor
+/// het Bestemmingspagina-scherm (Select Destination, WizardForm.DirBrowseButton), sinds 2026-10-02
+/// (Herberts verzoek) hergebruikt voor <see cref="InstallerProject.SelectProgramGroupBrowseButton"/>
+/// op het Select Start Menu Folder-scherm (WizardForm.GroupBrowseButton) — beide zijn in Inno
+/// Setup's eigen objectmodel een TNewButton, geverifieerd tegen Setup.WizardForm.pas. In Inno
+/// Setup is dit dus telkens een schermspecifieke knop, niet één van de drie gedeelde Terug-/
+/// Volgende-/Annuleren-knoppen — vandaar een eigen, apart model in plaats van een uitbreiding van
+/// <see cref="WizardScreenButtonSettings"/>. Eén gedeeld model voor beide schermen in plaats van
+/// twee bijna identieke klassen, omdat de velden en hun gedrag (zie hieronder) voor beide knoppen
+/// exact hetzelfde zijn.
 ///
 /// Bewust GEEN drielaags-resolutie via het Standaardscherm (zie WizardScreenEditorViewModel's
-/// Effective*-eigenschappen): deze knop komt maar op één scherm voor, dus er is geen "ander
-/// scherm" waarvan een standaardwaarde zinvol zou zijn.
+/// Effective*-eigenschappen): elk van deze knoppen komt maar op één scherm voor, dus er is geen
+/// "ander scherm" waarvan een standaardwaarde zinvol zou zijn.
 ///
 /// Caption toegevoegd op 2026-09-29: eerder (2026-09-04) had Herbert dit veld hier niet gevraagd,
 /// en het codecommentaar ging er toen van uit dat DirBrowseButton geen Caption zou hebben. Via

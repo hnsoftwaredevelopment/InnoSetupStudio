@@ -129,8 +129,23 @@
         <DataTemplate DataType="{x:Type vm:LicensePageEditorViewModel}">
             <wizard:LicensePagePreview />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:InfoBeforePageEditorViewModel}">
+            <wizard:InfoBeforePagePreview />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:UserInfoPageEditorViewModel}">
+            <wizard:UserInfoPagePreview />
+        </DataTemplate>
         <DataTemplate DataType="{x:Type vm:SelectDestinationPageEditorViewModel}">
             <wizard:SelectDestinationPagePreview />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SelectProgramGroupPageEditorViewModel}">
+            <wizard:SelectProgramGroupPagePreview />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ReadyPageEditorViewModel}">
+            <wizard:ReadyPagePreview />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:InfoAfterPageEditorViewModel}">
+            <wizard:InfoAfterPagePreview />
         </DataTemplate>
 
         <!-- Instellingenpaneel (rechts, nu het middendeel van MainWindow): staat wél hier in
@@ -164,6 +179,164 @@
             </StackPanel>
         </DataTemplate>
 
+        <!-- Info Before/After (hieronder): functioneel identiek aan de licentiepagina hierboven
+             (bestand kiezen + voorvertoning van de inhoud), alleen een andere labeltekst en geen
+             "akkoord"-keuzerondjes (zie InfoBeforePagePreview/InfoAfterPagePreview). -->
+        <DataTemplate DataType="{x:Type vm:InfoBeforePageEditorViewModel}" x:Key="InfoBeforePropertyPanelTemplate">
+            <StackPanel>
+                <TextBlock x:Name="InfoBeforeFilePathLabel" Text="{loc:Loc LabelInfoBeforeFilePath}" Margin="0,0,0,6" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" Text="{Binding InfoFilePath, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0"
+                             AutomationProperties.LabeledBy="{Binding ElementName=InfoBeforeFilePathLabel}" />
+                    <Button Grid.Column="1" Command="{Binding BrowseCommand}" ToolTip="{loc:Loc ButtonBrowse}"
+                            AutomationProperties.Name="{loc:Loc ButtonBrowse}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=InfoBeforeFilePathLabel}">
+                        <Path Data="{StaticResource Folder}" Fill="{DynamicResource Brush.TextPrimary}"
+                              Stretch="Uniform" Width="16" Height="16" />
+                    </Button>
+                </Grid>
+                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" />
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:InfoAfterPageEditorViewModel}" x:Key="InfoAfterPropertyPanelTemplate">
+            <StackPanel>
+                <TextBlock x:Name="InfoAfterFilePathLabel" Text="{loc:Loc LabelInfoAfterFilePath}" Margin="0,0,0,6" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" Text="{Binding InfoFilePath, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0"
+                             AutomationProperties.LabeledBy="{Binding ElementName=InfoAfterFilePathLabel}" />
+                    <Button Grid.Column="1" Command="{Binding BrowseCommand}" ToolTip="{loc:Loc ButtonBrowse}"
+                            AutomationProperties.Name="{loc:Loc ButtonBrowse}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=InfoAfterFilePathLabel}">
+                        <Path Data="{StaticResource Folder}" Fill="{DynamicResource Brush.TextPrimary}"
+                              Stretch="Uniform" Width="16" Height="16" />
+                    </Button>
+                </Grid>
+                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" />
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- User Info: drie vooringevulde tekstvelden plus het "onthoud bij update"-vinkje, geen
+             bestandskeuze of eigen knop (zie UserInfoPageEditorViewModel). -->
+        <DataTemplate DataType="{x:Type vm:UserInfoPageEditorViewModel}" x:Key="UserInfoPropertyPanelTemplate">
+            <StackPanel>
+                <!-- Hint-teksten onder deze drie velden (2026-10-02, Herberts vraag): deze velden
+                     accepteren niet alleen letterlijke tekst maar ook Inno Setup-constants (bijv.
+                     {sysuserinfoname}, {reg:...}, {param:...}) - zie
+                     docs/Gebruikersdocumentatie/Inno-Setup-Constants.md voor de volledige
+                     referentie. Bewust een vrij tekstveld met alleen een hint eronder, geen
+                     keuzelijst: de gebruiker moet elke constant-syntax met eigen parameters kunnen
+                     intypen, niet beperkt worden tot een vaste lijst. -->
+                <TextBlock x:Name="DefaultUserInfoNameLabel" Text="{loc:Loc LabelDefaultUserInfoName}" Margin="0,0,0,6" />
+                <TextBox Text="{Binding DefaultUserInfoName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"
+                         AutomationProperties.LabeledBy="{Binding ElementName=DefaultUserInfoNameLabel}" />
+                <TextBlock Text="{loc:Loc HintDefaultUserInfoName}" FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,12" />
+
+                <TextBlock x:Name="DefaultUserInfoOrgLabel" Text="{loc:Loc LabelDefaultUserInfoOrg}" Margin="0,0,0,6" />
+                <TextBox Text="{Binding DefaultUserInfoOrg, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"
+                         AutomationProperties.LabeledBy="{Binding ElementName=DefaultUserInfoOrgLabel}" />
+                <TextBlock Text="{loc:Loc HintDefaultUserInfoOrg}" FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,12" />
+
+                <TextBlock x:Name="DefaultUserInfoSerialLabel" Text="{loc:Loc LabelDefaultUserInfoSerial}" Margin="0,0,0,6" />
+                <TextBox Text="{Binding DefaultUserInfoSerial, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"
+                         AutomationProperties.LabeledBy="{Binding ElementName=DefaultUserInfoSerialLabel}" />
+                <TextBlock Text="{loc:Loc HintDefaultUserInfoSerial}" FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,12" />
+
+                <CheckBox Content="{loc:Loc LabelUsePreviousUserInfo}" IsChecked="{Binding UsePreviousUserInfo}"
+                          Foreground="{DynamicResource Brush.TextPrimary}" />
+                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" />
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- Select Start Menu Folder: vooringevulde groepsnaam + twee gedragsvinkjes (zie
+             SelectProgramGroupPageEditorViewModel). Sinds 2026-10-02 (Herberts verzoek) ook een
+             eigen aanpasbare Bladeren-knop, net als de bestemmingspagina — zie de sectie onderaan
+             deze template. -->
+        <DataTemplate DataType="{x:Type vm:SelectProgramGroupPageEditorViewModel}" x:Key="SelectProgramGroupPropertyPanelTemplate">
+            <StackPanel>
+                <TextBlock x:Name="DefaultGroupNameLabel" Text="{loc:Loc LabelDefaultGroupName}" Margin="0,0,0,6" />
+                <TextBox Text="{Binding DefaultGroupName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"
+                         AutomationProperties.LabeledBy="{Binding ElementName=DefaultGroupNameLabel}" />
+                <TextBlock Text="{loc:Loc LabelDefaultGroupNameHint}" FontSize="11"
+                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,16" />
+                <CheckBox Content="{loc:Loc LabelAppendDefaultGroupName}" IsChecked="{Binding AppendDefaultGroupName}"
+                          Foreground="{DynamicResource Brush.TextPrimary}" Margin="0,0,0,8" />
+                <CheckBox Content="{loc:Loc LabelAlwaysUsePersonalGroup}" IsChecked="{Binding AlwaysUsePersonalGroup}"
+                          Foreground="{DynamicResource Brush.TextPrimary}" Margin="0,0,0,16" />
+
+                <!-- Drie-waardige paginazichtbaarheid (sinds 2026-10-02, Herberts verzoek): komt
+                     overeen met Inno Setup's DisableProgramGroupPage=no/yes/auto, zie
+                     DisablePageMode. Eén dropdown i.p.v. een vinkje, zoals Herbert koos via
+                     AskUserQuestion. SelectedValuePath="Tag" + SelectedValue op de enum-property
+                     laat WPF's ingebouwde EnumConverter de Tag-tekst naar DisablePageMode omzetten,
+                     dus geen eigen IValueConverter nodig. -->
+                <TextBlock x:Name="GroupPageModeLabel" Text="{loc:Loc LabelGroupPageMode}" Margin="0,0,0,6" />
+                <ComboBox x:Name="GroupPageModeCombo" SelectedValuePath="Tag" SelectedValue="{Binding GroupPageMode}"
+                          HorizontalAlignment="Left" MinWidth="240"
+                          AutomationProperties.LabeledBy="{Binding ElementName=GroupPageModeLabel}">
+                    <ComboBoxItem Tag="AlwaysShow" Content="{loc:Loc LabelDisablePageModeAlwaysShow}" />
+                    <ComboBoxItem Tag="NeverShow" Content="{loc:Loc LabelDisablePageModeNeverShow}" />
+                    <ComboBoxItem Tag="AutoSkipIfKnown" Content="{loc:Loc LabelDisablePageModeAuto}" />
+                </ComboBox>
+                <TextBlock Text="{loc:Loc HintGroupPageModeNeverShow}" FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,4,0,0"
+                           Visibility="{Binding IsNeverShowHintVisible}" />
+                <TextBlock Text="{loc:Loc HintGroupPageModeAuto}" FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,4,0,0"
+                           Visibility="{Binding IsAutoSkipHintVisible}" />
+
+                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" Margin="0,16,0,0" />
+
+                <!-- Schermspecifieke "Bladeren"-knop (Inno Setup's WizardForm.GroupBrowseButton,
+                     zie BrowseButtonSettings): zelfde opzet als de Bladerknop-sectie onderaan
+                     SelectDestinationPropertyPanelTemplate hierboven (Herberts verzoek,
+                     2026-10-02: dezelfde bewerkingsmogelijkheden als de bestemmingspagina). -->
+                <TextBlock Text="{loc:Loc SectionBrowseButton}" FontWeight="Bold" Margin="0,20,0,8" />
+                <Grid Margin="0,0,0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="224" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="ProgramGroupBrowseButtonCaptionBox" Grid.Column="0" Width="220" HorizontalAlignment="Left"
+                             MaxLength="30"
+                             Text="{Binding BrowseButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"
+                             Foreground="{Binding BrowseButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
+                             controls:Placeholder.Text="{Binding EffectiveBrowseButtonCaption}" />
+                    <Button Grid.Column="1" Click="ProgramGroupBrowseButtonProperties_Click"
+                            ToolTip="{loc:Loc ButtonOpenProperties}" AutomationProperties.Name="{loc:Loc ButtonOpenProperties}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=ProgramGroupBrowseButtonCaptionBox}">
+                        <Path Data="{StaticResource Properties}" Fill="{DynamicResource Brush.TextPrimary}"
+                              Stretch="Uniform" Width="16" Height="16" />
+                    </Button>
+                </Grid>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- Klaar om te installeren: drie vinkjes die bepalen wat de samenvatting (ReadyMemo) op
+             deze pagina toont (zie ReadyPageEditorViewModel). -->
+        <DataTemplate DataType="{x:Type vm:ReadyPageEditorViewModel}" x:Key="ReadyPropertyPanelTemplate">
+            <StackPanel>
+                <CheckBox Content="{loc:Loc LabelDisableReadyMemo}" IsChecked="{Binding DisableReadyMemo}"
+                          Foreground="{DynamicResource Brush.TextPrimary}" Margin="0,0,0,8" />
+                <CheckBox Content="{loc:Loc LabelAlwaysShowDirOnReadyPage}" IsChecked="{Binding AlwaysShowDirOnReadyPage}"
+                          Foreground="{DynamicResource Brush.TextPrimary}" Margin="0,0,0,8" />
+                <CheckBox Content="{loc:Loc LabelAlwaysShowGroupOnReadyPage}" IsChecked="{Binding AlwaysShowGroupOnReadyPage}"
+                          Foreground="{DynamicResource Brush.TextPrimary}" />
+                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" />
+            </StackPanel>
+        </DataTemplate>
+
         <DataTemplate DataType="{x:Type vm:SelectDestinationPageEditorViewModel}" x:Key="SelectDestinationPropertyPanelTemplate">
             <StackPanel>
                 <TextBlock Text="{loc:Loc LabelDefaultDirName}" Margin="0,0,0,6" />
@@ -181,9 +354,26 @@
                 </Grid>
                 <TextBlock Text="{loc:Loc LabelDefaultDirNameHint}" FontSize="11"
                            Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,16" />
-                <CheckBox Content="{loc:Loc LabelAllowUserToChangeDir}" IsChecked="{Binding AllowUserToChangeDir}"
-                          Foreground="{DynamicResource Brush.TextPrimary}" />
-                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" />
+                <!-- Drie-waardige paginazichtbaarheid (sinds 2026-10-02, Herberts verzoek): komt
+                     overeen met Inno Setup's DisableDirPage=no/yes/auto, zie DisablePageMode.
+                     Vervangt het vinkje van vóór 2026-10-02 (AllowUserToChangeDir, alleen
+                     true/false) — zie ScreenEditorControl.xaml's SelectProgramGroupPropertyPanelTemplate
+                     voor dezelfde ComboBox-opzet bij de Start Menu-pagina. -->
+                <TextBlock x:Name="DirPageModeLabel" Text="{loc:Loc LabelDirPageMode}" Margin="0,0,0,6" />
+                <ComboBox x:Name="DirPageModeCombo" SelectedValuePath="Tag" SelectedValue="{Binding DirPageMode}"
+                          HorizontalAlignment="Left" MinWidth="240"
+                          AutomationProperties.LabeledBy="{Binding ElementName=DirPageModeLabel}">
+                    <ComboBoxItem Tag="AlwaysShow" Content="{loc:Loc LabelDisablePageModeAlwaysShow}" />
+                    <ComboBoxItem Tag="NeverShow" Content="{loc:Loc LabelDisablePageModeNeverShow}" />
+                    <ComboBoxItem Tag="AutoSkipIfKnown" Content="{loc:Loc LabelDisablePageModeAuto}" />
+                </ComboBox>
+                <TextBlock Text="{loc:Loc HintDirPageModeNeverShow}" FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,4,0,0"
+                           Visibility="{Binding ChangeDirHintVisibility}" />
+                <TextBlock Text="{loc:Loc HintDirPageModeAuto}" FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,4,0,0"
+                           Visibility="{Binding IsAutoSkipHintVisible}" />
+                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ButtonSettingsSectionTemplate}" Margin="0,16,0,0" />
 
                 <!-- Schermspecifieke "Bladeren"-knop (Inno Setup's WizardForm.DirBrowseButton,
                      zie BrowseButtonSettings): bewust een eigen sectie, los van
@@ -423,7 +613,12 @@
                         <converters:PropertyPanelTemplateSelector
                             WelcomeTemplate="{StaticResource PropertyPanelTemplate}"
                             LicenseTemplate="{StaticResource LicensePropertyPanelTemplate}"
+                            InfoBeforeTemplate="{StaticResource InfoBeforePropertyPanelTemplate}"
+                            UserInfoTemplate="{StaticResource UserInfoPropertyPanelTemplate}"
                             SelectDestinationTemplate="{StaticResource SelectDestinationPropertyPanelTemplate}"
+                            SelectProgramGroupTemplate="{StaticResource SelectProgramGroupPropertyPanelTemplate}"
+                            ReadyTemplate="{StaticResource ReadyPropertyPanelTemplate}"
+                            InfoAfterTemplate="{StaticResource InfoAfterPropertyPanelTemplate}"
                             DefaultScreenTemplate="{StaticResource DefaultScreenPropertyPanelTemplate}" />
                     </ContentControl.ContentTemplateSelector>
                 </ContentControl>

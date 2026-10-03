@@ -122,10 +122,10 @@ Dit is een levend document: vink af (verander ⬜/🔶 naar ✅ met een verwijzi
 | Richtlijn | Omschrijving | Mechanisme | Status |
 |---|---|---|---|
 | UserInfoPage | Aan/uit-schakeling, zie tabblad Schermen hierboven. | Eigenschap | ✅ (zie categorie 2) |
-| DefaultUserInfoName | Standaard vooringevulde naam. | Eigenschap | ⬜ (fase 4: UserInfo-schermeditor) |
-| DefaultUserInfoOrg | Standaard vooringevulde organisatie. | Eigenschap | ⬜ (fase 4) |
-| DefaultUserInfoSerial | Standaard vooringevuld serienummer. | Eigenschap | ⬜ (fase 4) |
-| UsePreviousUserInfo | Onthoudt eerder ingevulde naam/organisatie/serienummer bij een update. | Eigenschap | ⬜ (fase 4 — zelfde "update capability"-groep als tabblad Overige instellingen) |
+| DefaultUserInfoName | Standaard vooringevulde naam. Ondersteunt Inno Setup-constants (zie [Gebruikersdocumentatie/Inno-Setup-Constants.md](Gebruikersdocumentatie/Inno-Setup-Constants.md)). | Eigenschap | ✅ `InstallerProject.DefaultUserInfoName` |
+| DefaultUserInfoOrg | Standaard vooringevulde organisatie. Ondersteunt constants. | Eigenschap | ✅ `InstallerProject.DefaultUserInfoOrg` |
+| DefaultUserInfoSerial | Standaard vooringevuld serienummer. Ondersteunt constants. | Eigenschap | ✅ `InstallerProject.DefaultUserInfoSerial` |
+| UsePreviousUserInfo | Onthoudt eerder ingevulde naam/organisatie/serienummer bij een update. | Eigenschap | ✅ `InstallerProject.UsePreviousUserInfo` |
 | CheckSerial | Pascal-event om een serienummer zelf te valideren. | Pascal | ⬜ (fase 6) |
 
 ## 8. Wizardscherm: Select Destination Location

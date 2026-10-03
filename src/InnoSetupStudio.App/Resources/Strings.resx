@@ -261,8 +261,23 @@
   <data name="LabelDefaultDirNameHint" xml:space="preserve">
     <value>Leeg = {autopf}\&lt;Naam applicatie&gt;</value>
   </data>
-  <data name="LabelAllowUserToChangeDir" xml:space="preserve">
-    <value>Gebruiker mag map wijzigen</value>
+  <data name="LabelDirPageMode" xml:space="preserve">
+    <value>Zichtbaarheid van deze pagina</value>
+  </data>
+  <data name="LabelDisablePageModeAlwaysShow" xml:space="preserve">
+    <value>Altijd tonen</value>
+  </data>
+  <data name="LabelDisablePageModeNeverShow" xml:space="preserve">
+    <value>Nooit tonen</value>
+  </data>
+  <data name="LabelDisablePageModeAuto" xml:space="preserve">
+    <value>Automatisch overslaan indien al bekend</value>
+  </data>
+  <data name="HintDirPageModeNeverShow" xml:space="preserve">
+    <value>Setup laat de gebruiker de installatiemap niet wijzigen.</value>
+  </data>
+  <data name="HintDirPageModeAuto" xml:space="preserve">
+    <value>Bij een update slaat Setup deze pagina over als de installatiemap al bekend is.</value>
   </data>
   <data name="DialogFilterLicenseFiles" xml:space="preserve">
     <value>Licentiebestanden (*.txt;*.rtf)|*.txt;*.rtf|Alle bestanden (*.*)|*.*</value>
@@ -280,7 +295,7 @@
     <value>Volgende &gt;</value>
   </data>
   <data name="ScreenEditorNoScreens" xml:space="preserve">
-    <value>Geen van de schermen die de schermeditor al ondersteunt (Welkom, Licentieovereenkomst, Installatiemap kiezen) staat aan. Zet ze aan bij Projectinstellingen (tabblad Schermen) om ze hier te kunnen bewerken.</value>
+    <value>Geen van de schermen die de schermeditor al ondersteunt (Welkom, Licentieovereenkomst, Info Before, User Info, Installatiemap kiezen, Select Start Menu Folder, Klaar om te installeren, Info After) staat aan. Zet ze aan bij Projectinstellingen (tabblad Schermen) om ze hier te kunnen bewerken.</value>
   </data>
   <data name="ButtonWizardCancel" xml:space="preserve">
     <value>Annuleren</value>
@@ -383,5 +398,71 @@
   </data>
   <data name="SectionPreview" xml:space="preserve">
     <value>Voorvertoning</value>
+  </data>
+  <data name="LabelInfoBeforeFilePath" xml:space="preserve">
+    <value>Infobestand (voor installatie)</value>
+  </data>
+  <data name="LabelInfoAfterFilePath" xml:space="preserve">
+    <value>Infobestand (na installatie)</value>
+  </data>
+  <data name="DialogFilterInfoFiles" xml:space="preserve">
+    <value>Infobestanden (*.txt;*.rtf)|*.txt;*.rtf|Alle bestanden (*.*)|*.*</value>
+  </data>
+  <data name="ScreenEditorInfoBeforeNoFile" xml:space="preserve">
+    <value>Nog geen bestand gekozen.</value>
+  </data>
+  <data name="ScreenEditorInfoAfterNoFile" xml:space="preserve">
+    <value>Nog geen bestand gekozen.</value>
+  </data>
+  <data name="LabelDefaultUserInfoName" xml:space="preserve">
+    <value>Standaard naam</value>
+  </data>
+  <data name="HintDefaultUserInfoName" xml:space="preserve">
+    <value>Leeg = {sysuserinfoname} (naam waarop Windows geregistreerd staat). Ondersteunt ook andere Inno Setup-constants, zoals {username} of {reg:HKxx\Sleutel,Waarde|Standaard}.</value>
+  </data>
+  <data name="LabelDefaultUserInfoOrg" xml:space="preserve">
+    <value>Standaard organisatie</value>
+  </data>
+  <data name="HintDefaultUserInfoOrg" xml:space="preserve">
+    <value>Leeg = {sysuserinfoorg} (organisatie waarop Windows geregistreerd staat). Ondersteunt ook andere constants.</value>
+  </data>
+  <data name="LabelDefaultUserInfoSerial" xml:space="preserve">
+    <value>Standaard serienummer</value>
+  </data>
+  <data name="HintDefaultUserInfoSerial" xml:space="preserve">
+    <value>Ondersteunt Inno Setup-constants, bijvoorbeeld {reg:HKxx\Sleutel,Waarde|Standaard} of {param:Naam|Standaard}. Geen ingebouwde standaardwaarde: leeg tenzij je hier zelf iets invult.</value>
+  </data>
+  <data name="LabelUsePreviousUserInfo" xml:space="preserve">
+    <value>Onthoud ingevulde gegevens bij een update</value>
+  </data>
+  <data name="LabelDefaultGroupName" xml:space="preserve">
+    <value>Standaard startmenugroep</value>
+  </data>
+  <data name="LabelDefaultGroupNameHint" xml:space="preserve">
+    <value>Leeg = naam applicatie</value>
+  </data>
+  <data name="LabelAppendDefaultGroupName" xml:space="preserve">
+    <value>Voeg standaardnaam toe aan een eigen gekozen groep</value>
+  </data>
+  <data name="LabelAlwaysUsePersonalGroup" xml:space="preserve">
+    <value>Altijd in het persoonlijke startmenu (nooit "Alle gebruikers")</value>
+  </data>
+  <data name="LabelGroupPageMode" xml:space="preserve">
+    <value>Zichtbaarheid van deze pagina</value>
+  </data>
+  <data name="HintGroupPageModeNeverShow" xml:space="preserve">
+    <value>Setup laat de gebruiker de startmenugroep niet wijzigen.</value>
+  </data>
+  <data name="HintGroupPageModeAuto" xml:space="preserve">
+    <value>Bij een update slaat Setup deze pagina over als de startmenugroep al bekend is.</value>
+  </data>
+  <data name="LabelDisableReadyMemo" xml:space="preserve">
+    <value>Verberg samenvatting op deze pagina</value>
+  </data>
+  <data name="LabelAlwaysShowDirOnReadyPage" xml:space="preserve">
+    <value>Toon installatiemap altijd in de samenvatting</value>
+  </data>
+  <data name="LabelAlwaysShowGroupOnReadyPage" xml:space="preserve">
+    <value>Toon startmenugroep altijd in de samenvatting</value>
   </data>
 </root>
