@@ -89,6 +89,6 @@
              hier gewoon (zie DisablePageMode's doccomment) met alleen deze toelichting erbij. -->
         <TextBlock DockPanel.Dock="Bottom" Margin="0,16,0,0" Foreground="#FF666666" FontSize="11"
                     TextWrapping="Wrap" Visibility="{Binding IsAutoSkipHintVisible}"
-                    Text="During an update, Setup will skip this page if the destination folder is already known." />
+                    Text="During an update, Setup will skip this page if the same application is already installed." />
     </DockPanel>
 </UserControl>

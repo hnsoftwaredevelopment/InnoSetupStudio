@@ -58,7 +58,7 @@
                    Text="Setup does not allow the user to change this folder during installation." />
         <TextBlock DockPanel.Dock="Bottom" Margin="0,16,0,0" Foreground="#FF666666" FontSize="11"
                    TextWrapping="Wrap" Visibility="{Binding IsAutoSkipHintVisible}"
-                   Text="During an update, Setup will skip this page if the Start Menu folder is already known." />
+                   Text="During an update, Setup will skip this page if the same application is already installed." />
 
         <Grid DockPanel.Dock="Top">
             <Grid.ColumnDefinitions>

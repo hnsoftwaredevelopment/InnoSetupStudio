@@ -277,7 +277,7 @@
     <value>Setup laat de gebruiker de installatiemap niet wijzigen.</value>
   </data>
   <data name="HintDirPageModeAuto" xml:space="preserve">
-    <value>Bij een update slaat Setup deze pagina over als de installatiemap al bekend is.</value>
+    <value>Bij een update slaat Setup deze pagina over als dezelfde applicatie al geïnstalleerd is.</value>
   </data>
   <data name="DialogFilterLicenseFiles" xml:space="preserve">
     <value>Licentiebestanden (*.txt;*.rtf)|*.txt;*.rtf|Alle bestanden (*.*)|*.*</value>
@@ -454,7 +454,7 @@
     <value>Setup laat de gebruiker de startmenugroep niet wijzigen.</value>
   </data>
   <data name="HintGroupPageModeAuto" xml:space="preserve">
-    <value>Bij een update slaat Setup deze pagina over als de startmenugroep al bekend is.</value>
+    <value>Bij een update slaat Setup deze pagina over als dezelfde applicatie al geïnstalleerd is.</value>
   </data>
   <data name="LabelDisableReadyMemo" xml:space="preserve">
     <value>Verberg samenvatting op deze pagina</value>

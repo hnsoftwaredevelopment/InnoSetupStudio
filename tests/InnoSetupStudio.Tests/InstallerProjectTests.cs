@@ -629,6 +629,24 @@ public class InstallerProjectTests
     }
 
     [Fact]
+    public async Task LoadAsyncRejectsNumericTextForDisablePageMode()
+    {
+        // CodeRabbit (PR #23): Enum.TryParse accepteert ook numerieke tekst zoals "999" en gaf dan
+        // een ongedefinieerde enumwaarde terug. De converter moet alleen echte enumnamen toestaan.
+        var service = new JsonInstallerProjectService();
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.issproj");
+        await File.WriteAllTextAsync(path, "{\"AppName\":\"Corrupt\",\"GroupPageMode\":\"999\"}");
+        try
+        {
+            // LoadAsync verpakt de JsonException van de converter in een IOException (bestandsnaam
+            // in de melding); de oorspronkelijke fout zit in InnerException.
+            var ex = await Assert.ThrowsAsync<IOException>(() => service.LoadAsync(path));
+            Assert.IsType<System.Text.Json.JsonException>(ex.InnerException);
+        }
+        finally { if (File.Exists(path)) { File.Delete(path); } }
+    }
+
+    [Fact]
     public async Task SaveAsyncRetriesAndSucceedsWhenDestinationBrieflyLocked()
     {
         // Reproduceert het scenario dat Herbert tegenkwam: resaven van een bestaand

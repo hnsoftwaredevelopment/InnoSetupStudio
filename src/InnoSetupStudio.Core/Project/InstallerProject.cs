@@ -129,11 +129,9 @@ public sealed class InstallerProject
     /// (bewerkbaar), nooit tonen (vast), of automatisch overslaan bij een update (zie
     /// <see cref="DisablePageMode"/> voor de volledige toelichting). Komt overeen met Inno Setup's
     /// <c>DisableProgramGroupPage</c>-richtlijn. Standaard <see cref="DisablePageMode.AutoSkipIfKnown"/>
-    /// — Inno Setup's eigen standaard voor <c>DisableProgramGroupPage</c> is namelijk al
-    /// <c>auto</c>, anders dan <see cref="DirPageMode"/> hierboven (die standaard
-    /// <see cref="DisablePageMode.AlwaysShow"/> is, Inno Setup's eigen <c>DisableDirPage</c>-
-    /// standaard is <c>no</c>) — geverifieerd via de officiele documentatie en door Herbert zelf
-    /// aangeleverd (2026-10-02). Nieuw veld, geen oudere JSON-sleutel om achterwaarts compatibel
+    /// — Inno Setup's eigen standaard voor <c>DisableProgramGroupPage</c> is namelijk ook <c>auto</c>
+    /// (geverifieerd via de officiele documentatie, opnieuw op 2026-10-05). <see cref="DirPageMode"/>
+    /// hierboven wijkt hier bewust van af. Nieuw veld, geen oudere JSON-sleutel om achterwaarts compatibel
     /// mee te blijven (in tegenstelling tot DirPageMode): dit scherm had nog geen eigen
     /// bewerkbaar-vinkje.
     /// </summary>
@@ -181,8 +179,9 @@ public sealed class InstallerProject
     /// Hoe de bestemmingspagina (Select Destination Location) zich gedraagt: altijd tonen
     /// (bewerkbaar), nooit tonen (vast), of automatisch overslaan bij een update (zie
     /// <see cref="DisablePageMode"/> voor de volledige toelichting). Komt overeen met Inno Setup's
-    /// <c>DisableDirPage</c>-richtlijn, standaard <see cref="DisablePageMode.AlwaysShow"/> — Inno
-    /// Setup's eigen standaard voor <c>DisableDirPage</c> is <c>no</c>, wat hetzelfde is.
+    /// <c>DisableDirPage</c>-richtlijn. De projectstandaard blijft <see cref="DisablePageMode.AlwaysShow"/>
+    /// om het oude <c>AllowUserToChangeDir=true</c>-gedrag te behouden. Dat wijkt af van Inno
+    /// Setup's eigen standaard <c>auto</c>, die de pagina bij een bekende update kan overslaan.
     ///
     /// Was tot 2026-10-02 een <see langword="bool"/> onder dezelfde JSON-sleutel
     /// (<c>AllowUserToChangeDir</c>, <see langword="true"/> = bewerkbaar): de

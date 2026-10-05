@@ -277,7 +277,7 @@
     <value>Setup erlaubt dem Benutzer nicht, den Installationsordner zu ändern.</value>
   </data>
   <data name="HintDirPageModeAuto" xml:space="preserve">
-    <value>Bei einem Update überspringt Setup diese Seite, wenn der Installationsordner bereits bekannt ist.</value>
+    <value>Bei einem Update überspringt Setup diese Seite, wenn dieselbe Anwendung bereits installiert ist.</value>
   </data>
   <data name="DialogFilterLicenseFiles" xml:space="preserve">
     <value>Lizenzdateien (*.txt;*.rtf)|*.txt;*.rtf|Alle Dateien (*.*)|*.*</value>
@@ -454,7 +454,7 @@
     <value>Setup erlaubt dem Benutzer nicht, den Startmenüordner zu ändern.</value>
   </data>
   <data name="HintGroupPageModeAuto" xml:space="preserve">
-    <value>Bei einem Update überspringt Setup diese Seite, wenn der Startmenüordner bereits bekannt ist.</value>
+    <value>Bei einem Update überspringt Setup diese Seite, wenn dieselbe Anwendung bereits installiert ist.</value>
   </data>
   <data name="LabelDisableReadyMemo" xml:space="preserve">
     <value>Zusammenfassung auf dieser Seite ausblenden</value>

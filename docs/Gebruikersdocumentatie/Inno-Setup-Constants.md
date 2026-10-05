@@ -28,6 +28,11 @@ gevonden wordt (bijvoorbeeld een registersleutel die niet bestaat, of een comman
 die niet is meegegeven), gebruikt Setup de standaardwaarde na de `|`. Die standaardwaarde mag leeg
 zijn.
 
+Let op: dit geldt niet voor elke constant. Bij `{code:FunctieNaam|Parameter}` is de tekst na de `|`
+geen terugvalwaarde maar de tekstparameter die aan de Pascal Script-functie wordt doorgegeven (laat
+je hem weg, dan krijgt de functie een lege tekst). Een komma, `|` of `}` binnen een waarde moet je
+met %-codering schrijven.
+
 ## De drie User Info-velden
 
 ### Standaard naam (`DefaultUserInfoName`)
@@ -119,7 +124,7 @@ per se op de User Info-velden hierboven.
 | `{%OMGEVINGSVARIABELE\|Standaard}` | Een omgevingsvariabele. |
 | `{ini:Bestand,Sectie,Sleutel\|Standaard}` | Een waarde uit een .ini-bestand. |
 | `{cm:BerichtNaam}` | Een eigen vertaalbaar bericht (`[CustomMessages]`), afhankelijk van de gekozen taal. |
-| `{code:FunctieNaam\|Standaard}` | De returnwaarde van een eigen Pascal Script-functie (fase 6). |
+| `{code:FunctieNaam\|Parameter}` | De returnwaarde van een eigen Pascal Script-functie (fase 6). Wat na de `\|` staat is de parameter voor die functie, geen terugvalwaarde. |
 
 ## Bronnen
 

@@ -29,7 +29,12 @@ public sealed class DisablePageModeJsonConverter : JsonConverter<DisablePageMode
         if (reader.TokenType == JsonTokenType.String)
         {
             var text = reader.GetString();
-            if (text is not null && Enum.TryParse<DisablePageMode>(text, ignoreCase: true, out var parsed))
+            // Alleen een gedefinieerde enumnaam accepteren: Enum.TryParse laat ook numerieke tekst
+            // zoals "999" toe en zou dan een ongedefinieerde enumwaarde teruggeven (die later weer
+            // zou worden weggeschreven). Eerst tegen de namen controleren dus.
+            if (text is not null
+                && Array.Exists(Enum.GetNames<DisablePageMode>(), name => string.Equals(name, text, StringComparison.OrdinalIgnoreCase))
+                && Enum.TryParse<DisablePageMode>(text, ignoreCase: true, out var parsed))
             {
                 return parsed;
             }

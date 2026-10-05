@@ -2454,9 +2454,9 @@ alleen `yes`/`no` en gaan over een heel ander scherm (de samenvatting op de Read
 Installatiemap kiezen/Select Start Menu Folder zelf). Uitgezocht via de officiële Inno
 Setup-documentatie (jrsoftware.org/ishelp, 2026-10-02) en onafhankelijk bevestigd door Herberts
 eigen documentatiecitaat: de juiste richtlijnen zijn `DisableDirPage`/`DisableProgramGroupPage`,
-allebei met drie waarden (`no`/`yes`/`auto`), maar met een **verschillende standaardwaarde per
-richtlijn** — `DisableDirPage` staat standaard op `no` (pagina altijd tonen), terwijl
-`DisableProgramGroupPage` al standaard op `auto` staat. Dit lost tegelijk het laatste backlogpunt
+allebei met drie waarden (`no`/`yes`/`auto`), die in Inno Setup allebei standaard op `auto`
+staan (zie "Correcties" onderaan sectie 28: hier stond eerder ten onrechte dat `DisableDirPage`
+standaard `no` is). Dit lost tegelijk het laatste backlogpunt
 van sectie 26 op ("Verwarring over `AppendDefaultGroupName`"): in plaats van het voorgestelde
 `AllowUserToChangeGroup`-veld is het nu `GroupPageMode` geworden, naar hetzelfde patroon als
 Installatiemap kiezen.
@@ -2472,7 +2472,8 @@ betekenis identiek zijn; alleen de **standaardwaarde** verschilt per gebruiksple
 `InstallerProject` kreeg:
 
 - `DirPageMode` (vervangt de oude `AllowUserToChangeDir`-bool), standaard `AlwaysShow` —
-  overeenkomstig `DisableDirPage`'s eigen standaard (`no`).
+  bewust gekozen om het gedrag van de oude `AllowUserToChangeDir=true` te behouden. Dit wijkt af
+  van Inno Setup's eigen standaard (`auto`).
 - `GroupPageMode` (nieuw veld, geen eerdere bool-tegenhanger), standaard `AutoSkipIfKnown` —
   overeenkomstig `DisableProgramGroupPage`'s eigen standaard (`auto`).
 
@@ -2654,3 +2655,23 @@ testmethoden, wel uitgebreide assertions in twee bestaande tests).
   eigenschappenknop bij de Start Menu-Bladerknop (caption/kleur/lettertype/tooltip/per-taal), en
   dat de knop in de voorvertoning uitgeschakeld raakt zodra `GroupPageMode` op "Nooit tonen"
   staat.
+
+### Correcties n.a.v. CodeRabbit-review van 2026-10-02 (verwerkt op 2026-10-05)
+
+Alle vijf bevindingen zijn gecontroleerd tegen de officiële Inno Setup-documentatie
+(jrsoftware.org/ishelp) en bleken terecht:
+
+- **Standaardwaarde `DisableDirPage` was fout beschreven.** Sectie 27 en de code-commentaren zeiden
+  dat Inno Setup's standaard `no` is. De documentatie noemt voor `DisableDirPage` en
+  `DisableProgramGroupPage` allebei `auto` als standaard. Dit was mijn fout. Het model verandert
+  niet: `DirPageMode` blijft bewust standaard `AlwaysShow`, zodat oude projecten met
+  `AllowUserToChangeDir=true` zich hetzelfde blijven gedragen. Alleen de toelichting in
+  `DisablePageMode.cs`, `InstallerProject.cs` en sectie 27 is aangepast.
+- **Voorwaarde van `auto`.** Setup slaat de pagina over wanneer dezelfde applicatie al
+  geïnstalleerd is (volgens het register), niet wanneer de map of groep "bekend" is. De hints in de
+  drie resx-bestanden en in beide voorvertoningen zeggen dat nu zo.
+- **`{code:FunctieNaam|...}`.** De tekst na de `|` is de parameter voor de Pascal-functie en geen
+  terugvalwaarde. Gecorrigeerd in `Inno-Setup-Constants.md`, inclusief de algemene uitleg van `|`.
+- **`DisablePageModeJsonConverter`.** Numerieke tekst zoals `"999"` werd door `Enum.TryParse`
+  geaccepteerd en als ongedefinieerde waarde teruggeschreven. De converter accepteert nu alleen
+  gedefinieerde enumnamen. Nieuwe test: `LoadAsyncRejectsNumericTextForDisablePageMode`.

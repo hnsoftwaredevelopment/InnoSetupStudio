@@ -277,7 +277,7 @@
     <value>Setup does not allow the user to change the installation folder.</value>
   </data>
   <data name="HintDirPageModeAuto" xml:space="preserve">
-    <value>During an update, Setup skips this page if the installation folder is already known.</value>
+    <value>During an update, Setup skips this page if the same application is already installed.</value>
   </data>
   <data name="DialogFilterLicenseFiles" xml:space="preserve">
     <value>License files (*.txt;*.rtf)|*.txt;*.rtf|All files (*.*)|*.*</value>
@@ -454,7 +454,7 @@
     <value>Setup does not allow the user to change the Start Menu folder.</value>
   </data>
   <data name="HintGroupPageModeAuto" xml:space="preserve">
-    <value>During an update, Setup skips this page if the Start Menu folder is already known.</value>
+    <value>During an update, Setup skips this page if the same application is already installed.</value>
   </data>
   <data name="LabelDisableReadyMemo" xml:space="preserve">
     <value>Hide summary on this page</value>

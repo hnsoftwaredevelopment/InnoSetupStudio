@@ -8,11 +8,11 @@ namespace InnoSetupStudio.Core.Project;
 /// Inno Setup-documentatie, 2026-10-02, n.a.v. Herberts verzoek om een "Auto"-optie: bij een
 /// update, als Setup bij het opstarten in het register ziet dat dezelfde applicatie al
 /// geinstalleerd is, hoeft deze pagina niet meer getoond te worden). Beide richtlijnen
-/// ondersteunen <c>no</c>/<c>yes</c>/<c>auto</c>, maar met een verschillende standaardwaarde per
-/// richtlijn — zie <see cref="InstallerProject.DirPageMode"/> (standaard <see cref="AlwaysShow"/>,
-/// Inno Setup's eigen standaard voor <c>DisableDirPage</c> is <c>no</c>) versus
-/// <see cref="InstallerProject.GroupPageMode"/> (standaard <see cref="AutoSkipIfKnown"/>, Inno
-/// Setup's eigen standaard voor <c>DisableProgramGroupPage</c> is al <c>auto</c>).
+/// ondersteunen <c>no</c>/<c>yes</c>/<c>auto</c>, en hebben in Inno Setup allebei <c>auto</c> als
+/// standaard (gecontroleerd op 2026-10-05). Dit project volgt dat voor
+/// <see cref="InstallerProject.GroupPageMode"/> (standaard <see cref="AutoSkipIfKnown"/>), maar wijkt
+/// er bij <see cref="InstallerProject.DirPageMode"/> bewust van af: die blijft standaard
+/// <see cref="AlwaysShow"/> om het gedrag van de oude <c>AllowUserToChangeDir=true</c> te behouden.
 /// </summary>
 public enum DisablePageMode
 {
