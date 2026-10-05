@@ -40,6 +40,38 @@ public sealed class InstallerProject
     /// <summary>Pad naar het .ico-bestand dat als installer-icon wordt gebruikt.</summary>
     public string SetupIconFile { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Het hoofdprogramma van de applicatie, als pad relatief aan <see cref="SourceFilesPath"/>
+    /// (bijvoorbeeld <c>MijnApp.exe</c>). De generator (fase 5) gebruikt dit voor de
+    /// snelkoppelingen in de <c>[Icons]</c>-sectie en later voor "programma starten na
+    /// installatie". Leeg betekent: er is geen hoofdprogramma gekozen, en de generator maakt dan
+    /// geen snelkoppelingen. Nieuw sinds 2026-10-05 (ontwerp dunne generator, stap 1).
+    /// </summary>
+    public string MainExecutable { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Bestandsnaam van de gegenereerde installer zonder extensie, Inno Setup's
+    /// <c>OutputBaseFilename</c>-richtlijn. Leeg betekent: <see cref="GetEffectiveOutputBaseFilename"/>
+    /// geeft <c>&lt;AppName&gt;-&lt;AppVersion&gt;-Setup</c>, in plaats van Inno Setup's eigen
+    /// standaard <c>setup</c>.
+    /// </summary>
+    public string OutputBaseFilename { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Voor welke architectuur het hoofdprogramma is gebouwd, zie <see cref="InstallerArchitecture"/>.
+    /// Standaard <see cref="InstallerArchitecture.X64"/>, ook voor een ouder projectbestand zonder
+    /// deze sleutel: er is nog geen generator, dus er verandert niets aan bestaande installers.
+    /// </summary>
+    [JsonConverter(typeof(StrictEnumJsonConverter<InstallerArchitecture>))]
+    public InstallerArchitecture Architecture { get; set; } = InstallerArchitecture.X64;
+
+    /// <summary>
+    /// Uiterlijk van de wizard, Inno Setup's <c>WizardStyle</c>-richtlijn. Standaard
+    /// <see cref="InstallerWizardStyle.Modern"/>, zie <see cref="InstallerWizardStyle"/>.
+    /// </summary>
+    [JsonConverter(typeof(StrictEnumJsonConverter<InstallerWizardStyle>))]
+    public InstallerWizardStyle WizardStyle { get; set; } = InstallerWizardStyle.Modern;
+
     /// <summary>Welke standaard wizardschermen deze installer toont (fase 3).</summary>
     public WizardScreenSelection WizardScreens { get; set; } = new();
 
@@ -331,6 +363,24 @@ public sealed class InstallerProject
     /// <summary>Zie <see cref="UsePreviousAppDir"/>, maar dan voor de gekozen installertaal (Inno
     /// Setup's <c>UsePreviousLanguage</c>-richtlijn).</summary>
     public bool UsePreviousLanguage { get; set; } = true;
+
+    /// <summary>
+    /// De bestandsnaam (zonder extensie) die de generator voor de installer gebruikt: de ingevulde
+    /// <see cref="OutputBaseFilename"/>, of anders <c>&lt;AppName&gt;-&lt;AppVersion&gt;-Setup</c>.
+    /// Tekens die Windows in een bestandsnaam niet toestaat worden vervangen door een
+    /// onderstrepingsteken. Is ook de naam leeg, dan is het resultaat <c>Setup</c>; is alleen de
+    /// versie leeg, dan <c>&lt;AppName&gt;-Setup</c>.
+    /// </summary>
+    public string GetEffectiveOutputBaseFilename()
+    {
+        var custom = OutputBaseFilename?.Trim();
+        var name = !string.IsNullOrEmpty(custom)
+            ? custom
+            : string.Join("-", new[] { AppName?.Trim(), AppVersion?.Trim(), "Setup" }.Where(part => !string.IsNullOrEmpty(part)));
+
+        var invalid = Path.GetInvalidFileNameChars();
+        return new string(name.Select(c => Array.IndexOf(invalid, c) >= 0 ? '_' : c).ToArray());
+    }
 
     /// <summary>Maakt een nieuw, leeg project met een vers gegenereerd AppId.</summary>
     public static InstallerProject CreateNew() => new()

@@ -2682,3 +2682,48 @@ zodra de schermeditor `Caption` las. `JsonInstallerProjectService.LoadAsync` nor
 eigenschap nu naar `new()`, net als de schermknoppen. Hetzelfde gat zat al in
 `SelectDestinationBrowseButton`; die is in dezelfde stap meegenomen. Nieuwe test:
 `LoadAsyncNormalizesExplicitNullBrowseButtonSettings`.
+
+
+## 29. Projectvelden voor de generator: hoofdprogramma, bestandsnaam, architectuur, wizardstijl (2026-10-05)
+
+Stap 1 van `docs/Ontwerp-Dunne-Generator.md`. De generator bestaat nog niet; dit zijn de velden die
+zij nodig heeft en die het projectmodel miste. Alle vier staan in Projectinstellingen, tabblad
+Algemeen, onder de nieuwe kop "Installer".
+
+| Veld | Model | Standaard | Inno Setup |
+|---|---|---|---|
+| Hoofdprogramma | `InstallerProject.MainExecutable` | leeg | `[Icons]` en later `[Run]` |
+| Bestandsnaam installer | `InstallerProject.OutputBaseFilename` | leeg, dus `<AppName>-<AppVersion>-Setup` | `OutputBaseFilename` |
+| Architectuur | `InstallerProject.Architecture` (`InstallerArchitecture`) | `X64` | `ArchitecturesInstallIn64BitMode` |
+| Wizardstijl | `InstallerProject.WizardStyle` (`InstallerWizardStyle`) | `Modern` | `WizardStyle` |
+
+**Keuzes en gedrag.**
+
+- `MainExecutable` is een pad relatief aan `SourceFilesPath`. De Bladeren-knop opent een
+  bestandsdialoog in die map en slaat het relatieve pad op. Een bestand buiten de map wordt
+  geweigerd met een melding, omdat de installer alleen die map meeneemt. Is er nog geen map met
+  bronbestanden gekozen, dan vraagt de knop daar eerst om.
+- `GetEffectiveOutputBaseFilename()` staat in Core, niet in het ViewModel, zodat de generator
+  dezelfde regel gebruikt als de uitleg onder het veld. Tekens die Windows niet toestaat in een
+  bestandsnaam worden `_`. Lege naam en lege versie vallen terug op `Setup` of `<AppName>-Setup`.
+- De standaard voor `WizardStyle` is `Modern`, terwijl Inno Setup zelf `classic` als standaard heeft
+  (geverifieerd in de officiële documentatie). Dat is bewust, zoals het
+  HNSoftwareInstallerFramework. De generator schrijft de waarde dus altijd expliciet.
+- Bestaande projectbestanden zonder deze sleutels krijgen `X64` en `Modern`. Dat verandert niets
+  aan bestaande installers, want er is nog geen generator.
+- De twee enums gebruiken `StrictEnumJsonConverter<T>`: alleen echte enumnamen als tekst. Getallen,
+  numerieke tekst zoals `"999"`, onbekende namen en `null` geven een laadfout, dezelfde
+  strengheid als bij `DisablePageMode`. Expliciete JSON-`null` voor de twee tekstvelden wordt bij
+  het laden naar een lege tekst genormaliseerd.
+- Dit zijn de eerste velden in `ProjectSettingsViewModel` die niet door een schermeditor worden
+  bewerkt maar in dit scherm zelf. Ze hebben daarom geen pass-through nodig.
+
+**Tests.** 17 nieuwe tests (45 in totaal): round trip van de vier velden, standaardwaarden voor een
+ouder bestand, normalisatie van `null`, zes ongeldige JSON-varianten en negen gevallen voor
+`GetEffectiveOutputBaseFilename`. De 3 resx-bestanden hebben nu elk 166 sleutels (voorheen 151),
+gevalideerd met een ElementTree-script op identieke sleutelverzameling en `{0}`-plaatsaanduidingen.
+
+**Wat de generator hiermee later doet** (nog niet gebouwd): `Architecture.X64` wordt
+`ArchitecturesInstallIn64BitMode`, `X86` laat de richtlijn weg. De exacte identifier (`x64` of
+`x64compatible`) en het effect op `{autopf}` worden in stap 2 met een ISCC-test vastgesteld; de
+officiële documentatiepagina gaf daar via de fetch geen tekst over.

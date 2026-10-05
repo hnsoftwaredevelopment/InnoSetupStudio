@@ -229,7 +229,7 @@ Dit is een levend document: vink af (verander ⬜/🔶 naar ✅ met een verwijzi
 
 | Richtlijn | Omschrijving | Mechanisme | Status |
 |---|---|---|---|
-| WizardStyle | Algehele visuele stijl van de wizard (classic/modern). | Eigenschap | ⬜ |
+| WizardStyle | Algehele visuele stijl van de wizard (classic/modern). | Eigenschap | ✅ `InstallerProject.WizardStyle` (alleen classic en modern; de overige stijlen en modifiers ⬜) |
 | WizardStyleFile / WizardStyleFileDynamicDark | Eigen VCL-stijlbestand voor thema, incl. dark-mode-variant. | Eigenschap | ⬜ |
 | WizardSizePercent | Schaalt het wizardvenster met een percentage. | Eigenschap | ⬜ |
 | WizardResizable | *(verouderd, zie categorie 37)* | — | ➖ |
@@ -342,7 +342,7 @@ Zie sectie 25 van `Architectuur-en-Ontwerp.md` voor de volledige toelichting op 
 | MinVersion | Minimaal vereiste Windows-versie. | Eigenschap | ⬜ |
 | OnlyBelowVersion | Maximale Windows-versie waarboven Setup weigert te draaien. | Eigenschap | ⬜ |
 | ArchitecturesAllowed | Toegestane processorarchitecturen. | Eigenschap | ⬜ |
-| ArchitecturesInstallIn64BitMode | Welke architecturen een 64-bit installatie triggeren. | Eigenschap | ⬜ |
+| ArchitecturesInstallIn64BitMode | Welke architecturen een 64-bit installatie triggeren. | Eigenschap | ✅ `InstallerProject.Architecture` (alleen x86 of x64; arm64 ⬜) |
 | SetupArchitecture | Of de gecompileerde Setup zelf 32-bit of 64-bit draait. | Eigenschap | ⬜ |
 | PrivilegesRequired | Vereist Setup beheerdersrechten. | Eigenschap | ⬜ |
 | PrivilegesRequiredOverridesAllowed | Mag het rechtenniveau via command-line/dialoog overruled worden. | Eigenschap | ⬜ |
@@ -396,7 +396,7 @@ Zie sectie 25 van `Architectuur-en-Ontwerp.md` voor de volledige toelichting op 
 | ReserveBytes | Gereserveerde vrije ruimte op de eerste schijf. | Eigenschap | ⬜ |
 | SlicesPerDisk | Aantal slice-bestanden per schijf. | Eigenschap | ⬜ |
 | Output | Genereert de compiler daadwerkelijk bestanden, of alleen een foutencontrole. | Eigenschap | ⬜ |
-| OutputBaseFilename | Bestandsnaam van de gecompileerde installer. | Eigenschap | ⬜ |
+| OutputBaseFilename | Bestandsnaam van de gecompileerde installer. | Eigenschap | ✅ `InstallerProject.OutputBaseFilename` (leeg = `<AppName>-<AppVersion>-Setup`, zie `GetEffectiveOutputBaseFilename`) |
 | OutputManifestFile | Genereert een manifestbestand met de outputbestanden. | Eigenschap | ⬜ |
 | ChangesAssociations | Meldt dat Setup bestandskoppelingen wijzigt (Explorer-refresh). | Eigenschap | ⬜ |
 | ChangesEnvironment | Meldt draaiende applicaties dat omgevingsvariabelen gewijzigd zijn. | Eigenschap | ⬜ |

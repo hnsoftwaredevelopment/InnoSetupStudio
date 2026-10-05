@@ -465,4 +465,49 @@
   <data name="LabelAlwaysShowGroupOnReadyPage" xml:space="preserve">
     <value>Startmenüordner immer in der Zusammenfassung anzeigen</value>
   </data>
+  <data name="SectionInstaller" xml:space="preserve">
+    <value>Installer</value>
+  </data>
+  <data name="LabelMainExecutable" xml:space="preserve">
+    <value>Hauptprogramm</value>
+  </data>
+  <data name="HintMainExecutable" xml:space="preserve">
+    <value>Datei innerhalb des Quelldateien-Ordners, zum Beispiel MeineApp.exe. Die Verknüpfungen verweisen darauf.</value>
+  </data>
+  <data name="DialogFilterExecutableFiles" xml:space="preserve">
+    <value>Programme (*.exe)|*.exe|Alle Dateien (*.*)|*.*</value>
+  </data>
+  <data name="MainExecutableNoSourceFolderMessage" xml:space="preserve">
+    <value>Wählen Sie zuerst den Quelldateien-Ordner. Das Hauptprogramm muss darin liegen.</value>
+  </data>
+  <data name="MainExecutableOutsideSourceMessage" xml:space="preserve">
+    <value>Wählen Sie eine Datei innerhalb des Quelldateien-Ordners ({0}). Sonst nimmt der Installer die Datei nicht mit.</value>
+  </data>
+  <data name="LabelOutputBaseFilename" xml:space="preserve">
+    <value>Installer-Dateiname</value>
+  </data>
+  <data name="HintOutputBaseFilename" xml:space="preserve">
+    <value>Ohne Erweiterung. Wenn dieses Feld leer ist, wird "{0}" verwendet.</value>
+  </data>
+  <data name="LabelArchitecture" xml:space="preserve">
+    <value>Architektur</value>
+  </data>
+  <data name="LabelArchitectureX64" xml:space="preserve">
+    <value>64-Bit (x64)</value>
+  </data>
+  <data name="LabelArchitectureX86" xml:space="preserve">
+    <value>32-Bit (x86)</value>
+  </data>
+  <data name="HintArchitecture" xml:space="preserve">
+    <value>Wählen Sie 64-Bit, wenn das Hauptprogramm eine 64-Bit-Anwendung ist.</value>
+  </data>
+  <data name="LabelWizardStyle" xml:space="preserve">
+    <value>Assistentenstil</value>
+  </data>
+  <data name="LabelWizardStyleModern" xml:space="preserve">
+    <value>Modern</value>
+  </data>
+  <data name="LabelWizardStyleClassic" xml:space="preserve">
+    <value>Klassisch</value>
+  </data>
 </root>
