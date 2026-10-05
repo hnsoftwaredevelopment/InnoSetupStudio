@@ -2754,7 +2754,7 @@ ISCC-tests bewijzen dat tegen Inno Setup 7.1.0.
 |---|---|
 | `IssGenerator.cs` | De generator. `Generate` is deterministisch en heeft geen toestand; per aanroep draait een eigen `Run`. |
 | `IssWriter.cs` | Bouwt het script: CRLF, een lege regel voor elke sectie, kopjes (`Heading`) die alleen verschijnen als er een richtlijn onder komt. |
-| `IssEscape.cs` | `Constants` (`{` wordt `{{`), `Quoted` (`"` wordt `""`), `ContainsLineBreak` en `FileSystemName` (tekens die Windows niet toestaat worden `_`). |
+| `IssEscape.cs` | `Constants` (`{` wordt `{{`), `Quoted` (`"` wordt `""`), `ContainsLineBreak` en `FileSystemName` (tekens die Windows niet toestaat worden `_`, uit een vaste lijst en dus op elk besturingssysteem gelijk; blijft er niets over, dan is het resultaat `App`). |
 | `GenerationIssue.cs` | `GenerationSeverity` (Info, Warning, Error), `GenerationIssueCode` en het record `GenerationIssue(Severity, Code, Arguments)`. |
 | `GenerationResult.cs` | `Script`, `Issues` en `HasErrors`. |
 | `IGeneratorEnvironment.cs` | `DirectoryExists` en `FileExists`, met `DiskGeneratorEnvironment`. Alleen hier raakt de generator de schijf, zodat tests een nepomgeving gebruiken. |
@@ -2788,19 +2788,23 @@ taal-id. Info: het aantal schermen en knoppen met instellingen die pas in stap 4
 
 - Een bestandsnaam of mapnaam die Setup aanmaakt (de terugvalwaarden van `DefaultDirName` en
   `DefaultGroupName`, en de naam van een snelkoppeling) wordt bestandsnaam-veilig gemaakt. ISCC weigert
-  een aanhalingsteken in de Name-parameter van `[Icons]`. `AppName` zelf blijft ongewijzigd.
+  een aanhalingsteken in de Name-parameter van `[Icons]`. `AppName` zelf blijft ongewijzigd. Een naam die
+  daarna leeg zou zijn (bijvoorbeeld `...`) wordt `App`, zodat er geen `{group}\` zonder naam ontstaat
+  (CodeRabbit, PR #27).
 - `UninstallDisplayVersion` wordt niet geschreven: het is geen `[Setup]`-richtlijn.
 - Codering UTF-8 met BOM: Inno Setup 7.1.0 leest ook UTF-8 zonder BOM goed, Inno Setup 6 niet.
+- De golden file `Golden/Full.iss` is een vergelijkingsbestand voor de test en moet ongewijzigd blijven. Wie
+  een gegenereerd script met eigen paden wil compileren, werkt op een kopie buiten de repo.
 - Een pad met een accolade in `Source` of `OutputDir` compileert, maar een pad dat zelf een bestaande
   Inno-constante bevat (bijvoorbeeld een map die `{app}` heet) is niet getest en zeer onwaarschijnlijk.
 
-**Tests** (`tests/InnoSetupStudio.Tests/Generation/`, 107 nieuwe testgevallen, 175 in totaal).
+**Tests** (`tests/InnoSetupStudio.Tests/Generation/`, 111 nieuwe testgevallen, 179 in totaal).
 
 | Bestand | Inhoud |
 |---|---|
 | `IssGeneratorTests.cs` | Mapping per beslistabel: paginamodi, standaardwaarden, bestandsrichtlijnen, User Info, afbeeldingen. |
 | `IssGeneratorIssuesTests.cs` | Escaping, meldingen, snelkoppelingen en taken, talen, knopinstellingen, eigenschappen van de uitvoer (deterministisch, alleen CRLF, BOM). |
-| `IssGeneratorGoldenTests.cs` | Vergelijkt drie gegenereerde scripts met de bestanden in `Golden/`. Met de omgevingsvariabele `UPDATE_GOLDEN=1` schrijft de test de bestanden opnieuw en faalt hij Ã©Ã©n keer, zodat een gewijzigd bestand nooit ongezien door een test komt. |
+| `IssGeneratorGoldenTests.cs` | Vergelijkt drie gegenereerde scripts met de bestanden in `Golden/`. Met de omgevingsvariabele `UPDATE_GOLDEN=1` schrijft de test de bestanden opnieuw en faalt hij één keer, zodat een gewijzigd bestand nooit ongezien door een test komt. |
 | `IssCompilerTests.cs` | Laat ISCC 18 scripts compileren: minimaal, alle pagina's aan en uit, vier combinaties van architectuur en wizardstijl, alle 33 talen, speciale tekens, accolades in zeven paden, een naam met accent, en een `AppId` zonder `{{` dat juist niet mag compileren. Controleert exitcode 0, het bestaan van de installer en dat de uitvoer geen regel met `Warning:` bevat. Elke catalogustaal moet bovendien een bestaand `.isl`-bestand hebben. |
 | `InnoSetupInstallation.cs` | Zoekt `ISCC.exe` (omgevingsvariabele `INNO_SETUP_DIR`, anders Inno Setup 7 of 6 in Program Files). `IsccFact` en `IsccTheory` slaan de tests over als het programma ontbreekt, zoals op een build-server. |
 

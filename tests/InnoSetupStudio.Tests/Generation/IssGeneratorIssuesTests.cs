@@ -72,6 +72,10 @@ public class IssGeneratorIssuesTests
     [InlineData("A:B/C\\D", "A_B_C_D")]
     [InlineData("Naam. ", "Naam")]
     [InlineData("Mijn {App}", "Mijn {App}")]
+    [InlineData("...", "App")]
+    [InlineData("", "App")]
+    [InlineData("A\u0001B", "A_B")]
+    [InlineData("A|B?C*D<E>", "A_B_C_D_E_")]
     public void File_system_name_replaces_characters_windows_does_not_allow(string value, string expected)
         => Assert.Equal(expected, IssEscape.FileSystemName(value));
 

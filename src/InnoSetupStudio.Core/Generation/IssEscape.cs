@@ -22,16 +22,26 @@ public static class IssEscape
     /// .iss en zou het bestand beschadigen.</summary>
     public static bool ContainsLineBreak(string value) => value.AsSpan().IndexOfAny('\r', '\n') >= 0;
 
+    /// <summary>De naam die <see cref="FileSystemName"/> teruggeeft als er niets bruikbaars overblijft.</summary>
+    public const string FallbackFileSystemName = "App";
+
+    // De tekens die Windows in een bestands- of mapnaam niet toestaat. Bewust een vaste lijst in
+    // plaats van Path.GetInvalidFileNameChars(): die lijst hangt af van het besturingssysteem
+    // waarop de code draait, terwijl het .iss altijd voor Windows is (CodeRabbit, PR #27).
+    private static readonly HashSet<char> InvalidFileNameChars = ['<', '>', ':', '"', '/', '\\', '|', '?', '*'];
+
     /// <summary>
     /// Maakt van een naam een geldige bestands- of mapnaam: tekens die Windows daarin niet toestaat
-    /// (zoals <c>"</c>, <c>:</c> en <c>\</c>) worden <c>_</c>, en punten en spaties aan het einde
-    /// vallen weg. Nodig voor namen die Inno Setup als map of snelkoppeling aanmaakt: de compiler
-    /// weigert bijvoorbeeld een <c>"</c> in de Name-parameter van een [Icons]-regel.
+    /// (zoals <c>"</c>, <c>:</c> en <c>\</c>, en stuurtekens) worden <c>_</c>, en punten en spaties
+    /// aan het einde vallen weg. Blijft er niets over (bijvoorbeeld bij <c>...</c>), dan is het
+    /// resultaat <see cref="FallbackFileSystemName"/>. Nodig voor namen die Inno Setup als map of
+    /// snelkoppeling aanmaakt: de compiler weigert bijvoorbeeld een <c>"</c> in de Name-parameter
+    /// van een [Icons]-regel.
     /// </summary>
     public static string FileSystemName(string value)
     {
-        var invalid = Path.GetInvalidFileNameChars();
-        var chars = value.Select(c => Array.IndexOf(invalid, c) >= 0 ? '_' : c).ToArray();
-        return new string(chars).TrimEnd('.', ' ');
+        var chars = value.Select(c => c < ' ' || InvalidFileNameChars.Contains(c) ? '_' : c).ToArray();
+        var name = new string(chars).TrimEnd('.', ' ');
+        return name.Length == 0 ? FallbackFileSystemName : name;
     }
 }
