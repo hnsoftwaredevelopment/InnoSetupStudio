@@ -55,7 +55,7 @@ Rond het schrijven van `UsePrevious...`: Inno's standaard is `yes`, het project 
 Zonder deze velden komt er wel een compileerbaar .iss uit, maar geen bruikbare installer.
 
 1. **Hoofduitvoerbestand** (bijvoorbeeld `MijnApp.exe`, relatief aan `SourceFilesPath`). Nodig voor `[Icons]` en straks voor `[Run]` (programma starten na installatie). Zonder dit veld geen snelkoppelingen, ook al staat `CreateStartMenuIcon` aan.
-2. **Naam van het uitvoerbestand** (`OutputBaseFilename`). Inno's standaard is `setup`. Voorstel: standaardwaarde `<AppName>-<AppVersion>-Setup`, aanpasbaar.
+2. **Naam van het uitvoerbestand** (`OutputBaseFilename`). Inno's standaard is `setup`. Voorstel: standaardwaarde `<AppName>-<AppVersion>-Setup`, aanpasbaar. Is het veld leeg, dan meldt de generator dat met een Info-melding (`OutputBaseFilenameDefaulted`) die de gebruikte naam noemt.
 3. **64-bit installatie** (`ArchitecturesInstallIn64BitMode`). Zonder deze richtlijn draait Setup in 32-bit modus en wijst `{autopf}` op Program Files (x86). Dat is bekend Inno-gedrag, maar de officiële pagina gaf daar via de fetch geen tekst over. Ik bevestig dit in stap 2 met een ISCC-test. Voorstel: een keuzelijst "32-bit", "64-bit" in Projectinstellingen met 64-bit als standaard voor nieuwe projecten. De generator schrijft `x64compatible` (de waarde in de voorbeeldscripts van Inno Setup 7.1.0; `x64` is een verouderde alias van `x64os`). ISCC accepteert dit, zie sectie 12.
 4. **WizardStyle**. Inno's standaard is `classic` (geverifieerd). Het HNSoftwareInstallerFramework gebruikt `modern`. Voorstel: `modern` als vaste waarde in versie 1, geen UI.
 5. **PrivilegesRequired**. Inno's standaard is admin. Niet nodig voor versie 1, wel het bedoelde gedrag voor `{autopf}`.

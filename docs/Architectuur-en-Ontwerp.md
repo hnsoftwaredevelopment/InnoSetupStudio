@@ -2838,7 +2838,7 @@ en is actief zodra er een project open is.
 **Taal van de meldingen.** `GenerationIssueFormatter` (in `InnoSetupStudio.App/Localization`) zoekt voor elke
 `GenerationIssueCode` de resx-sleutel `GenIssue_<Code>` en vult de plaatsaanduidingen `{0}`, `{1}` met de
 argumenten van de melding. De ernst heeft `GenSeverity_<Severity>`. De drie resx-bestanden hebben er 28
-sleutels bij gekregen (nu 196 per taal). Een beschadigde vertaling (`FormatException`) laat het venster
+sleutels bij gekregen (nu 197 per taal, zie de laatste bewuste keuze hieronder). Een beschadigde vertaling (`FormatException`) laat het venster
 niet crashen: dan verschijnt de ongeformatteerde tekst.
 
 **Bewuste keuzes.**
@@ -2850,8 +2850,14 @@ niet crashen: dan verschijnt de ongeformatteerde tekst.
   extra aanwijzing, geen enige drager van de betekenis.
 - Het script overschrijven vraagt bevestiging via `OverwritePrompt`. Het bestand is bewust een
   gegenereerd bestand: de koptekst zegt dat handmatige wijzigingen verloren gaan.
+- Een leeg veld "Bestandsnaam installer" blokkeert niets (de standaardnaam `<AppName>-<AppVersion>-Setup`
+  wordt gebruikt), maar de generator meldt het sinds de test van 2026-10-05 met de Info-melding
+  `OutputBaseFilenameDefaulted`. Het argument is de naam die in het script komt. Alleen een leeg of
+  uit spaties bestaand veld geeft de melding; een ingevulde naam die tot een andere naam wordt
+  schoongemaakt (ongeldige tekens worden `_`) geeft geen melding.
 
-**Tests** (10 nieuwe testgevallen, 189 in totaal). `GenerationIssueResourceTests` leest de drie
+**Tests** (10 nieuwe testgevallen in deze stap, plus 2 voor de melding over de lege bestandsnaam:
+191 in totaal). `GenerationIssueResourceTests` leest de drie
 resx-bestanden rechtstreeks en controleert dat elke `GenerationIssueCode` een tekst heeft in NL, EN en DE
 met precies de plaatsaanduidingen die de generator aan argumenten meegeeft, dat elke ernst een tekst heeft
 en dat de teksten van de knop en het resultaatvenster bestaan. Voegt iemand een code toe, dan faalt de test

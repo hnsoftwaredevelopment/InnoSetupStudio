@@ -600,4 +600,7 @@
   <data name="GenIssue_ButtonSettingsNotGenerated" xml:space="preserve">
     <value>{0} group(s) of button settings are not yet written to the script.</value>
   </data>
+  <data name="GenIssue_OutputBaseFilenameDefaulted" xml:space="preserve">
+    <value>No installer file name entered. The installer will be named {0}.</value>
+  </data>
 </root>

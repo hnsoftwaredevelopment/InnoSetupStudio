@@ -409,4 +409,31 @@ public class IssGeneratorIssuesTests
     [Fact]
     public void Generate_rejects_null()
         => Assert.Throws<ArgumentNullException>(() => new IssGenerator().Generate(null!));
+
+    [Fact]
+    public void Empty_installer_file_name_is_reported_with_the_default_name()
+    {
+        var project = SampleProject();
+        project.OutputBaseFilename = "  ";
+
+        var result = Generate(project);
+
+        var issue = Assert.Single(result.Issues, i => i.Code == GenerationIssueCode.OutputBaseFilenameDefaulted);
+        Assert.Equal(GenerationSeverity.Info, issue.Severity);
+        Assert.Equal(new[] { "MijnApp-1.2.3-Setup" }, issue.Arguments);
+        Assert.Contains("OutputBaseFilename=MijnApp-1.2.3-Setup", Lines(result));
+        Assert.False(result.HasErrors);
+    }
+
+    [Fact]
+    public void Entered_installer_file_name_is_not_reported()
+    {
+        var project = SampleProject();
+        project.OutputBaseFilename = "MijnSetup";
+
+        var result = Generate(project);
+
+        Assert.False(HasIssue(result, GenerationIssueCode.OutputBaseFilenameDefaulted));
+        Assert.Contains("OutputBaseFilename=MijnSetup", Lines(result));
+    }
 }

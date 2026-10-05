@@ -47,6 +47,9 @@ internal static class GeneratorTestSupport
         AppVersion = "1.2.3",
         SourceFilesPath = @"C:\Bron\MijnApp",
         MainExecutable = "MijnApp.exe",
+        // Gelijk aan de standaardnaam, zodat het script gelijk blijft en het voorbeeldproject
+        // geen melding "geen bestandsnaam ingevuld" geeft.
+        OutputBaseFilename = "MijnApp-1.2.3-Setup",
         CreateStartMenuIcon = false,
     };
 

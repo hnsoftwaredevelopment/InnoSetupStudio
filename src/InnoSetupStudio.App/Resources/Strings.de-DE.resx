@@ -600,4 +600,7 @@
   <data name="GenIssue_ButtonSettingsNotGenerated" xml:space="preserve">
     <value>{0} Gruppe(n) von Schaltflächeneinstellungen werden noch nicht in das Skript geschrieben.</value>
   </data>
+  <data name="GenIssue_OutputBaseFilenameDefaulted" xml:space="preserve">
+    <value>Kein Dateiname für das Installationsprogramm angegeben. Es heißt {0}.</value>
+  </data>
 </root>

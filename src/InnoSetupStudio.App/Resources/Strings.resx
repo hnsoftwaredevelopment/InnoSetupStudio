@@ -600,4 +600,7 @@
   <data name="GenIssue_ButtonSettingsNotGenerated" xml:space="preserve">
     <value>{0} groep(en) knopinstellingen worden nog niet in het script gezet.</value>
   </data>
+  <data name="GenIssue_OutputBaseFilenameDefaulted" xml:space="preserve">
+    <value>Geen bestandsnaam voor de installer ingevuld. De installer krijgt de naam {0}.</value>
+  </data>
 </root>

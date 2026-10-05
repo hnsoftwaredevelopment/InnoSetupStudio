@@ -34,6 +34,7 @@ public class GenerationIssueResourceTests
         [GenerationIssueCode.TasksPageShownForDesktopIcon] = 0,
         [GenerationIssueCode.UnknownLanguage] = 1,
         [GenerationIssueCode.ButtonSettingsNotGenerated] = 1,
+        [GenerationIssueCode.OutputBaseFilenameDefaulted] = 1,
     };
 
     [Fact]

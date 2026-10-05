@@ -72,6 +72,10 @@ public enum GenerationIssueCode
     /// Argumenten: taal-id.</summary>
     UnknownLanguage,
 
+    /// <summary>Er is geen bestandsnaam voor de installer ingevuld; de standaardnaam wordt gebruikt.
+    /// Argumenten: de naam die in het script komt (zonder .exe).</summary>
+    OutputBaseFilenameDefaulted,
+
     /// <summary>Knopinstellingen worden nog niet vertaald (vergen een [Code]-blok). Argumenten:
     /// aantal schermen of knoppen met aanpassingen.</summary>
     ButtonSettingsNotGenerated,
