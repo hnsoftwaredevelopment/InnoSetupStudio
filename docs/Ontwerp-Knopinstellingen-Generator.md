@@ -1,6 +1,6 @@
 # Ontwerp: knopinstellingen in het gegenereerde script (stap 4)
 
-Status: ontwerp, nog niet gebouwd (2026-10-05). Dit is stap 4 uit `docs/Ontwerp-Dunne-Generator.md`. Stap 1 tot en met 3 (projectvelden, `IssGenerator`, de knop "Genereer .iss") zijn gemerged. De generator schrijft nu geen knopinstellingen weg en meldt alleen dat er instellingen zijn die niet worden vertaald (`ButtonSettingsNotGenerated`).
+Status: ontwerp, nog niet gebouwd (2026-10-05). De keuzes uit sectie 11 zijn op 2026-10-05 door Herbert gemaakt. Dit is stap 4 uit `docs/Ontwerp-Dunne-Generator.md`. Stap 1 tot en met 3 (projectvelden, `IssGenerator`, de knop "Genereer .iss") zijn gemerged. De generator schrijft nu geen knopinstellingen weg en meldt alleen dat er instellingen zijn die niet worden vertaald (`ButtonSettingsNotGenerated`).
 
 ## 1. Doel
 
@@ -150,7 +150,7 @@ Afspraken voor de uitvoer, in de lijn van de bestaande generator:
 
 ## 8. Wat niet kan, en welke meldingen er komen
 
-**Tekstkleur kan niet.** `Font.Color` compileert maar heeft geen effect op de knoppen van Setup: Windows tekent een gewone knop met de themakleur, in `modern` en in `classic` (gemeten, zie sectie 2). Dezelfde reden waarom de achtergrondkleur al eerder uit het model is geschrapt. Een kleur zou alleen werken met een zelf getekende knop, en dat is een veel grotere ingreep dan deze stap. Voorstel: de generator schrijft geen kleurcode en meldt dat. De velden blijven voorlopig in het model en de editor staan (opruimen in de UI is een aparte, kleine PR, zie sectie 11).
+**Tekstkleur kan niet.** `Font.Color` compileert maar heeft geen effect op de knoppen van Setup: Windows tekent een gewone knop met de themakleur, in `modern` en in `classic` (gemeten, zie sectie 2). Dezelfde reden waarom de achtergrondkleur al eerder uit het model is geschrapt. Een kleur zou alleen werken met een zelf getekende knop, en dat is een veel grotere ingreep dan deze stap. Besloten: de generator schrijft geen kleurcode en meldt dat. De velden blijven voorlopig in het model en de editor staan (opruimen in de UI is een aparte, kleine PR, zie sectie 11).
 
 Meldingen die in stap 4 veranderen. Elke nieuwe code krijgt teksten in NL, EN en DE en een regel in `GenerationIssueResourceTests.ArgumentCounts`, zoals bij stap 3.
 
@@ -183,13 +183,13 @@ Eén PR op een eigen branch, in deze volgorde, elke stap met tests voordat de vo
 5. Goldenbestand en ISCC-tests.
 6. Documentatie bijwerken (dit document, architectuurdoc sectie 30 en 31, featurechecklist) en spiegelen naar Obsidian.
 
-## 11. Open vragen
+## 11. Beslissingen en open punten
 
-1. **Tekstkleur.** Voorstel: niet genereren, melding `ButtonTextColorNotSupported`, en daarna in een aparte PR het kleurveld uit de editor halen of er uitleg bij zetten. Alternatief: toch genereren (compileert, maar geen effect, en dus misleidend). Alternatief: zelf getekende knoppen (grote ingreep, buiten deze stap).
-2. **Standaardscherm op pagina's zonder knopmodel.** Select Components, Select Tasks, Preparing, Installing en Finished hebben geen eigen model. Voorstel voor versie 1: het Standaardscherm geldt alleen voor de acht schermen uit sectie 3, want alleen die zie je in de editor. Gevolg: de pagina Select Tasks (die Setup toont zodra er een bureaubladpictogram-taak is) en de Finished-pagina houden Setup's eigen knoppen. Alternatief: het Standaardscherm op alle pagina's toepassen met een `else`-tak. Dat toont een instelling die je in de editor niet kunt zien, en bijvoorbeeld een uitgeschakelde of verborgen Volgende op Finished zou de gebruiker laten vastlopen.
-3. **Melding `NextButtonUnusable`.** Voorstel: ja, als Warning. Het gegenereerde script heeft geen logica die Volgende later aanzet. Op de Licentie-pagina bepaalt Setup zelf wanneer Volgende aan gaat, dus daar volgt Setup zijn eigen regels.
-4. **Afgekapte tekst.** Een knop groeit niet mee met een lange tekst of een grote letter. Voorstel voor versie 1: niets doen en het in de handmatige testpunten noemen. Later een knopbreedte per knop toevoegen (backlog).
-5. **Tooltip op een uitgeschakelde knop.** Nog niet gemeten. Dat controleert Herbert in de handmatige test (sectie 12). Blijkt het niet te werken, dan wordt het een opmerking in de documentatie en geen codewijziging.
+1. **Tekstkleur. Besloten: niet genereren.** De generator schrijft geen kleurcode en meldt `ButtonTextColorNotSupported` als er een kleur is ingesteld. Daarna volgt in een aparte kleine PR het opruimen van het kleurveld in de editor (verwijderen of toelichten). Verworpen: toch genereren (compileert, maar de knoppen blijven zwart, dus misleidend) en zelf getekende knoppen (veel te grote ingreep voor deze stap).
+2. **Standaardscherm op pagina's zonder knopmodel. Besloten: alleen de acht schermen uit sectie 3.** Select Components, Select Tasks, Preparing, Installing en Finished houden Setup's eigen knoppen, omdat je in de editor alleen de acht schermen ziet. Gevolg: de pagina Select Tasks (die Setup toont zodra er een bureaubladpictogram-taak is) en Finished hebben dan Setup's eigen knoppen, ook als het Standaardscherm iets anders instelt. Verworpen: het Standaardscherm op alle pagina's toepassen met een `else`-tak, want dat toont een instelling die je in de editor niet kunt zien, en een verborgen of uitgeschakelde Volgende op Finished kan de gebruiker laten vastlopen.
+3. **Melding `NextButtonUnusable`. Besloten: ja, als Warning.** Het gegenereerde script heeft geen logica die Volgende later aanzet. Op de Licentie-pagina bepaalt Setup zelf wanneer Volgende aan gaat, dus daar volgt Setup zijn eigen regels.
+4. **Afgekapte tekst. Voorstel, nog niet besloten.** Een knop groeit niet mee met een lange tekst of een grote letter. Voorstel voor versie 1: niets doen en het in de handmatige testpunten noemen. Later een knopbreedte per knop toevoegen (backlog).
+5. **Tooltip op een uitgeschakelde knop. Nog te meten.** Dat controleert Herbert in de handmatige test (sectie 12). Blijkt het niet te werken, dan wordt het een opmerking in de documentatie en geen codewijziging.
 
 ## 12. Handmatige testpunten na de bouw (voor Herbert)
 
