@@ -261,8 +261,23 @@
   <data name="LabelDefaultDirNameHint" xml:space="preserve">
     <value>Empty = {autopf}\&lt;Application name&gt;</value>
   </data>
-  <data name="LabelAllowUserToChangeDir" xml:space="preserve">
-    <value>User may change the folder</value>
+  <data name="LabelDirPageMode" xml:space="preserve">
+    <value>Page visibility</value>
+  </data>
+  <data name="LabelDisablePageModeAlwaysShow" xml:space="preserve">
+    <value>Always show</value>
+  </data>
+  <data name="LabelDisablePageModeNeverShow" xml:space="preserve">
+    <value>Never show</value>
+  </data>
+  <data name="LabelDisablePageModeAuto" xml:space="preserve">
+    <value>Automatically skip if already known</value>
+  </data>
+  <data name="HintDirPageModeNeverShow" xml:space="preserve">
+    <value>Setup does not allow the user to change the installation folder.</value>
+  </data>
+  <data name="HintDirPageModeAuto" xml:space="preserve">
+    <value>During an update, Setup skips this page if the same application is already installed.</value>
   </data>
   <data name="DialogFilterLicenseFiles" xml:space="preserve">
     <value>License files (*.txt;*.rtf)|*.txt;*.rtf|All files (*.*)|*.*</value>
@@ -280,7 +295,7 @@
     <value>Next &gt;</value>
   </data>
   <data name="ScreenEditorNoScreens" xml:space="preserve">
-    <value>None of the screens the screen editor supports yet (Welcome, License agreement, Select destination folder) are enabled. Enable them under Project settings (Screens tab) to edit them here.</value>
+    <value>None of the screens the screen editor supports yet (Welcome, License agreement, Info Before, User Info, Select destination folder, Select Start Menu Folder, Ready to install, Info After) are enabled. Enable them under Project settings (Screens tab) to edit them here.</value>
   </data>
   <data name="ButtonWizardCancel" xml:space="preserve">
     <value>Cancel</value>
@@ -383,5 +398,71 @@
   </data>
   <data name="SectionPreview" xml:space="preserve">
     <value>Preview</value>
+  </data>
+  <data name="LabelInfoBeforeFilePath" xml:space="preserve">
+    <value>Info file (before installation)</value>
+  </data>
+  <data name="LabelInfoAfterFilePath" xml:space="preserve">
+    <value>Info file (after installation)</value>
+  </data>
+  <data name="DialogFilterInfoFiles" xml:space="preserve">
+    <value>Info files (*.txt;*.rtf)|*.txt;*.rtf|All files (*.*)|*.*</value>
+  </data>
+  <data name="ScreenEditorInfoBeforeNoFile" xml:space="preserve">
+    <value>No file selected yet.</value>
+  </data>
+  <data name="ScreenEditorInfoAfterNoFile" xml:space="preserve">
+    <value>No file selected yet.</value>
+  </data>
+  <data name="LabelDefaultUserInfoName" xml:space="preserve">
+    <value>Default name</value>
+  </data>
+  <data name="HintDefaultUserInfoName" xml:space="preserve">
+    <value>Empty = {sysuserinfoname} (the name Windows is registered to). Also supports other Inno Setup constants, such as {username} or {reg:HKxx\Subkey,Value|Default}.</value>
+  </data>
+  <data name="LabelDefaultUserInfoOrg" xml:space="preserve">
+    <value>Default organization</value>
+  </data>
+  <data name="HintDefaultUserInfoOrg" xml:space="preserve">
+    <value>Empty = {sysuserinfoorg} (the organization Windows is registered to). Also supports other constants.</value>
+  </data>
+  <data name="LabelDefaultUserInfoSerial" xml:space="preserve">
+    <value>Default serial number</value>
+  </data>
+  <data name="HintDefaultUserInfoSerial" xml:space="preserve">
+    <value>Supports Inno Setup constants, for example {reg:HKxx\Subkey,Value|Default} or {param:Name|Default}. No built-in default: empty unless you fill in something here.</value>
+  </data>
+  <data name="LabelUsePreviousUserInfo" xml:space="preserve">
+    <value>Remember entered details on update</value>
+  </data>
+  <data name="LabelDefaultGroupName" xml:space="preserve">
+    <value>Default Start Menu folder</value>
+  </data>
+  <data name="LabelDefaultGroupNameHint" xml:space="preserve">
+    <value>Empty = application name</value>
+  </data>
+  <data name="LabelAppendDefaultGroupName" xml:space="preserve">
+    <value>Append default name to a custom group</value>
+  </data>
+  <data name="LabelAlwaysUsePersonalGroup" xml:space="preserve">
+    <value>Always in the personal Start Menu (never "All users")</value>
+  </data>
+  <data name="LabelGroupPageMode" xml:space="preserve">
+    <value>Page visibility</value>
+  </data>
+  <data name="HintGroupPageModeNeverShow" xml:space="preserve">
+    <value>Setup does not allow the user to change the Start Menu folder.</value>
+  </data>
+  <data name="HintGroupPageModeAuto" xml:space="preserve">
+    <value>During an update, Setup skips this page if the same application is already installed.</value>
+  </data>
+  <data name="LabelDisableReadyMemo" xml:space="preserve">
+    <value>Hide summary on this page</value>
+  </data>
+  <data name="LabelAlwaysShowDirOnReadyPage" xml:space="preserve">
+    <value>Always show installation folder in the summary</value>
+  </data>
+  <data name="LabelAlwaysShowGroupOnReadyPage" xml:space="preserve">
+    <value>Always show Start Menu folder in the summary</value>
   </data>
 </root>

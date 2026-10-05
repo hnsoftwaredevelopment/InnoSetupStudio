@@ -17,7 +17,17 @@ public sealed class PropertyPanelTemplateSelector : DataTemplateSelector
 
     public DataTemplate? LicenseTemplate { get; set; }
 
+    public DataTemplate? InfoBeforeTemplate { get; set; }
+
+    public DataTemplate? UserInfoTemplate { get; set; }
+
     public DataTemplate? SelectDestinationTemplate { get; set; }
+
+    public DataTemplate? SelectProgramGroupTemplate { get; set; }
+
+    public DataTemplate? ReadyTemplate { get; set; }
+
+    public DataTemplate? InfoAfterTemplate { get; set; }
 
     /// <summary>Voor het Standaardscherm (§12.6/§12.7); geen echt installerscherm, dus geen eigen
     /// voorvertoning-template nodig (WizardEditorWindow.xaml schakelt de hele voorvertoning-Border
@@ -29,7 +39,12 @@ public sealed class PropertyPanelTemplateSelector : DataTemplateSelector
     {
         WelcomePageEditorViewModel => WelcomeTemplate,
         LicensePageEditorViewModel => LicenseTemplate,
+        InfoBeforePageEditorViewModel => InfoBeforeTemplate,
+        UserInfoPageEditorViewModel => UserInfoTemplate,
         SelectDestinationPageEditorViewModel => SelectDestinationTemplate,
+        SelectProgramGroupPageEditorViewModel => SelectProgramGroupTemplate,
+        ReadyPageEditorViewModel => ReadyTemplate,
+        InfoAfterPageEditorViewModel => InfoAfterTemplate,
         DefaultScreenEditorViewModel => DefaultScreenTemplate,
         _ => null,
     };

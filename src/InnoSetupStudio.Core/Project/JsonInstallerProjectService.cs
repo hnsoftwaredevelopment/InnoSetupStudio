@@ -34,12 +34,24 @@ public sealed class JsonInstallerProjectService : IInstallerProjectService
             loaded.WizardScreens ??= new();
 
             // Zelfde verhaal voor de knopinstellingen per scherm (inclusief het Standaardscherm,
-            // fase 4 vervolg): een expliciete JSON-null voor een van deze vier eigenschappen zou
+            // fase 4 vervolg): een expliciete JSON-null voor een van deze eigenschappen zou
             // anders pas een NullReferenceException geven zodra de schermeditor wordt geopend.
             loaded.WelcomeScreenButtons ??= new();
             loaded.LicenseScreenButtons ??= new();
+            loaded.InfoBeforeScreenButtons ??= new();
+            loaded.UserInfoScreenButtons ??= new();
             loaded.SelectDestinationScreenButtons ??= new();
+            loaded.SelectProgramGroupScreenButtons ??= new();
+            loaded.ReadyScreenButtons ??= new();
+            loaded.InfoAfterScreenButtons ??= new();
             loaded.DefaultScreenButtons ??= new();
+
+            // De twee schermspecifieke Bladeren-knoppen (BrowseButtonSettings): zelfde risico bij
+            // een expliciete JSON-null — de schermeditor leest er rechtstreeks .Caption e.d. uit.
+            // SelectDestinationBrowseButton had deze normalisatie nog niet (CodeRabbit, PR #23,
+            // vond het bij SelectProgramGroupBrowseButton; hetzelfde gat zat hier al).
+            loaded.SelectDestinationBrowseButton ??= new();
+            loaded.SelectProgramGroupBrowseButton ??= new();
 
             // Zelfde verhaal voor SupportedLanguageIds (backlogitem 4, sectie 14): een expliciete
             // JSON-null geeft anders een NullReferenceException zodra het talenoverzicht wordt

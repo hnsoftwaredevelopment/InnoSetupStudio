@@ -9,9 +9,10 @@ namespace InnoSetupStudio.App.ViewModels;
 /// ViewModel voor de schermeditor (fase 4): de inhoud bewerken van de wizardschermen die in fase
 /// 3 zijn aangevinkt, met een voorvertoning die Inno Setup's eigen weergave benadert (zie
 /// ScreenEditorPreviewDisclaimer in de vertalingen). Alleen schermen waarvoor al een editor
-/// gebouwd is (Welkom, Licentieovereenkomst, Installatiemap kiezen) staan in de lijst; de overige
-/// acht standaardschermen volgen in latere PR's van deze fase. Een aangevinkt scherm zonder editor
-/// verschijnt dus nog niet hier — bewuste, tijdelijke scope-afbakening voor deze eerste PR.
+/// gebouwd is staan in de lijst: Welkom, Licentieovereenkomst, Info Before, User Info,
+/// Installatiemap kiezen, Select Start Menu Folder, Klaar om te installeren en Info After. Select
+/// Components, Select Tasks en Voltooid volgen in een latere PR van deze fase. Een aangevinkt
+/// scherm zonder editor verschijnt dus nog niet hier — bewuste, tijdelijke scope-afbakening.
 /// </summary>
 public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
 {
@@ -77,11 +78,64 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
             });
         }
 
+        if (project.WizardScreens.ShowInfoBeforePage)
+        {
+            _screens.Add(new InfoBeforePageEditorViewModel(project.InfoBeforeFilePath, projectFilePath, assetService)
+            {
+                ButtonSettings = project.InfoBeforeScreenButtons,
+                Defaults = _defaultScreen,
+                NonEnglishLanguageIds = nonEnglishLanguageIds,
+            });
+        }
+
+        if (project.WizardScreens.ShowUserInfoPage)
+        {
+            _screens.Add(new UserInfoPageEditorViewModel(project.DefaultUserInfoName, project.DefaultUserInfoOrg, project.DefaultUserInfoSerial, project.UsePreviousUserInfo)
+            {
+                ButtonSettings = project.UserInfoScreenButtons,
+                Defaults = _defaultScreen,
+                NonEnglishLanguageIds = nonEnglishLanguageIds,
+            });
+        }
+
         if (project.WizardScreens.ShowSelectDestinationPage)
         {
-            _screens.Add(new SelectDestinationPageEditorViewModel(project.AppName, project.DefaultDirName, project.AllowUserToChangeDir, project.SelectDestinationBrowseButton)
+            _screens.Add(new SelectDestinationPageEditorViewModel(project.AppName, project.DefaultDirName, project.DirPageMode, project.SelectDestinationBrowseButton)
             {
                 ButtonSettings = project.SelectDestinationScreenButtons,
+                Defaults = _defaultScreen,
+                NonEnglishLanguageIds = nonEnglishLanguageIds,
+            });
+        }
+
+        // Inno Setup's eigen volgorde plaatst Select Components en Select Tasks hiertussen; die
+        // twee hebben nog geen editor (zie de klasse-doccomment hierboven), dus Select Program
+        // Group en Ready sluiten hier rechtstreeks aan op Select Destination.
+        if (project.WizardScreens.ShowSelectProgramGroupPage)
+        {
+            _screens.Add(new SelectProgramGroupPageEditorViewModel(project.AppName, project.DefaultGroupName, project.AppendDefaultGroupName, project.AlwaysUsePersonalGroup, project.GroupPageMode, project.SelectProgramGroupBrowseButton)
+            {
+                ButtonSettings = project.SelectProgramGroupScreenButtons,
+                Defaults = _defaultScreen,
+                NonEnglishLanguageIds = nonEnglishLanguageIds,
+            });
+        }
+
+        if (project.WizardScreens.ShowReadyPage)
+        {
+            _screens.Add(new ReadyPageEditorViewModel(project.DisableReadyMemo, project.AlwaysShowDirOnReadyPage, project.AlwaysShowGroupOnReadyPage)
+            {
+                ButtonSettings = project.ReadyScreenButtons,
+                Defaults = _defaultScreen,
+                NonEnglishLanguageIds = nonEnglishLanguageIds,
+            });
+        }
+
+        if (project.WizardScreens.ShowInfoAfterPage)
+        {
+            _screens.Add(new InfoAfterPageEditorViewModel(project.InfoAfterFilePath, projectFilePath, assetService)
+            {
+                ButtonSettings = project.InfoAfterScreenButtons,
                 Defaults = _defaultScreen,
                 NonEnglishLanguageIds = nonEnglishLanguageIds,
             });
@@ -195,11 +249,40 @@ public sealed partial class WizardEditorViewModel : DirtyTrackingViewModel
                     project.LicenseFilePath = license.LicenseFilePath;
                     project.LicenseScreenButtons = license.ReadButtonSettings();
                     break;
+                case InfoBeforePageEditorViewModel infoBefore:
+                    project.InfoBeforeFilePath = infoBefore.InfoFilePath;
+                    project.InfoBeforeScreenButtons = infoBefore.ReadButtonSettings();
+                    break;
+                case UserInfoPageEditorViewModel userInfo:
+                    project.DefaultUserInfoName = userInfo.DefaultUserInfoName;
+                    project.DefaultUserInfoOrg = userInfo.DefaultUserInfoOrg;
+                    project.DefaultUserInfoSerial = userInfo.DefaultUserInfoSerial;
+                    project.UsePreviousUserInfo = userInfo.UsePreviousUserInfo;
+                    project.UserInfoScreenButtons = userInfo.ReadButtonSettings();
+                    break;
                 case SelectDestinationPageEditorViewModel destination:
                     project.DefaultDirName = destination.DefaultDirName;
-                    project.AllowUserToChangeDir = destination.AllowUserToChangeDir;
+                    project.DirPageMode = destination.DirPageMode;
                     project.SelectDestinationScreenButtons = destination.ReadButtonSettings();
                     project.SelectDestinationBrowseButton = destination.ReadBrowseButtonSettings();
+                    break;
+                case SelectProgramGroupPageEditorViewModel programGroup:
+                    project.DefaultGroupName = programGroup.DefaultGroupName;
+                    project.AppendDefaultGroupName = programGroup.AppendDefaultGroupName;
+                    project.AlwaysUsePersonalGroup = programGroup.AlwaysUsePersonalGroup;
+                    project.GroupPageMode = programGroup.GroupPageMode;
+                    project.SelectProgramGroupScreenButtons = programGroup.ReadButtonSettings();
+                    project.SelectProgramGroupBrowseButton = programGroup.ReadBrowseButtonSettings();
+                    break;
+                case ReadyPageEditorViewModel ready:
+                    project.DisableReadyMemo = ready.DisableReadyMemo;
+                    project.AlwaysShowDirOnReadyPage = ready.AlwaysShowDirOnReadyPage;
+                    project.AlwaysShowGroupOnReadyPage = ready.AlwaysShowGroupOnReadyPage;
+                    project.ReadyScreenButtons = ready.ReadButtonSettings();
+                    break;
+                case InfoAfterPageEditorViewModel infoAfter:
+                    project.InfoAfterFilePath = infoAfter.InfoFilePath;
+                    project.InfoAfterScreenButtons = infoAfter.ReadButtonSettings();
                     break;
             }
         }

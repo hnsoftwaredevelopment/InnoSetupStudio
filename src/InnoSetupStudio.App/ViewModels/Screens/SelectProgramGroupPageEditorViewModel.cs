@@ -1,28 +1,37 @@
-using System.IO;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using InnoSetupStudio.App.Localization;
 using InnoSetupStudio.Core.Project;
-using Microsoft.Win32;
 
 namespace InnoSetupStudio.App.ViewModels.Screens;
 
 /// <summary>
-/// Bestemmingspagina: de standaard installatiemap die Inno Setup voorstelt, en hoe de pagina
-/// zich gedraagt (altijd tonen, nooit tonen, of automatisch overslaan bij een update). Komt
-/// overeen met InstallerProject.DefaultDirName/DirPageMode.
+/// Select Start Menu Folder-pagina (Inno Setup's eigen naam voor deze pagina; de interne
+/// <c>WizardScreenSelection.ShowSelectProgramGroupPage</c>-vlag heet naar Inno Setup's
+/// Pascal Script-kant "ProgramGroup", zie de toelichting daar). Net als de Bestemmingspagina een
+/// eigen "Bladeren"-knop (Inno Setup's WizardForm.GroupBrowseButton, sinds 2026-10-02 bewerkbaar,
+/// Herberts verzoek) naast de vooringevulde groepsnaam, twee vinkjes en een drie-waardige
+/// paginazichtbaarheid.
 /// </summary>
-public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenEditorViewModel
+public sealed partial class SelectProgramGroupPageEditorViewModel : WizardScreenEditorViewModel
 {
     private readonly string _appName;
 
-    public SelectDestinationPageEditorViewModel(string appName, string defaultDirName, DisablePageMode dirPageMode, BrowseButtonSettings browseButtonSettings)
-        : base("ShowSelectDestinationPage", LocalizationManager.Instance["WizardScreenSelectDestination"], "Folder")
+    public SelectProgramGroupPageEditorViewModel(
+        string appName,
+        string defaultGroupName,
+        bool appendDefaultGroupName,
+        bool alwaysUsePersonalGroup,
+        DisablePageMode groupPageMode,
+        BrowseButtonSettings browseButtonSettings)
+        : base("ShowSelectProgramGroupPage", LocalizationManager.Instance["WizardScreenSelectProgramGroup"], "Folder")
     {
         _appName = appName;
-        _defaultDirName = defaultDirName;
-        _dirPageMode = dirPageMode;
+        _defaultGroupName = defaultGroupName;
+        _appendDefaultGroupName = appendDefaultGroupName;
+        _alwaysUsePersonalGroup = alwaysUsePersonalGroup;
+        _groupPageMode = groupPageMode;
         _browseButtonCaption = browseButtonSettings.Caption;
         _browseButtonEnabled = browseButtonSettings.Enabled;
         _browseButtonVisible = browseButtonSettings.Visible;
@@ -36,70 +45,53 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
     }
 
     [ObservableProperty]
-    private string _defaultDirName;
+    private string _defaultGroupName;
 
     [ObservableProperty]
-    private DisablePageMode _dirPageMode;
+    private bool _appendDefaultGroupName;
 
-    /// <summary>Voorvertoningstekst boven het map-veld, met de echte projectnaam erin.</summary>
-    public string InstallIntroText =>
-        $"Setup will install {(string.IsNullOrWhiteSpace(_appName) ? "the application" : _appName)} into the following folder.";
+    [ObservableProperty]
+    private bool _alwaysUsePersonalGroup;
 
-    /// <summary>Wat de voorvertoning in het map-veld toont: het ingevulde pad, of anders Inno
-    /// Setup's eigen standaardvoorstel ({autopf}\AppName) als voorbeeld.</summary>
-    public string DisplayDirName => string.IsNullOrWhiteSpace(DefaultDirName)
-        ? $"{{autopf}}\\{(string.IsNullOrWhiteSpace(_appName) ? "App" : _appName)}"
-        : DefaultDirName;
+    [ObservableProperty]
+    private DisablePageMode _groupPageMode;
 
-    /// <summary>Toont een toelichting in de voorvertoning zodra de gebruiker de map niet meer mag
-    /// wijzigen tijdens de installatie, zodat duidelijk is waarom de Bladeren-knop daar uitstaat.
-    /// Alleen voor <see cref="DisablePageMode.NeverShow"/> — zie <see cref="DisablePageMode"/>
-    /// voor waarom <see cref="DisablePageMode.AutoSkipIfKnown"/> hier geen "nooit bewerkbaar"-
-    /// waarschuwing krijgt, maar <see cref="IsAutoSkipHintVisible"/> hieronder.</summary>
-    public Visibility ChangeDirHintVisibility => DirPageMode == DisablePageMode.NeverShow ? Visibility.Visible : Visibility.Collapsed;
+    /// <summary>Toont een toelichting zodra deze pagina nooit getoond wordt (de voorgestelde
+    /// groepsnaam ligt dan vast) — zie <see cref="DisablePageMode"/>.</summary>
+    public Visibility IsNeverShowHintVisible => GroupPageMode == DisablePageMode.NeverShow ? Visibility.Visible : Visibility.Collapsed;
 
     /// <summary>Toont een toelichting zodra deze pagina bij een update automatisch wordt
-    /// overgeslagen (Herberts verzoek, 2026-10-02): de voorvertoning zelf kan dit runtime-gedrag
-    /// niet daadwerkelijk simuleren (zie <see cref="DisablePageMode.AutoSkipIfKnown"/>), dus een
-    /// korte tekst in plaats daarvan.</summary>
-    public Visibility IsAutoSkipHintVisible => DirPageMode == DisablePageMode.AutoSkipIfKnown ? Visibility.Visible : Visibility.Collapsed;
+    /// overgeslagen (Herberts verzoek, 2026-10-02) — de voorvertoning simuleert hier bewust een
+    /// eerste installatie, zie <see cref="DisablePageMode.AutoSkipIfKnown"/>.</summary>
+    public Visibility IsAutoSkipHintVisible => GroupPageMode == DisablePageMode.AutoSkipIfKnown ? Visibility.Visible : Visibility.Collapsed;
 
-    partial void OnDefaultDirNameChanged(string value) => OnPropertyChanged(nameof(DisplayDirName));
-
-    partial void OnDirPageModeChanged(DisablePageMode value)
+    partial void OnGroupPageModeChanged(DisablePageMode value)
     {
-        OnPropertyChanged(nameof(ChangeDirHintVisibility));
+        OnPropertyChanged(nameof(IsNeverShowHintVisible));
         OnPropertyChanged(nameof(IsAutoSkipHintVisible));
         OnPropertyChanged(nameof(IsBrowseButtonEnabledInPreview));
     }
 
-    [RelayCommand]
-    private void Browse()
-    {
-        // Zelfde patroon als ProjectSettingsViewModel.BrowseForFolder: DefaultDirName is vaak
-        // geen bestaand pad op deze machine maar een Inno Setup-constante zoals "{autopf}\App"
-        // (zie LabelDefaultDirNameHint), dus InitialDirectory alleen zetten als het veld toevallig
-        // wél een echte, bestaande map bevat. De dialoog opent anders gewoon zonder voorkeurspad.
-        var dialog = new OpenFolderDialog();
-        if (!string.IsNullOrWhiteSpace(DefaultDirName) && Directory.Exists(DefaultDirName))
-        {
-            dialog.InitialDirectory = DefaultDirName;
-        }
+    /// <summary>Wat de voorvertoning in het mapveld toont: de ingevulde groepsnaam, of anders
+    /// Inno Setup's eigen terugvalwaarde (de toepassingsnaam, zie InstallerProject.DefaultGroupName)
+    /// als voorbeeld — zelfde aanpak als SelectDestinationPageEditorViewModel.DisplayDirName
+    /// (CodeRabbit, PR #23: een leeg veld op een nieuw project toonde hier niets, terwijl het
+    /// model al een terugval naar AppName belooft).</summary>
+    public string EffectiveGroupName => string.IsNullOrWhiteSpace(DefaultGroupName)
+        ? (string.IsNullOrWhiteSpace(_appName) ? "App" : _appName)
+        : DefaultGroupName;
 
-        if (dialog.ShowDialog() == true)
-        {
-            DefaultDirName = dialog.FolderName;
-        }
-    }
+    partial void OnDefaultGroupNameChanged(string value) => OnPropertyChanged(nameof(EffectiveGroupName));
 
     // Eigenschappen van de schermspecifieke "Bladeren"-knop zelf (Inno Setup's
-    // WizardForm.DirBrowseButton) — niet te verwarren met de Browse()-opdracht hierboven, die de
-    // knop is in Inno Setup Studio's EIGEN UI om een map te kiezen voor DefaultDirName. Zie
+    // WizardForm.GroupBrowseButton, geverifieerd tegen Setup.WizardForm.pas: FGroupBrowseButton:
+    // TNewButton, net als FDirBrowseButton op de Bestemmingspagina) — deze pagina heeft zelf geen
+    // Browse()-opdracht in Inno Setup Studio's eigen UI, de groepsnaam is altijd vrije tekst. Zie
     // BrowseButtonSettings voor waarom dit los staat van de drie gedeelde Terug-/Volgende-/
     // Annuleren-knoppen: deze knop komt maar op dit ene scherm voor, dus geen Effective*-resolutie
-    // via het Standaardscherm. Caption is sinds 2026-09-29 wél een veld (zie BrowseButtonSettings)
-    // — tweelaags net als hieronder, alleen met Inno Setup's eigen ingebouwde knoptekst als
-    // terugvalwaarde in plaats van een derde, Standaardscherm-laag.
+    // via het Standaardscherm. Zelfde model hergebruikt als SelectDestinationBrowseButton
+    // (Herberts verzoek, 2026-10-02: dezelfde bewerkingsmogelijkheden als de Bestemmingspagina)
+    // in plaats van een tweede, bijna identieke klasse.
 
     [ObservableProperty]
     private string _browseButtonCaption;
@@ -136,8 +128,7 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
     private Dictionary<string, string> _browseButtonTooltipByLanguage;
 
     // Hergebruikt de kleurenkiezer van de basisklasse (WizardScreenEditorViewModel.PickColor,
-    // protected static): geen eigen kopie nodig, deze klasse erft al van die basisklasse (anders
-    // dan DefaultScreenEditorViewModel, die geen gedeelde basisklasse heeft).
+    // protected static): geen eigen kopie nodig, deze klasse erft al van die basisklasse.
     [RelayCommand]
     private void PickBrowseButtonTextColor() => BrowseButtonTextColor = PickColor(BrowseButtonTextColor);
 
@@ -165,16 +156,6 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
         OnPropertyChanged(nameof(EffectiveBrowseButtonCaption));
     }
 
-    // Herbert (2026-09-30): alle knoppen moeten dezelfde bewerkingsfunctionaliteiten krijgen als
-    // Terug/Volgende/Annuleren, tenzij Inno Setup dat niet ondersteunt. Enabled/Visible stonden
-    // hier al als velden (zie hierboven, ButtonPropertiesWindow kon ze al instellen), maar zonder
-    // de leeg-is-true-terugvalwaarde die Terug/Volgende/Annuleren wél hebben (IsXxxButtonVisible/
-    // IsXxxButtonEnabled in WizardScreenEditorViewModel) — en de voorvertoning hieronder gebruikte
-    // ze zelfs helemaal niet: alleen AllowUserToChangeDir bepaalde IsEnabled, dus een expliciete
-    // "Bladeren-knop uitschakelen"-instelling had zichtbaar geen enkel effect. Tweelaags, geen
-    // Standaardscherm-cascade — zelfde reden als bij Caption hierboven (deze knop komt maar op één
-    // scherm voor).
-
     /// <summary>True tenzij de Bladeren-knop expliciet op onzichtbaar gezet is.</summary>
     public bool IsBrowseButtonVisible => BrowseButtonVisible ?? true;
 
@@ -184,11 +165,11 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
     public bool IsBrowseButtonEnabled => BrowseButtonEnabled ?? true;
 
     /// <summary>Wat de voorvertoning daadwerkelijk als IsEnabled van de Bladeren-knop gebruikt:
-    /// zowel Inno Setup's eigen ingebouwde gedrag (de knop gaat uit zodra de gebruiker de map
-    /// nooit mag wijzigen, zie DirPageMode/ChangeDirHintVisibility — bij AutoSkipIfKnown toont de
-    /// voorvertoning bewust het eerste-installatie-scenario, dus bewerkbaar) als de knop-eigen
-    /// Enabled-instelling moeten allebei "aan" staan.</summary>
-    public bool IsBrowseButtonEnabledInPreview => DirPageMode != DisablePageMode.NeverShow && IsBrowseButtonEnabled;
+    /// zowel Inno Setup's eigen ingebouwde gedrag (de knop gaat uit zodra deze pagina nooit getoond
+    /// wordt, zie GroupPageMode/IsNeverShowHintVisible — bij AutoSkipIfKnown toont de voorvertoning
+    /// bewust het eerste-installatie-scenario, dus bewerkbaar) als de knop-eigen Enabled-instelling
+    /// moeten allebei "aan" staan.</summary>
+    public bool IsBrowseButtonEnabledInPreview => GroupPageMode != DisablePageMode.NeverShow && IsBrowseButtonEnabled;
 
     partial void OnBrowseButtonVisibleChanged(bool? value) => OnPropertyChanged(nameof(IsBrowseButtonVisible));
 
