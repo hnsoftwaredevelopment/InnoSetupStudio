@@ -1,6 +1,6 @@
 # Ontwerp: dunne .iss-generator (fase 5, versie 1)
 
-Status: voorstel, 2026-10-05. Er is nog geen code geschreven. Beslispunten staan in sectie 9.
+Status: goedgekeurd door Herbert op 2026-10-05. Er is nog geen code geschreven. Beslissingen staan in sectie 9.
 
 ## 1. Doel
 
@@ -108,10 +108,12 @@ Elke stap is een eigen feature-branch en PR, met handmatige test door Herbert v√
 | Paden | Absolute paden zoals ze nu in het project staan. Projectrelatieve paden volgen als aparte stap (het openstaande CodeRabbit-punt over `ProjectAssetService.Import`, zie de architectuurdoc). |
 | Uitvoerlocatie | Naast het `.issproj`, via een SaveFileDialog die Herbert kan aanpassen. |
 
-Nog te beslissen, klein genoeg om met mijn voorstel te starten tenzij Herbert iets anders wil:
+Aanvullende beslissingen (Herbert, 2026-10-05, na het lezen van dit ontwerp):
 
-- `AppSupportURL` en `AppUpdatesURL` vullen met `PublisherUrl`, zoals het HNSoftwareInstallerFramework. Voorstel: ja, zolang er geen eigen velden zijn.
-- `UsePrevious...`-richtlijnen alleen bij afwijking van Inno's standaard schrijven (voorstel) of altijd.
+- Sectie 3 is voor versie 1 volledig.
+- `AppSupportURL` en `AppUpdatesURL` worden gevuld met `PublisherUrl`, zolang er geen eigen velden zijn.
+- `UsePrevious...`-richtlijnen worden alleen geschreven bij afwijking van Inno's standaard.
+- Prioriteit voor versie 1 en waarschijnlijk ook de eerstvolgende versies: de compiler moet het gegenereerde bestand accepteren. Een correct compileerbaar `.iss` gaat voor op volledigheid van de vertaling.
 
 ## 10. Buiten versie 1
 
