@@ -2702,7 +2702,11 @@ Algemeen, onder de nieuwe kop "Installer".
 - `MainExecutable` is een pad relatief aan `SourceFilesPath`. De Bladeren-knop opent een
   bestandsdialoog in die map en slaat het relatieve pad op. Een bestand buiten de map wordt
   geweigerd met een melding, omdat de installer alleen die map meeneemt. Is er nog geen map met
-  bronbestanden gekozen, dan vraagt de knop daar eerst om.
+  bronbestanden gekozen, dan vraagt de knop daar eerst om. Bevat de gekozen map (ook in
+  submappen) geen enkel `.exe`-bestand, dan meldt de knop dat ook meteen en opent de
+  bestandsdialoog niet (aangescherpt na Herberts handmatige test, 2026-10-05: eerst kon hij in een
+  map zonder programma alsnog een bestand zoeken). Een hoofdprogramma zonder `.exe`-extensie kan de
+  gebruiker rechtstreeks in het tekstveld typen.
 - `GetEffectiveOutputBaseFilename()` staat in Core, niet in het ViewModel, zodat de generator
   dezelfde regel gebruikt als de uitleg onder het veld. Tekens die Windows niet toestaat in een
   bestandsnaam worden `_`. Lege naam en lege versie vallen terug op `Setup` of `<AppName>-Setup`.
@@ -2720,7 +2724,7 @@ Algemeen, onder de nieuwe kop "Installer".
 
 **Tests.** 17 nieuwe tests (45 in totaal): round trip van de vier velden, standaardwaarden voor een
 ouder bestand, normalisatie van `null`, zes ongeldige JSON-varianten en negen gevallen voor
-`GetEffectiveOutputBaseFilename`. De 3 resx-bestanden hebben nu elk 166 sleutels (voorheen 151),
+`GetEffectiveOutputBaseFilename`. De 3 resx-bestanden hebben nu elk 167 sleutels (voorheen 151),
 gevalideerd met een ElementTree-script op identieke sleutelverzameling en `{0}`-plaatsaanduidingen.
 
 **Wat de generator hiermee later doet** (nog niet gebouwd): `Architecture.X64` wordt

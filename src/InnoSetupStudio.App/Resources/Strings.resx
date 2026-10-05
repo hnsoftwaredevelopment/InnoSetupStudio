@@ -510,4 +510,7 @@
   <data name="LabelWizardStyleClassic" xml:space="preserve">
     <value>Klassiek</value>
   </data>
+  <data name="MainExecutableNoExecutableInSourceMessage" xml:space="preserve">
+    <value>In de map met bronbestanden ({0}) staat geen .exe-bestand. Controleer of dit de juiste map is.</value>
+  </data>
 </root>

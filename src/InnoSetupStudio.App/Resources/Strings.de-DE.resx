@@ -510,4 +510,7 @@
   <data name="LabelWizardStyleClassic" xml:space="preserve">
     <value>Klassisch</value>
   </data>
+  <data name="MainExecutableNoExecutableInSourceMessage" xml:space="preserve">
+    <value>Im Quelldateien-Ordner ({0}) liegt keine .exe-Datei. Prüfen Sie, ob dies der richtige Ordner ist.</value>
+  </data>
 </root>

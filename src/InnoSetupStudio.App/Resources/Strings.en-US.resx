@@ -510,4 +510,7 @@
   <data name="LabelWizardStyleClassic" xml:space="preserve">
     <value>Classic</value>
   </data>
+  <data name="MainExecutableNoExecutableInSourceMessage" xml:space="preserve">
+    <value>The source files folder ({0}) contains no .exe file. Check that this is the right folder.</value>
+  </data>
 </root>

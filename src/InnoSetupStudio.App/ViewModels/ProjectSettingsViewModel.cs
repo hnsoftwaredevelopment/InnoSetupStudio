@@ -296,6 +296,20 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
             return;
         }
 
+        // Een map zonder enig .exe-bestand (ook niet in een submap) is vrijwel zeker niet de
+        // bedoelde map met bronbestanden. Dan meteen melden in plaats van de gebruiker eerst een
+        // bestand te laten zoeken dat toch niet in de installer terechtkomt. Een hoofdprogramma
+        // zonder .exe-extensie kan de gebruiker nog steeds rechtstreeks in het tekstveld typen.
+        if (!ContainsExecutable(SourceFilesPath))
+        {
+            MessageBox.Show(
+                string.Format(LocalizationManager.Instance["MainExecutableNoExecutableInSourceMessage"], SourceFilesPath),
+                "Inno Setup Studio",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
         var dialog = new OpenFileDialog
         {
             Filter = LocalizationManager.Instance["DialogFilterExecutableFiles"],
@@ -623,6 +637,20 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
         // race met een nieuwe wijziging zoals bij MainWindow's ScreenEditor), maar een
         // rechtstreeks resultaat is ondubbelzinnig en blijft dat ook als die aanname ooit wijzigt.
         return await SaveCoreAsync() ? UnsavedChangesDecision.AlreadyClosing : UnsavedChangesDecision.Abort;
+    }
+
+    private static bool ContainsExecutable(string folder)
+    {
+        try
+        {
+            var options = new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true };
+            return Directory.EnumerateFiles(folder, "*.exe", options).Any();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // Onleesbare map: niet blokkeren, de bestandsdialoog toont dan zelf wat er te kiezen is.
+            return true;
+        }
     }
 
     private static string? BrowseForFolder(string currentPath)
