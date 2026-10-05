@@ -1,6 +1,6 @@
 # Ontwerp: dunne .iss-generator (fase 5, versie 1)
 
-Status: goedgekeurd door Herbert op 2026-10-05. Er is nog geen code geschreven. Beslissingen staan in sectie 9.
+Status: goedgekeurd door Herbert op 2026-10-05. Stap 2 (de generator in Core) is gebouwd en met ISCC 7.1.0 getest; wat die test aan het licht bracht staat in sectie 12. Beslissingen staan in sectie 9.
 
 ## 1. Doel
 
@@ -22,7 +22,7 @@ Een regel hieronder staat alleen in het resultaat als de waarde niet leeg is, te
 
 | Model | Inno Setup | Opmerking |
 |---|---|---|
-| `AppId` | `AppId={{GUID}` | Openingsaccolade verdubbelen. Dat patroon staat in echte scripts op de pc (Inno-All-in-One-Setup). Bevestigen met ISCC-test. |
+| `AppId` | `AppId={{GUID}` | Openingsaccolade verdubbelen. Dat patroon staat in echte scripts op de pc (Inno-All-in-One-Setup). Bevestigd met ISCC: zonder verdubbeling compileert het script niet. |
 | `AppName`, `AppVersion` | `AppName`, `AppVersion` | Verplicht. Leeg is een fout. |
 | `Publisher` | `AppPublisher` | |
 | `PublisherUrl` | `AppPublisherURL` | `AppSupportURL` en `AppUpdatesURL` ook vullen, zoals het HNSoftwareInstallerFramework doet? Zie beslispunt. |
@@ -42,7 +42,7 @@ Een regel hieronder staat alleen in het resultaat als de waarde niet leeg is, te
 | `AppendDefaultGroupName`, `AlwaysUsePersonalGroup` | zelfde namen | Alleen bij afwijking van Inno's standaard. |
 | `DisableReadyMemo`, `AlwaysShowDirOnReadyPage`, `AlwaysShowGroupOnReadyPage` | zelfde namen | Alleen bij afwijking van Inno's standaard (`no`). |
 | `SetupIconFile`, `WizardImageFile`, `WizardSmallImageFile` | zelfde namen | Leeg betekent: Inno-standaard. De meegeleverde standaardafbeelding uit de editor komt dus niet in het .iss. |
-| `OutputPath` | `OutputDir` | |
+| `OutputPath` | `OutputDir` | Niet geëscaped, zie sectie 12. |
 | `SourceFilesPath` | `[Files]` | `Source: "<pad>\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs`, zoals `Files.iss` in het HNSoftwareInstallerFramework. |
 | `CreateStartMenuIcon` | `[Icons]` | `Name: "{group}\<AppName>"; Filename: "{app}\<hoofdbestand>"`. Heeft het hoofdbestand nodig (sectie 4). |
 | `CreateDesktopIcon` | `[Tasks]` en `[Icons]` | Taak `desktopicon` (Flags: unchecked) plus `{autodesktop}`-icoon met `Tasks: desktopicon`. Taaltekst via `{cm:CreateDesktopIcon}`, die in elke taalbestand al vertaald is (geverifieerd in de docs). |
@@ -56,18 +56,18 @@ Zonder deze velden komt er wel een compileerbaar .iss uit, maar geen bruikbare i
 
 1. **Hoofduitvoerbestand** (bijvoorbeeld `MijnApp.exe`, relatief aan `SourceFilesPath`). Nodig voor `[Icons]` en straks voor `[Run]` (programma starten na installatie). Zonder dit veld geen snelkoppelingen, ook al staat `CreateStartMenuIcon` aan.
 2. **Naam van het uitvoerbestand** (`OutputBaseFilename`). Inno's standaard is `setup`. Voorstel: standaardwaarde `<AppName>-<AppVersion>-Setup`, aanpasbaar.
-3. **64-bit installatie** (`ArchitecturesInstallIn64BitMode`). Zonder deze richtlijn draait Setup in 32-bit modus en wijst `{autopf}` op Program Files (x86). Dat is bekend Inno-gedrag, maar de officiële pagina gaf daar via de fetch geen tekst over. Ik bevestig dit in stap 2 met een ISCC-test. Voorstel: een keuzelijst "32-bit", "64-bit" in Projectinstellingen met 64-bit als standaard voor nieuwe projecten. De voorbeeldscripts in de map InnoSetup Examples (`64Bit.iss`, `64BitTwoArch.iss`) gebruiken `ArchitecturesInstallIn64BitMode=x64`; of `x64compatible` beter is, bepaal ik in stap 2 met ISCC.
+3. **64-bit installatie** (`ArchitecturesInstallIn64BitMode`). Zonder deze richtlijn draait Setup in 32-bit modus en wijst `{autopf}` op Program Files (x86). Dat is bekend Inno-gedrag, maar de officiële pagina gaf daar via de fetch geen tekst over. Ik bevestig dit in stap 2 met een ISCC-test. Voorstel: een keuzelijst "32-bit", "64-bit" in Projectinstellingen met 64-bit als standaard voor nieuwe projecten. De generator schrijft `x64compatible` (de waarde in de voorbeeldscripts van Inno Setup 7.1.0; `x64` is een verouderde alias van `x64os`). ISCC accepteert dit, zie sectie 12.
 4. **WizardStyle**. Inno's standaard is `classic` (geverifieerd). Het HNSoftwareInstallerFramework gebruikt `modern`. Voorstel: `modern` als vaste waarde in versie 1, geen UI.
 5. **PrivilegesRequired**. Inno's standaard is admin. Niet nodig voor versie 1, wel het bedoelde gedrag voor `{autopf}`.
 
-Vaste waarden die de generator zonder UI schrijft: `Compression=lzma2`, `SolidCompression=yes`, `WizardStyle=modern`, `UninstallDisplayName`, `UninstallDisplayVersion` (zoals `Base.iss`).
+Vaste waarden die de generator zonder UI schrijft: `Compression=lzma2`, `SolidCompression=yes`, `UninstallDisplayName` en `UninstallDisplayIcon`. `WizardStyle=modern` volgt de keuze in Projectinstellingen. `UninstallDisplayVersion` bestaat niet als `[Setup]`-richtlijn (ISCC weigert die, zie sectie 12): Programma's en onderdelen toont de `AppVersion`.
 
 ## 5. Gedrag van de generator
 
 - **Deterministisch.** Zelfde project, zelfde tekst. Geen tijdstempel, geen willekeurige volgorde. Dat houdt git-diffs bruikbaar. De kop zegt wel "gegenereerd door Inno Setup Studio, handmatige wijzigingen gaan verloren".
 - **Eenrichting.** Versie 1 schrijft alleen. Het inlezen van een bestaand .iss (de parser uit fase 5) komt later.
-- **Escaping.** Waarden uit het project zoals `AppName` die een `{` bevatten, krijgen `{{`. Parameters tussen aanhalingstekens in `[Files]`, `[Icons]` en `[Languages]` krijgen `""` voor een aanhalingsteken. Regeleinden in een waarde zijn een fout. `DefaultDirName` en `DefaultGroupName` zijn de uitzondering: dat zijn bewust constanten-teksten.
-- **Codering.** UTF-8 met BOM en CRLF-regeleinden, zodat niet-ASCII-tekens (bijvoorbeeld "é" in een bedrijfsnaam) goed compileren. Dit verifieer ik in een test met zo'n teken, het is een aanname tot dan.
+- **Escaping.** Alleen waarden die Setup tijdens de installatie als constante-tekst leest, krijgen `{{` voor een `{`: `AppId`, `AppName`, `AppVersion`, `AppPublisher`, de URL's, `AppContact`, `DefaultUserInfo*`, `UninstallDisplayName`, `UninstallDisplayIcon` en de namen en doelen in `[Icons]`. Waarden die de compiler zelf leest (`Source` in `[Files]`, `OutputDir`, `OutputBaseFilename`, `LicenseFile`, `InfoBeforeFile`, `InfoAfterFile`, `SetupIconFile`, `WizardImageFile`, `WizardSmallImageFile`) worden niet geëscaped: daar is `{{` letterlijke tekst. Parameters tussen aanhalingstekens krijgen `""` voor een aanhalingsteken. Regeleinden in een waarde zijn een fout. `DefaultDirName` en `DefaultGroupName` zijn de uitzondering: dat zijn bewust constanten-teksten. Een naam die als map of snelkoppeling wordt aangemaakt (de terugvalwaarden van die twee, en de namen in `[Icons]`) wordt eerst bestandsnaam-veilig gemaakt: tekens die Windows niet toestaat (zoals een aanhalingsteken) worden `_`.
+- **Codering.** UTF-8 met BOM en CRLF-regeleinden, zodat niet-ASCII-tekens (bijvoorbeeld "é" in een bedrijfsnaam) goed compileren. Inno Setup 7.1.0 leest UTF-8 ook zonder BOM goed; de BOM blijft staan omdat Inno Setup 6 een bestand zonder BOM als ANSI leest.
 - **Padseparatoren.** Windows-paden blijven met backslash.
 - **Volgorde van secties.** `[Setup]`, `[Languages]`, `[Tasks]`, `[Files]`, `[Icons]`. Binnen `[Setup]` gegroepeerd (toepassing, mappen, pagina's, uiterlijk, uitvoer) met commentaarregels.
 
@@ -136,3 +136,17 @@ Aanvullende beslissingen (Herbert, 2026-10-05, na het lezen van dit ontwerp):
 - **Aanname over escaping en codering** (`{{`, UTF-8 met BOM, `""`). De ISCC-integratietest vangt dit af; zonder Inno Setup op een machine draait die test niet.
 - **Inno Setup 7 tegenover 6.** Herbert heeft 7.1.0 geïnstalleerd. De gecontroleerde documentatie wees op 6.5.0 voor `Default.isl`. Directives die in 7 anders zijn dan in 6 vallen pas op bij de ISCC-test; daarom valideert die test tegen de versie die Herbert gebruikt.
 - **`WizardStyle=modern`** bestaat in Inno 6 en 7. Het bestaan van andere stijlnamen (`polar`, `slate`, enzovoort) in de docs van de nieuwste versie laat ik bewust buiten de keuzelijst.
+
+## 12. Bevindingen uit de ISCC-test (stap 2, Inno Setup 7.1.0)
+
+De generator is gebouwd en getest tegen de echte compiler. Dit heeft ISCC aangetoond, en daarmee is het ontwerp op deze punten gecorrigeerd:
+
+1. **`UninstallDisplayVersion` bestaat niet.** ISCC stopt met "Unrecognized [Setup] section directive". Het stond in dit ontwerp "zoals `Base.iss`", maar was niet tegen de compiler gecontroleerd. De generator schrijft de richtlijn niet meer.
+2. **`{{` werkt alleen waar Setup constanten leest.** Voor `AppId`, `AppName` en de andere runtime-waarden is `{{` nodig (zonder verdubbeling in `AppId` compileert het script niet). In `Source`, `OutputDir`, `OutputBaseFilename` en de bestandsrichtlijnen is `{{` letterlijke tekst: een installer met `{{y}` in de naam, of een bronmap die niet wordt gevonden. Daar escapet de generator dus niet. Een pad met een accolade compileert zo.
+3. **Een aanhalingsteken in de naam van een snelkoppeling is een compilerfout** ("Parameter Name cannot include quotes"). Windows staat het ook niet toe in een bestandsnaam. De generator vervangt zulke tekens in namen van snelkoppelingen en in de terugvalwaarden van `DefaultDirName` en `DefaultGroupName` door `_`. `AppName` zelf blijft ongewijzigd.
+4. **`ArchitecturesInstallIn64BitMode=x64compatible`** compileert met 7.1.0, voor X64 met zowel Classic als Modern.
+5. **Alle 33 talen uit de catalogus** compileren samen in één script, en elk `MessagesFile` uit de catalogus bestaat in de installatie.
+6. **Inno Setup 7.1.0 leest UTF-8 zonder BOM goed.** De BOM blijft toch staan voor Inno Setup 6.
+7. **Geen compilerwaarschuwingen** voor de geteste scripts. De ISCC-tests falen op een regel die met `Warning:` begint.
+
+De ISCC-tests bouwen een installer maar voeren hem niet uit. Een installatie vraagt standaard om beheerdersrechten (`PrivilegesRequired` is admin), wat een geautomatiseerde test niet kan afhandelen.

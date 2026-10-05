@@ -2738,7 +2738,71 @@ ouder bestand, normalisatie van `null`, zes ongeldige JSON-varianten, negentien 
 `GetEffectiveOutputBaseFilename` en dertien voor `IsValidMainExecutablePath`. De 3 resx-bestanden hebben nu elk 168 sleutels (voorheen 151),
 gevalideerd met een ElementTree-script op identieke sleutelverzameling en `{0}`-plaatsaanduidingen.
 
-**Wat de generator hiermee later doet** (nog niet gebouwd): `Architecture.X64` wordt
-`ArchitecturesInstallIn64BitMode`, `X86` laat de richtlijn weg. De exacte identifier (`x64` of
-`x64compatible`) en het effect op `{autopf}` worden in stap 2 met een ISCC-test vastgesteld; de
-officiële documentatiepagina gaf daar via de fetch geen tekst over.
+**Wat de generator hiermee doet** (gebouwd in stap 2, zie sectie 30): `Architecture.X64` wordt
+`ArchitecturesInstallIn64BitMode=x64compatible`, `X86` laat de richtlijn weg.
+
+## 30. De dunne generator: IssGenerator in Core (2026-10-05)
+
+Stap 2 van `docs/Ontwerp-Dunne-Generator.md`. Een pure functie zonder UI: `new IssGenerator().Generate(project)`
+geeft een `GenerationResult` met de scripttekst en een lijst meldingen. De app roept hem nog niet aan
+(stap 3). De prioriteit van versie 1 was dat de Inno Setup-compiler het resultaat accepteert; de
+ISCC-tests bewijzen dat tegen Inno Setup 7.1.0.
+
+**Bestanden in `InnoSetupStudio.Core/Generation/`.**
+
+| Bestand | Rol |
+|---|---|
+| `IssGenerator.cs` | De generator. `Generate` is deterministisch en heeft geen toestand; per aanroep draait een eigen `Run`. |
+| `IssWriter.cs` | Bouwt het script: CRLF, een lege regel voor elke sectie, kopjes (`Heading`) die alleen verschijnen als er een richtlijn onder komt. |
+| `IssEscape.cs` | `Constants` (`{` wordt `{{`), `Quoted` (`"` wordt `""`), `ContainsLineBreak` en `FileSystemName` (tekens die Windows niet toestaat worden `_`). |
+| `GenerationIssue.cs` | `GenerationSeverity` (Info, Warning, Error), `GenerationIssueCode` en het record `GenerationIssue(Severity, Code, Arguments)`. |
+| `GenerationResult.cs` | `Script`, `Issues` en `HasErrors`. |
+| `IGeneratorEnvironment.cs` | `DirectoryExists` en `FileExists`, met `DiskGeneratorEnvironment`. Alleen hier raakt de generator de schijf, zodat tests een nepomgeving gebruiken. |
+
+`InnoLanguageOption` heeft er een veld bij gekregen: `MessagesFile` (`compiler:Default.isl` voor Engels,
+`compiler:Languages\<Naam>.isl` voor de rest, met de hoofdletters van de echte bestandsnaam).
+
+**Wat er in het script komt.** Volgorde: `[Setup]`, `[Languages]`, `[Tasks]`, `[Files]`, `[Icons]`. In
+`[Setup]` staan alleen richtlijnen die van Inno Setup's eigen standaard afwijken, behalve de basisgegevens.
+De mapping per model-eigenschap staat in sectie 3 van het ontwerp. Engels staat altijd als eerste in
+`[Languages]` (Setup valt daarop terug); de andere gekozen talen volgen in de volgorde van de catalogus,
+niet in de volgorde waarin ze in het project staan, zodat de uitvoer stabiel is.
+
+**Escaping, per richtlijn.** Dit is het belangrijkste wat de ISCC-test heeft opgeleverd. Waarden die Setup
+tijdens de installatie als constante-tekst leest (`AppId`, `AppName`, `AppVersion`, `AppPublisher`, de
+URL's, `AppContact`, `DefaultUserInfo*`, `UninstallDisplay*`, de namen en doelen in `[Icons]`) krijgen
+`{{` voor een `{`. Waarden die de compiler zelf leest (`Source`, `OutputDir`, `OutputBaseFilename`, de
+bestandsrichtlijnen) krijgen dat niet: daar is `{{` letterlijke tekst. De documentatie bevestigt voor
+de eerste groep dat de waarde constanten kan bevatten; voor de tweede groep is dit door ISCC zelf
+aangetoond (zie sectie 12 van het ontwerp).
+
+**Meldingen.** Codes en ernst staan in `GenerationIssueCode`; de tekst komt in stap 3 uit de resx-bestanden
+(NL, EN, DE), zodat de generator zelf taalloos blijft. Fouten: ontbrekende `AppId`, `AppName`,
+`AppVersion` of `SourceFilesPath`, en een regeleinde in een waarde (die waarde wordt dan weggelaten).
+Waarschuwingen: pagina aan zonder bestand, bestand of map die niet bestaat, ongeldig of onvindbaar
+hoofdprogramma, snelkoppelingen zonder hoofdprogramma, Select Components aan (nog niet ondersteund),
+Select Tasks aan zonder taken en andersom (bureaubladpictogram zonder Select Tasks-pagina), onbekende
+taal-id. Info: het aantal schermen en knoppen met instellingen die pas in stap 4 worden vertaald.
+
+**Bewuste keuzes.**
+
+- Een bestandsnaam of mapnaam die Setup aanmaakt (de terugvalwaarden van `DefaultDirName` en
+  `DefaultGroupName`, en de naam van een snelkoppeling) wordt bestandsnaam-veilig gemaakt. ISCC weigert
+  een aanhalingsteken in de Name-parameter van `[Icons]`. `AppName` zelf blijft ongewijzigd.
+- `UninstallDisplayVersion` wordt niet geschreven: het is geen `[Setup]`-richtlijn.
+- Codering UTF-8 met BOM: Inno Setup 7.1.0 leest ook UTF-8 zonder BOM goed, Inno Setup 6 niet.
+- Een pad met een accolade in `Source` of `OutputDir` compileert, maar een pad dat zelf een bestaande
+  Inno-constante bevat (bijvoorbeeld een map die `{app}` heet) is niet getest en zeer onwaarschijnlijk.
+
+**Tests** (`tests/InnoSetupStudio.Tests/Generation/`, 107 nieuwe testgevallen, 175 in totaal).
+
+| Bestand | Inhoud |
+|---|---|
+| `IssGeneratorTests.cs` | Mapping per beslistabel: paginamodi, standaardwaarden, bestandsrichtlijnen, User Info, afbeeldingen. |
+| `IssGeneratorIssuesTests.cs` | Escaping, meldingen, snelkoppelingen en taken, talen, knopinstellingen, eigenschappen van de uitvoer (deterministisch, alleen CRLF, BOM). |
+| `IssGeneratorGoldenTests.cs` | Vergelijkt drie gegenereerde scripts met de bestanden in `Golden/`. Met de omgevingsvariabele `UPDATE_GOLDEN=1` schrijft de test de bestanden opnieuw en faalt hij Ã©Ã©n keer, zodat een gewijzigd bestand nooit ongezien door een test komt. |
+| `IssCompilerTests.cs` | Laat ISCC 18 scripts compileren: minimaal, alle pagina's aan en uit, vier combinaties van architectuur en wizardstijl, alle 33 talen, speciale tekens, accolades in zeven paden, een naam met accent, en een `AppId` zonder `{{` dat juist niet mag compileren. Controleert exitcode 0, het bestaan van de installer en dat de uitvoer geen regel met `Warning:` bevat. Elke catalogustaal moet bovendien een bestaand `.isl`-bestand hebben. |
+| `InnoSetupInstallation.cs` | Zoekt `ISCC.exe` (omgevingsvariabele `INNO_SETUP_DIR`, anders Inno Setup 7 of 6 in Program Files). `IsccFact` en `IsccTheory` slaan de tests over als het programma ontbreekt, zoals op een build-server. |
+
+De ISCC-tests bouwen een installer maar voeren hem niet uit: Setup vraagt standaard om
+beheerdersrechten, wat een geautomatiseerde test niet kan afhandelen.
