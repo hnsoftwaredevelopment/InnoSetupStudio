@@ -513,4 +513,7 @@
   <data name="MainExecutableNoExecutableInSourceMessage" xml:space="preserve">
     <value>Im Quelldateien-Ordner ({0}) liegt keine .exe-Datei. Prüfen Sie, ob dies der richtige Ordner ist.</value>
   </data>
+  <data name="MainExecutableInvalidPathMessage" xml:space="preserve">
+    <value>Das Hauptprogramm muss ein Pfad relativ zum Quelldateien-Ordner sein, zum Beispiel MeineApp.exe oder bin\MeineApp.exe. Absolute Pfade und ".." sind nicht erlaubt.</value>
+  </data>
 </root>

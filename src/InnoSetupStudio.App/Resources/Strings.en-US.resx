@@ -513,4 +513,7 @@
   <data name="MainExecutableNoExecutableInSourceMessage" xml:space="preserve">
     <value>The source files folder ({0}) contains no .exe file. Check that this is the right folder.</value>
   </data>
+  <data name="MainExecutableInvalidPathMessage" xml:space="preserve">
+    <value>The main program must be a path relative to the source files folder, for example MyApp.exe or bin\MyApp.exe. Absolute paths and ".." are not allowed.</value>
+  </data>
 </root>

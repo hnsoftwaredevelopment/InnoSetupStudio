@@ -2707,6 +2707,17 @@ Algemeen, onder de nieuwe kop "Installer".
   bestandsdialoog niet (aangescherpt na Herberts handmatige test, 2026-10-05: eerst kon hij in een
   map zonder programma alsnog een bestand zoeken). Een hoofdprogramma zonder `.exe`-extensie kan de
   gebruiker rechtstreeks in het tekstveld typen.
+- Het tekstveld Hoofdprogramma kan ook met de hand gevuld worden. `Opslaan` controleert daarom de
+  vorm met `InstallerProject.IsValidMainExecutablePath`: relatief, zonder `.`, `..`, lege onderdelen
+  of ongeldige tekens (CodeRabbit, PR #26). Of het bestand ook in de huidige bronbestandenmap
+  staat, controleert dit scherm bewust niet, want dat hangt af van de volgorde waarin de velden
+  worden ingevuld; dat is een waarschuwing van de generator. Hetzelfde geldt voor een
+  bronbestandenmap die niet bestaat: het scherm controleert die niet (Herbert: netter, maar geen
+  must), de generator meldt het.
+- `GetEffectiveOutputBaseFilename` vermijdt ook gereserveerde Windows-apparaatnamen (`CON`,
+  `PRN`, `AUX`, `NUL`, `COM1` tot `COM9`, `LPT1` tot `LPT9`, ook met extensie) door er een
+  onderstrepingsteken voor te zetten, en laat een punt of spatie aan het einde weg (CodeRabbit,
+  PR #26).
 - `GetEffectiveOutputBaseFilename()` staat in Core, niet in het ViewModel, zodat de generator
   dezelfde regel gebruikt als de uitleg onder het veld. Tekens die Windows niet toestaat in een
   bestandsnaam worden `_`. Lege naam en lege versie vallen terug op `Setup` of `<AppName>-Setup`.
@@ -2722,9 +2733,9 @@ Algemeen, onder de nieuwe kop "Installer".
 - Dit zijn de eerste velden in `ProjectSettingsViewModel` die niet door een schermeditor worden
   bewerkt maar in dit scherm zelf. Ze hebben daarom geen pass-through nodig.
 
-**Tests.** 17 nieuwe tests (45 in totaal): round trip van de vier velden, standaardwaarden voor een
-ouder bestand, normalisatie van `null`, zes ongeldige JSON-varianten en negen gevallen voor
-`GetEffectiveOutputBaseFilename`. De 3 resx-bestanden hebben nu elk 167 sleutels (voorheen 151),
+**Tests.** Nieuwe tests (68 in totaal): round trip van de vier velden, standaardwaarden voor een
+ouder bestand, normalisatie van `null`, zes ongeldige JSON-varianten, negentien gevallen voor
+`GetEffectiveOutputBaseFilename` en dertien voor `IsValidMainExecutablePath`. De 3 resx-bestanden hebben nu elk 168 sleutels (voorheen 151),
 gevalideerd met een ElementTree-script op identieke sleutelverzameling en `{0}`-plaatsaanduidingen.
 
 **Wat de generator hiermee later doet** (nog niet gebouwd): `Architecture.X64` wordt

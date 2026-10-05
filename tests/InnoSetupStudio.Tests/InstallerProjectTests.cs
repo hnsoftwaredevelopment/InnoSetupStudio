@@ -292,6 +292,25 @@ public class InstallerProjectTests
         }
     }
 
+    [Theory]
+    [InlineData("", true)]
+    [InlineData("   ", true)]
+    [InlineData("MijnApp.exe", true)]
+    [InlineData(@"bin\MijnApp.exe", true)]
+    [InlineData("bin/MijnApp.exe", true)]
+    [InlineData(@"..\Ander.exe", false)]
+    [InlineData(@"bin\..\..\Ander.exe", false)]
+    [InlineData(@"C:\Ander\App.exe", false)]
+    [InlineData(@"\Ander\App.exe", false)]
+    [InlineData(@"\\server\share\App.exe", false)]
+    [InlineData(@"bin\\App.exe", false)]
+    [InlineData(@".\App.exe", false)]
+    [InlineData(@"bin\App?.exe", false)]
+    public void IsValidMainExecutablePathOnlyAcceptsRelativePathsInsideTheSourceFolder(string path, bool expected)
+    {
+        Assert.Equal(expected, InstallerProject.IsValidMainExecutablePath(path));
+    }
+
     [Fact]
     public async Task LoadAsyncDefaultsGeneratorFieldsForOlderProjectFileWithoutThem()
     {
@@ -362,6 +381,16 @@ public class InstallerProjectTests
     [InlineData("", "", "", "Setup")]
     [InlineData("", "Bedrijf: App", "1.0", "Bedrijf_ App-1.0-Setup")]
     [InlineData("a/b?c", "Mijn App", "1.0", "a_b_c")]
+    [InlineData("CON", "App", "1", "_CON")]
+    [InlineData("con.txt", "App", "1", "_con.txt")]
+    [InlineData("Nul", "App", "1", "_Nul")]
+    [InlineData("COM1", "App", "1", "_COM1")]
+    [InlineData("LPT9.exe", "App", "1", "_LPT9.exe")]
+    [InlineData("CONSOLE", "App", "1", "CONSOLE")]
+    [InlineData("COM0", "App", "1", "COM0")]
+    [InlineData("MijnApp.v2", "App", "1", "MijnApp.v2")]
+    [InlineData("App.", "App", "1", "App")]
+    [InlineData("...", "App", "1", "Setup")]
     public void GetEffectiveOutputBaseFilenameUsesCustomNameOrFallsBackToNameVersionSetup(
         string custom, string appName, string appVersion, string expected)
     {

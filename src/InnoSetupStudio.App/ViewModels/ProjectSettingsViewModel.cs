@@ -452,6 +452,20 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
     /// </summary>
     private async Task<bool> SaveCoreAsync()
     {
+        // CodeRabbit (PR #26): het tekstveld Hoofdprogramma kan ook met de hand worden gevuld, dus
+        // de controle in BrowseMainExecutable alleen is niet genoeg. Alleen de vorm wordt hier
+        // gecontroleerd (relatief, geen ".."); of het bestand in de gekozen bronbestandenmap staat
+        // hangt af van de invulvolgorde en is een waarschuwing van de generator.
+        if (!InstallerProject.IsValidMainExecutablePath(MainExecutable))
+        {
+            MessageBox.Show(
+                LocalizationManager.Instance["MainExecutableInvalidPathMessage"],
+                "Inno Setup Studio",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return false;
+        }
+
         var targetPath = ProjectFilePath;
         if (string.IsNullOrWhiteSpace(targetPath))
         {
@@ -481,7 +495,7 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
             OutputPath = OutputPath,
             CustomImagesPath = CustomImagesPath,
             SetupIconFile = SetupIconFile,
-            MainExecutable = MainExecutable,
+            MainExecutable = MainExecutable.Trim(),
             OutputBaseFilename = OutputBaseFilename,
             Architecture = Architecture,
             WizardStyle = WizardStyle,

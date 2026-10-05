@@ -368,8 +368,11 @@ public sealed class InstallerProject
     /// De bestandsnaam (zonder extensie) die de generator voor de installer gebruikt: de ingevulde
     /// <see cref="OutputBaseFilename"/>, of anders <c>&lt;AppName&gt;-&lt;AppVersion&gt;-Setup</c>.
     /// Tekens die Windows in een bestandsnaam niet toestaat worden vervangen door een
-    /// onderstrepingsteken. Is ook de naam leeg, dan is het resultaat <c>Setup</c>; is alleen de
-    /// versie leeg, dan <c>&lt;AppName&gt;-Setup</c>.
+    /// onderstrepingsteken, een punt of spatie aan het einde valt weg (Windows negeert die toch),
+    /// en een gereserveerde apparaatnaam als <c>CON</c>, <c>NUL</c>, <c>COM1</c> of <c>LPT1</c>
+    /// (ook met extensie, zoals <c>CON.exe</c>) krijgt een onderstrepingsteken ervoor. Is er niets
+    /// bruikbaars over, dan is het resultaat <c>Setup</c>. Is alleen de versie leeg, dan
+    /// <c>&lt;AppName&gt;-Setup</c>.
     /// </summary>
     public string GetEffectiveOutputBaseFilename()
     {
@@ -379,7 +382,57 @@ public sealed class InstallerProject
             : string.Join("-", new[] { AppName?.Trim(), AppVersion?.Trim(), "Setup" }.Where(part => !string.IsNullOrEmpty(part)));
 
         var invalid = Path.GetInvalidFileNameChars();
-        return new string(name.Select(c => Array.IndexOf(invalid, c) >= 0 ? '_' : c).ToArray());
+        var safe = new string(name.Select(c => Array.IndexOf(invalid, c) >= 0 ? '_' : c).ToArray()).TrimEnd('.', ' ');
+        if (safe.Length == 0)
+        {
+            return "Setup";
+        }
+
+        // Path.GetInvalidFileNameChars() kent de gereserveerde apparaatnamen van Windows niet. Het
+        // gaat om het deel voor de eerste punt: "CON.exe" en "con.txt" zijn net zo onbruikbaar als
+        // "CON" (CodeRabbit, PR #26).
+        var baseName = safe.Split('.')[0].TrimEnd(' ');
+        return ReservedDeviceNames.Contains(baseName) ? "_" + safe : safe;
+    }
+
+    private static readonly HashSet<string> ReservedDeviceNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "CON", "PRN", "AUX", "NUL",
+        "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+        "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+    };
+
+    /// <summary>
+    /// Controleert de vorm van <see cref="MainExecutable"/>, los van welke bronbestandenmap er op dit
+    /// moment is gekozen: leeg is toegestaan (nog geen hoofdprogramma), anders moet het een relatief
+    /// pad zijn zonder <c>.</c>- of <c>..</c>-onderdelen, lege onderdelen of tekens die Windows in
+    /// een bestandsnaam niet toestaat. Een pad als <c>..\Ander.exe</c> of <c>C:\Ander.exe</c> zou in
+    /// het .iss naar een bestand buiten de installer wijzen. Of het bestand ook echt in de huidige
+    /// bronbestandenmap staat, controleert de generator (dat hangt af van de volgorde waarin de
+    /// gebruiker de velden invult, en is daarom een waarschuwing en geen blokkade).
+    /// </summary>
+    public static bool IsValidMainExecutablePath(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return true;
+        }
+
+        if (Path.IsPathRooted(path))
+        {
+            return false;
+        }
+
+        var invalid = Path.GetInvalidFileNameChars();
+        foreach (var segment in path.Trim().Split('\\', '/'))
+        {
+            if (segment.Length == 0 || segment == "." || segment == ".." || segment.IndexOfAny(invalid) >= 0)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /// <summary>Maakt een nieuw, leeg project met een vers gegenereerd AppId.</summary>

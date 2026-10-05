@@ -56,7 +56,7 @@ Zonder deze velden komt er wel een compileerbaar .iss uit, maar geen bruikbare i
 
 1. **Hoofduitvoerbestand** (bijvoorbeeld `MijnApp.exe`, relatief aan `SourceFilesPath`). Nodig voor `[Icons]` en straks voor `[Run]` (programma starten na installatie). Zonder dit veld geen snelkoppelingen, ook al staat `CreateStartMenuIcon` aan.
 2. **Naam van het uitvoerbestand** (`OutputBaseFilename`). Inno's standaard is `setup`. Voorstel: standaardwaarde `<AppName>-<AppVersion>-Setup`, aanpasbaar.
-3. **64-bit installatie** (`ArchitecturesInstallIn64BitMode`). Zonder deze richtlijn draait Setup in 32-bit modus en wijst `{autopf}` op Program Files (x86). Dat is bekend Inno-gedrag, maar de officiële pagina gaf daar via de fetch geen tekst over. Ik bevestig dit in stap 2 met een ISCC-test. Voorstel: een keuzelijst "32-bit", "64-bit" in Projectinstellingen met 64-bit als standaard voor nieuwe projecten.
+3. **64-bit installatie** (`ArchitecturesInstallIn64BitMode`). Zonder deze richtlijn draait Setup in 32-bit modus en wijst `{autopf}` op Program Files (x86). Dat is bekend Inno-gedrag, maar de officiële pagina gaf daar via de fetch geen tekst over. Ik bevestig dit in stap 2 met een ISCC-test. Voorstel: een keuzelijst "32-bit", "64-bit" in Projectinstellingen met 64-bit als standaard voor nieuwe projecten. De voorbeeldscripts in de map InnoSetup Examples (`64Bit.iss`, `64BitTwoArch.iss`) gebruiken `ArchitecturesInstallIn64BitMode=x64`; of `x64compatible` beter is, bepaal ik in stap 2 met ISCC.
 4. **WizardStyle**. Inno's standaard is `classic` (geverifieerd). Het HNSoftwareInstallerFramework gebruikt `modern`. Voorstel: `modern` als vaste waarde in versie 1, geen UI.
 5. **PrivilegesRequired**. Inno's standaard is admin. Niet nodig voor versie 1, wel het bedoelde gedrag voor `{autopf}`.
 
@@ -76,7 +76,7 @@ Vaste waarden die de generator zonder UI schrijft: `Compression=lzma2`, `SolidCo
 Drie niveaus. Een fout blokkeert het schrijven van het bestand, een waarschuwing niet.
 
 - Fout: lege `AppName`, `AppVersion` of `AppId`; lege `SourceFilesPath`; regeleinde in een waarde.
-- Waarschuwing: pagina aangevinkt maar bestand ontbreekt (Licentie, Info Before, Info After); `SourceFilesPath` bestaat niet op schijf; `CreateStartMenuIcon` aan zonder hoofdbestand; Select Components of Select Tasks aangevinkt terwijl daar nog niets voor gegenereerd wordt.
+- Waarschuwing: pagina aangevinkt maar bestand ontbreekt (Licentie, Info Before, Info After); `SourceFilesPath` bestaat niet op schijf; `MainExecutable` ingevuld maar niet te vinden in `SourceFilesPath` of met een ongeldig pad; `CreateStartMenuIcon` aan zonder hoofdbestand; Select Components of Select Tasks aangevinkt terwijl daar nog niets voor gegenereerd wordt.
 - Info: knopinstellingen die in versie 1 niet worden vertaald (aantal schermen en knoppen dat instellingen heeft), per-taal-teksten die niet worden vertaald, Bladeren-knopinstellingen.
 
 De meldingen krijgen een stabiele code (bijvoorbeeld `ISS001`) en een resx-sleutel, zodat ze in NL, EN en DE verschijnen zoals de rest van de UI.
@@ -118,6 +118,12 @@ Aanvullende beslissingen (Herbert, 2026-10-05, na het lezen van dit ontwerp):
 ## 10. Buiten versie 1
 
 - `[Code]`, dus alle knopinstellingen en de Bladeren-knoppen (stap 4).
+- Eén installer voor meerdere architecturen (x86 en x64 samen). Inno Setup kiest dan op basis van
+  het besturingssysteem welke bestanden worden geïnstalleerd, de gebruiker kiest niet zelf. Dat
+  werkt met `Check: Is64BitInstallMode` in `[Files]`, zoals in `64BitTwoArch.iss` in de map
+  InnoSetup Examples, en vraagt een tweede bronbestandenmap per architectuur. Voor nu kiest het
+  project één architectuur; wie beide wil, maakt twee projecten (of twee installers) met een eigen
+  bestandsnaam. Besloten op 2026-10-05 na Herberts vraag; later opnieuw te beoordelen.
 - `[Components]`, `[Types]` en een eigen `[Tasks]`-beheer. De pagina's Select Components en Select Tasks hebben nog geen editor en geen model.
 - `[Run]` (programma starten na installatie), `[Registry]`, `[INI]`, `[UninstallDelete]`, handtekeningen, aangepaste uninstall-instellingen.
 - Per-veld en meertalige User Info-teksten, `CheckSerial`.

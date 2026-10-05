@@ -513,4 +513,7 @@
   <data name="MainExecutableNoExecutableInSourceMessage" xml:space="preserve">
     <value>In de map met bronbestanden ({0}) staat geen .exe-bestand. Controleer of dit de juiste map is.</value>
   </data>
+  <data name="MainExecutableInvalidPathMessage" xml:space="preserve">
+    <value>Het hoofdprogramma moet een pad zijn dat relatief is aan de map met bronbestanden, bijvoorbeeld MijnApp.exe of bin\MijnApp.exe. Absolute paden en ".." zijn niet toegestaan.</value>
+  </data>
 </root>
