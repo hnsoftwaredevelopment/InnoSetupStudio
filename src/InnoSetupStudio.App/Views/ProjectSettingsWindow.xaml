@@ -218,6 +218,74 @@
                     </Button>
                 </Grid>
 
+                <!-- Installer-instellingen voor de generator (stap 1 van het generator-ontwerp,
+                     2026-10-05): hoofdprogramma voor de snelkoppelingen, bestandsnaam van de
+                     installer, architectuur en wizardstijl. -->
+                <TextBlock Text="{loc:Loc SectionInstaller}" FontSize="15" FontWeight="Bold" Margin="0,10,0,12" />
+
+                <Grid Margin="0,0,0,2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="MainExecutableLabel" Grid.Column="0" Text="{loc:Loc LabelMainExecutable}" VerticalAlignment="Center" />
+                    <TextBox Grid.Column="1" Text="{Binding MainExecutable, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0"
+                             AutomationProperties.LabeledBy="{Binding ElementName=MainExecutableLabel}" />
+                    <Button Grid.Column="2" Command="{Binding BrowseMainExecutableCommand}" ToolTip="{loc:Loc ButtonBrowse}"
+                            AutomationProperties.Name="{loc:Loc ButtonBrowse}">
+                        <Path Data="{StaticResource Folder}" Fill="{DynamicResource Brush.TextPrimary}"
+                              Stretch="Uniform" Width="16" Height="16" />
+                    </Button>
+                </Grid>
+                <TextBlock Text="{loc:Loc HintMainExecutable}" FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="150,0,0,10" />
+
+                <Grid Margin="0,0,0,2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="OutputBaseFilenameLabel" Grid.Column="0" Text="{loc:Loc LabelOutputBaseFilename}" VerticalAlignment="Center" />
+                    <TextBox Grid.Column="1" Text="{Binding OutputBaseFilename, UpdateSourceTrigger=PropertyChanged}"
+                             AutomationProperties.LabeledBy="{Binding ElementName=OutputBaseFilenameLabel}" />
+                </Grid>
+                <TextBlock Text="{Binding OutputBaseFilenameHint}" FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="150,0,0,10" />
+
+                <!-- Zelfde opzet als de paginamodus-dropdown in ScreenEditorControl.xaml:
+                     SelectedValuePath="Tag" + SelectedValue op de enum-property laat WPF's
+                     ingebouwde EnumConverter de Tag-tekst naar de enum omzetten. -->
+                <Grid Margin="0,0,0,2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="ArchitectureLabel" Grid.Column="0" Text="{loc:Loc LabelArchitecture}" VerticalAlignment="Center" />
+                    <ComboBox Grid.Column="1" SelectedValuePath="Tag" SelectedValue="{Binding Architecture}"
+                              HorizontalAlignment="Left" MinWidth="200"
+                              AutomationProperties.LabeledBy="{Binding ElementName=ArchitectureLabel}">
+                        <ComboBoxItem Tag="X64" Content="{loc:Loc LabelArchitectureX64}" />
+                        <ComboBoxItem Tag="X86" Content="{loc:Loc LabelArchitectureX86}" />
+                    </ComboBox>
+                </Grid>
+                <TextBlock Text="{loc:Loc HintArchitecture}" FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Brush.TextSecondary}" Margin="150,0,0,10" />
+
+                <Grid Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="WizardStyleLabel" Grid.Column="0" Text="{loc:Loc LabelWizardStyle}" VerticalAlignment="Center" />
+                    <ComboBox Grid.Column="1" SelectedValuePath="Tag" SelectedValue="{Binding WizardStyle}"
+                              HorizontalAlignment="Left" MinWidth="200"
+                              AutomationProperties.LabeledBy="{Binding ElementName=WizardStyleLabel}">
+                        <ComboBoxItem Tag="Modern" Content="{loc:Loc LabelWizardStyleModern}" />
+                        <ComboBoxItem Tag="Classic" Content="{loc:Loc LabelWizardStyleClassic}" />
+                    </ComboBox>
+                </Grid>
+
                 <!-- Wizardafbeeldingen (WizardImageFile/WizardSmallImageFile) stonden hier tot
                      backlogitem 1 (sectie 14): ze worden nu op het Standaardscherm in de
                      schermeditor bewerkt (ScreenEditorControl.xaml,

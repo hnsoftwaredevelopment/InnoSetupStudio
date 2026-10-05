@@ -131,6 +131,10 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
         OutputPath = project.OutputPath;
         CustomImagesPath = project.CustomImagesPath;
         SetupIconFile = project.SetupIconFile;
+        MainExecutable = project.MainExecutable;
+        OutputBaseFilename = project.OutputBaseFilename;
+        Architecture = project.Architecture;
+        WizardStyle = project.WizardStyle;
 
         CreateDesktopIcon = project.CreateDesktopIcon;
         CreateStartMenuIcon = project.CreateStartMenuIcon;
@@ -222,6 +226,27 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
     [ObservableProperty]
     private string _setupIconFile = string.Empty;
 
+    // Installer-instellingen voor de generator (stap 1 van het generator-ontwerp, 2026-10-05).
+    // Anders dan de pass-through-velden hierboven worden deze vier wél in dit scherm bewerkt.
+    [ObservableProperty]
+    private string _mainExecutable = string.Empty;
+
+    [ObservableProperty]
+    private string _outputBaseFilename = string.Empty;
+
+    [ObservableProperty]
+    private InstallerArchitecture _architecture = InstallerArchitecture.X64;
+
+    [ObservableProperty]
+    private InstallerWizardStyle _wizardStyle = InstallerWizardStyle.Modern;
+
+    /// <summary>De uitleg onder het veld Bestandsnaam installer, met de naam die de generator
+    /// gebruikt zolang het veld leeg is. Wordt bijgewerkt bij elke wijziging van naam, versie of
+    /// bestandsnaam.</summary>
+    public string OutputBaseFilenameHint => string.Format(
+        LocalizationManager.Instance["HintOutputBaseFilename"],
+        new InstallerProject { AppName = AppName, AppVersion = AppVersion }.GetEffectiveOutputBaseFilename());
+
     // Overige instellingen (backlogitem 3, sectie 25, tabblad "Overige instellingen"): zie
     // InstallerProject voor de uitleg per veld en waarom dit bewust alleen deze drie groepen zijn
     // (bureaublad-snelkoppeling, startmenu, update capability) en niet de volledige instellingen-
@@ -255,6 +280,62 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
 
     [RelayCommand]
     private void BrowseCustomImages() => CustomImagesPath = BrowseForFolder(CustomImagesPath) ?? CustomImagesPath;
+
+    [RelayCommand]
+    private void BrowseMainExecutable()
+    {
+        // Het hoofdprogramma moet binnen de map met bronbestanden liggen: de installer kopieert
+        // alleen die map, en de generator verwijst met {app}\<relatief pad> naar het bestand.
+        if (string.IsNullOrWhiteSpace(SourceFilesPath) || !Directory.Exists(SourceFilesPath))
+        {
+            MessageBox.Show(
+                LocalizationManager.Instance["MainExecutableNoSourceFolderMessage"],
+                "Inno Setup Studio",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        // Een map zonder enig .exe-bestand (ook niet in een submap) is vrijwel zeker niet de
+        // bedoelde map met bronbestanden. Dan meteen melden in plaats van de gebruiker eerst een
+        // bestand te laten zoeken dat toch niet in de installer terechtkomt. Een hoofdprogramma
+        // zonder .exe-extensie kan de gebruiker nog steeds rechtstreeks in het tekstveld typen.
+        if (!ContainsExecutable(SourceFilesPath))
+        {
+            MessageBox.Show(
+                string.Format(LocalizationManager.Instance["MainExecutableNoExecutableInSourceMessage"], SourceFilesPath),
+                "Inno Setup Studio",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
+        var dialog = new OpenFileDialog
+        {
+            Filter = LocalizationManager.Instance["DialogFilterExecutableFiles"],
+            InitialDirectory = SourceFilesPath,
+        };
+
+        if (dialog.ShowDialog() != true)
+        {
+            return;
+        }
+
+        var relative = Path.GetRelativePath(SourceFilesPath, dialog.FileName);
+        if (relative == ".."
+            || relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+            || Path.IsPathRooted(relative))
+        {
+            MessageBox.Show(
+                string.Format(LocalizationManager.Instance["MainExecutableOutsideSourceMessage"], SourceFilesPath),
+                "Inno Setup Studio",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
+        MainExecutable = relative;
+    }
 
     [RelayCommand]
     private void BrowseIcon()
@@ -310,9 +391,17 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
         SaveCommand.NotifyCanExecuteChanged();
     }
 
-    partial void OnAppNameChanged(string value) => MarkDirty();
+    partial void OnAppNameChanged(string value)
+    {
+        OnPropertyChanged(nameof(OutputBaseFilenameHint));
+        MarkDirty();
+    }
 
-    partial void OnAppVersionChanged(string value) => MarkDirty();
+    partial void OnAppVersionChanged(string value)
+    {
+        OnPropertyChanged(nameof(OutputBaseFilenameHint));
+        MarkDirty();
+    }
 
     partial void OnPublisherChanged(string value) => MarkDirty();
 
@@ -327,6 +416,14 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
     partial void OnCustomImagesPathChanged(string value) => MarkDirty();
 
     partial void OnSetupIconFileChanged(string value) => MarkDirty();
+
+    partial void OnMainExecutableChanged(string value) => MarkDirty();
+
+    partial void OnOutputBaseFilenameChanged(string value) => MarkDirty();
+
+    partial void OnArchitectureChanged(InstallerArchitecture value) => MarkDirty();
+
+    partial void OnWizardStyleChanged(InstallerWizardStyle value) => MarkDirty();
 
     partial void OnCreateDesktopIconChanged(bool value) => MarkDirty();
 
@@ -355,6 +452,20 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
     /// </summary>
     private async Task<bool> SaveCoreAsync()
     {
+        // CodeRabbit (PR #26): het tekstveld Hoofdprogramma kan ook met de hand worden gevuld, dus
+        // de controle in BrowseMainExecutable alleen is niet genoeg. Alleen de vorm wordt hier
+        // gecontroleerd (relatief, geen ".."); of het bestand in de gekozen bronbestandenmap staat
+        // hangt af van de invulvolgorde en is een waarschuwing van de generator.
+        if (!InstallerProject.IsValidMainExecutablePath(MainExecutable))
+        {
+            MessageBox.Show(
+                LocalizationManager.Instance["MainExecutableInvalidPathMessage"],
+                "Inno Setup Studio",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return false;
+        }
+
         var targetPath = ProjectFilePath;
         if (string.IsNullOrWhiteSpace(targetPath))
         {
@@ -384,6 +495,10 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
             OutputPath = OutputPath,
             CustomImagesPath = CustomImagesPath,
             SetupIconFile = SetupIconFile,
+            MainExecutable = MainExecutable.Trim(),
+            OutputBaseFilename = OutputBaseFilename,
+            Architecture = Architecture,
+            WizardStyle = WizardStyle,
             WizardImageFile = _wizardImageFile,
             WizardSmallImageFile = _wizardSmallImageFile,
             WizardScreens = _wizardScreensSubViewModel.ToSelection(),
@@ -536,6 +651,20 @@ public sealed partial class ProjectSettingsViewModel : DirtyTrackingViewModel
         // race met een nieuwe wijziging zoals bij MainWindow's ScreenEditor), maar een
         // rechtstreeks resultaat is ondubbelzinnig en blijft dat ook als die aanname ooit wijzigt.
         return await SaveCoreAsync() ? UnsavedChangesDecision.AlreadyClosing : UnsavedChangesDecision.Abort;
+    }
+
+    private static bool ContainsExecutable(string folder)
+    {
+        try
+        {
+            var options = new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true };
+            return Directory.EnumerateFiles(folder, "*.exe", options).Any();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // Onleesbare map: niet blokkeren, de bestandsdialoog toont dan zelf wat er te kiezen is.
+            return true;
+        }
     }
 
     private static string? BrowseForFolder(string currentPath)

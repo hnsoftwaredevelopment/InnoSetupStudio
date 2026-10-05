@@ -465,4 +465,55 @@
   <data name="LabelAlwaysShowGroupOnReadyPage" xml:space="preserve">
     <value>Always show Start Menu folder in the summary</value>
   </data>
+  <data name="SectionInstaller" xml:space="preserve">
+    <value>Installer</value>
+  </data>
+  <data name="LabelMainExecutable" xml:space="preserve">
+    <value>Main program</value>
+  </data>
+  <data name="HintMainExecutable" xml:space="preserve">
+    <value>File inside the source files folder, for example MyApp.exe. The shortcuts point to it.</value>
+  </data>
+  <data name="DialogFilterExecutableFiles" xml:space="preserve">
+    <value>Programs (*.exe)|*.exe|All files (*.*)|*.*</value>
+  </data>
+  <data name="MainExecutableNoSourceFolderMessage" xml:space="preserve">
+    <value>Choose the source files folder first. The main program must be inside it.</value>
+  </data>
+  <data name="MainExecutableOutsideSourceMessage" xml:space="preserve">
+    <value>Choose a file inside the source files folder ({0}). Otherwise the installer does not include the file.</value>
+  </data>
+  <data name="LabelOutputBaseFilename" xml:space="preserve">
+    <value>Installer file name</value>
+  </data>
+  <data name="HintOutputBaseFilename" xml:space="preserve">
+    <value>Without extension. If this field is empty, "{0}" is used.</value>
+  </data>
+  <data name="LabelArchitecture" xml:space="preserve">
+    <value>Architecture</value>
+  </data>
+  <data name="LabelArchitectureX64" xml:space="preserve">
+    <value>64-bit (x64)</value>
+  </data>
+  <data name="LabelArchitectureX86" xml:space="preserve">
+    <value>32-bit (x86)</value>
+  </data>
+  <data name="HintArchitecture" xml:space="preserve">
+    <value>Choose 64-bit if the main program is a 64-bit application.</value>
+  </data>
+  <data name="LabelWizardStyle" xml:space="preserve">
+    <value>Wizard style</value>
+  </data>
+  <data name="LabelWizardStyleModern" xml:space="preserve">
+    <value>Modern</value>
+  </data>
+  <data name="LabelWizardStyleClassic" xml:space="preserve">
+    <value>Classic</value>
+  </data>
+  <data name="MainExecutableNoExecutableInSourceMessage" xml:space="preserve">
+    <value>The source files folder ({0}) contains no .exe file. Check that this is the right folder.</value>
+  </data>
+  <data name="MainExecutableInvalidPathMessage" xml:space="preserve">
+    <value>The main program must be a path relative to the source files folder, for example MyApp.exe or bin\MyApp.exe. Absolute paths and ".." are not allowed.</value>
+  </data>
 </root>

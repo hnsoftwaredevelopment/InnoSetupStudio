@@ -465,4 +465,55 @@
   <data name="LabelAlwaysShowGroupOnReadyPage" xml:space="preserve">
     <value>Toon startmenugroep altijd in de samenvatting</value>
   </data>
+  <data name="SectionInstaller" xml:space="preserve">
+    <value>Installer</value>
+  </data>
+  <data name="LabelMainExecutable" xml:space="preserve">
+    <value>Hoofdprogramma</value>
+  </data>
+  <data name="HintMainExecutable" xml:space="preserve">
+    <value>Bestand binnen de map met bronbestanden, bijvoorbeeld MijnApp.exe. De snelkoppelingen verwijzen hiernaar.</value>
+  </data>
+  <data name="DialogFilterExecutableFiles" xml:space="preserve">
+    <value>Programma's (*.exe)|*.exe|Alle bestanden (*.*)|*.*</value>
+  </data>
+  <data name="MainExecutableNoSourceFolderMessage" xml:space="preserve">
+    <value>Kies eerst de map met bronbestanden. Het hoofdprogramma moet daarin staan.</value>
+  </data>
+  <data name="MainExecutableOutsideSourceMessage" xml:space="preserve">
+    <value>Kies een bestand binnen de map met bronbestanden ({0}). Anders neemt de installer het bestand niet mee.</value>
+  </data>
+  <data name="LabelOutputBaseFilename" xml:space="preserve">
+    <value>Bestandsnaam installer</value>
+  </data>
+  <data name="HintOutputBaseFilename" xml:space="preserve">
+    <value>Zonder extensie. Als dit veld leeg is, wordt "{0}" gebruikt.</value>
+  </data>
+  <data name="LabelArchitecture" xml:space="preserve">
+    <value>Architectuur</value>
+  </data>
+  <data name="LabelArchitectureX64" xml:space="preserve">
+    <value>64-bit (x64)</value>
+  </data>
+  <data name="LabelArchitectureX86" xml:space="preserve">
+    <value>32-bit (x86)</value>
+  </data>
+  <data name="HintArchitecture" xml:space="preserve">
+    <value>Kies 64-bit als het hoofdprogramma een 64-bit applicatie is.</value>
+  </data>
+  <data name="LabelWizardStyle" xml:space="preserve">
+    <value>Wizardstijl</value>
+  </data>
+  <data name="LabelWizardStyleModern" xml:space="preserve">
+    <value>Modern</value>
+  </data>
+  <data name="LabelWizardStyleClassic" xml:space="preserve">
+    <value>Klassiek</value>
+  </data>
+  <data name="MainExecutableNoExecutableInSourceMessage" xml:space="preserve">
+    <value>In de map met bronbestanden ({0}) staat geen .exe-bestand. Controleer of dit de juiste map is.</value>
+  </data>
+  <data name="MainExecutableInvalidPathMessage" xml:space="preserve">
+    <value>Het hoofdprogramma moet een pad zijn dat relatief is aan de map met bronbestanden, bijvoorbeeld MijnApp.exe of bin\MijnApp.exe. Absolute paden en ".." zijn niet toegestaan.</value>
+  </data>
 </root>

@@ -40,6 +40,38 @@ public sealed class InstallerProject
     /// <summary>Pad naar het .ico-bestand dat als installer-icon wordt gebruikt.</summary>
     public string SetupIconFile { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Het hoofdprogramma van de applicatie, als pad relatief aan <see cref="SourceFilesPath"/>
+    /// (bijvoorbeeld <c>MijnApp.exe</c>). De generator (fase 5) gebruikt dit voor de
+    /// snelkoppelingen in de <c>[Icons]</c>-sectie en later voor "programma starten na
+    /// installatie". Leeg betekent: er is geen hoofdprogramma gekozen, en de generator maakt dan
+    /// geen snelkoppelingen. Nieuw sinds 2026-10-05 (ontwerp dunne generator, stap 1).
+    /// </summary>
+    public string MainExecutable { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Bestandsnaam van de gegenereerde installer zonder extensie, Inno Setup's
+    /// <c>OutputBaseFilename</c>-richtlijn. Leeg betekent: <see cref="GetEffectiveOutputBaseFilename"/>
+    /// geeft <c>&lt;AppName&gt;-&lt;AppVersion&gt;-Setup</c>, in plaats van Inno Setup's eigen
+    /// standaard <c>setup</c>.
+    /// </summary>
+    public string OutputBaseFilename { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Voor welke architectuur het hoofdprogramma is gebouwd, zie <see cref="InstallerArchitecture"/>.
+    /// Standaard <see cref="InstallerArchitecture.X64"/>, ook voor een ouder projectbestand zonder
+    /// deze sleutel: er is nog geen generator, dus er verandert niets aan bestaande installers.
+    /// </summary>
+    [JsonConverter(typeof(StrictEnumJsonConverter<InstallerArchitecture>))]
+    public InstallerArchitecture Architecture { get; set; } = InstallerArchitecture.X64;
+
+    /// <summary>
+    /// Uiterlijk van de wizard, Inno Setup's <c>WizardStyle</c>-richtlijn. Standaard
+    /// <see cref="InstallerWizardStyle.Modern"/>, zie <see cref="InstallerWizardStyle"/>.
+    /// </summary>
+    [JsonConverter(typeof(StrictEnumJsonConverter<InstallerWizardStyle>))]
+    public InstallerWizardStyle WizardStyle { get; set; } = InstallerWizardStyle.Modern;
+
     /// <summary>Welke standaard wizardschermen deze installer toont (fase 3).</summary>
     public WizardScreenSelection WizardScreens { get; set; } = new();
 
@@ -331,6 +363,77 @@ public sealed class InstallerProject
     /// <summary>Zie <see cref="UsePreviousAppDir"/>, maar dan voor de gekozen installertaal (Inno
     /// Setup's <c>UsePreviousLanguage</c>-richtlijn).</summary>
     public bool UsePreviousLanguage { get; set; } = true;
+
+    /// <summary>
+    /// De bestandsnaam (zonder extensie) die de generator voor de installer gebruikt: de ingevulde
+    /// <see cref="OutputBaseFilename"/>, of anders <c>&lt;AppName&gt;-&lt;AppVersion&gt;-Setup</c>.
+    /// Tekens die Windows in een bestandsnaam niet toestaat worden vervangen door een
+    /// onderstrepingsteken, een punt of spatie aan het einde valt weg (Windows negeert die toch),
+    /// en een gereserveerde apparaatnaam als <c>CON</c>, <c>NUL</c>, <c>COM1</c> of <c>LPT1</c>
+    /// (ook met extensie, zoals <c>CON.exe</c>) krijgt een onderstrepingsteken ervoor. Is er niets
+    /// bruikbaars over, dan is het resultaat <c>Setup</c>. Is alleen de versie leeg, dan
+    /// <c>&lt;AppName&gt;-Setup</c>.
+    /// </summary>
+    public string GetEffectiveOutputBaseFilename()
+    {
+        var custom = OutputBaseFilename?.Trim();
+        var name = !string.IsNullOrEmpty(custom)
+            ? custom
+            : string.Join("-", new[] { AppName?.Trim(), AppVersion?.Trim(), "Setup" }.Where(part => !string.IsNullOrEmpty(part)));
+
+        var invalid = Path.GetInvalidFileNameChars();
+        var safe = new string(name.Select(c => Array.IndexOf(invalid, c) >= 0 ? '_' : c).ToArray()).TrimEnd('.', ' ');
+        if (safe.Length == 0)
+        {
+            return "Setup";
+        }
+
+        // Path.GetInvalidFileNameChars() kent de gereserveerde apparaatnamen van Windows niet. Het
+        // gaat om het deel voor de eerste punt: "CON.exe" en "con.txt" zijn net zo onbruikbaar als
+        // "CON" (CodeRabbit, PR #26).
+        var baseName = safe.Split('.')[0].TrimEnd(' ');
+        return ReservedDeviceNames.Contains(baseName) ? "_" + safe : safe;
+    }
+
+    private static readonly HashSet<string> ReservedDeviceNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "CON", "PRN", "AUX", "NUL",
+        "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+        "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+    };
+
+    /// <summary>
+    /// Controleert de vorm van <see cref="MainExecutable"/>, los van welke bronbestandenmap er op dit
+    /// moment is gekozen: leeg is toegestaan (nog geen hoofdprogramma), anders moet het een relatief
+    /// pad zijn zonder <c>.</c>- of <c>..</c>-onderdelen, lege onderdelen of tekens die Windows in
+    /// een bestandsnaam niet toestaat. Een pad als <c>..\Ander.exe</c> of <c>C:\Ander.exe</c> zou in
+    /// het .iss naar een bestand buiten de installer wijzen. Of het bestand ook echt in de huidige
+    /// bronbestandenmap staat, controleert de generator (dat hangt af van de volgorde waarin de
+    /// gebruiker de velden invult, en is daarom een waarschuwing en geen blokkade).
+    /// </summary>
+    public static bool IsValidMainExecutablePath(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return true;
+        }
+
+        if (Path.IsPathRooted(path))
+        {
+            return false;
+        }
+
+        var invalid = Path.GetInvalidFileNameChars();
+        foreach (var segment in path.Trim().Split('\\', '/'))
+        {
+            if (segment.Length == 0 || segment == "." || segment == ".." || segment.IndexOfAny(invalid) >= 0)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     /// <summary>Maakt een nieuw, leeg project met een vers gegenereerd AppId.</summary>
     public static InstallerProject CreateNew() => new()

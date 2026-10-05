@@ -53,6 +53,12 @@ public sealed class JsonInstallerProjectService : IInstallerProjectService
             loaded.SelectDestinationBrowseButton ??= new();
             loaded.SelectProgramGroupBrowseButton ??= new();
 
+            // De twee nieuwe tekstvelden voor de generator (stap 1 van het generator-ontwerp): een
+            // expliciete JSON-null zou anders een NullReferenceException geven zodra het
+            // Projectinstellingen-scherm of de generator ze leest.
+            loaded.MainExecutable ??= string.Empty;
+            loaded.OutputBaseFilename ??= string.Empty;
+
             // Zelfde verhaal voor SupportedLanguageIds (backlogitem 4, sectie 14): een expliciete
             // JSON-null geeft anders een NullReferenceException zodra het talenoverzicht wordt
             // geopend. Bevat een handmatig bewerkt bestand een lijst zonder Engels, dan wordt dat

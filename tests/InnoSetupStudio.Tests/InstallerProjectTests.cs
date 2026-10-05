@@ -48,6 +48,10 @@ public class InstallerProjectTests
         project.OutputPath = @"C:\Output";
         project.CustomImagesPath = @"C:\Images";
         project.SetupIconFile = @"C:\Icons\setup.ico";
+        project.MainExecutable = @"bin\MijnApp.exe";
+        project.OutputBaseFilename = "MijnApp-Installer";
+        project.Architecture = InstallerArchitecture.X86;
+        project.WizardStyle = InstallerWizardStyle.Classic;
         project.WizardScreens = new WizardScreenSelection
         {
             ShowWelcomePage = false,
@@ -274,6 +278,10 @@ public class InstallerProjectTests
             Assert.Equal(project.UsePreviousSetupType, loaded.UsePreviousSetupType);
             Assert.Equal(project.UsePreviousTasks, loaded.UsePreviousTasks);
             Assert.Equal(project.UsePreviousLanguage, loaded.UsePreviousLanguage);
+            Assert.Equal(project.MainExecutable, loaded.MainExecutable);
+            Assert.Equal(project.OutputBaseFilename, loaded.OutputBaseFilename);
+            Assert.Equal(project.Architecture, loaded.Architecture);
+            Assert.Equal(project.WizardStyle, loaded.WizardStyle);
         }
         finally
         {
@@ -282,6 +290,118 @@ public class InstallerProjectTests
                 File.Delete(tempPath);
             }
         }
+    }
+
+    [Theory]
+    [InlineData("", true)]
+    [InlineData("   ", true)]
+    [InlineData("MijnApp.exe", true)]
+    [InlineData(@"bin\MijnApp.exe", true)]
+    [InlineData("bin/MijnApp.exe", true)]
+    [InlineData(@"..\Ander.exe", false)]
+    [InlineData(@"bin\..\..\Ander.exe", false)]
+    [InlineData(@"C:\Ander\App.exe", false)]
+    [InlineData(@"\Ander\App.exe", false)]
+    [InlineData(@"\\server\share\App.exe", false)]
+    [InlineData(@"bin\\App.exe", false)]
+    [InlineData(@".\App.exe", false)]
+    [InlineData(@"bin\App?.exe", false)]
+    public void IsValidMainExecutablePathOnlyAcceptsRelativePathsInsideTheSourceFolder(string path, bool expected)
+    {
+        Assert.Equal(expected, InstallerProject.IsValidMainExecutablePath(path));
+    }
+
+    [Fact]
+    public async Task LoadAsyncDefaultsGeneratorFieldsForOlderProjectFileWithoutThem()
+    {
+        // Stap 1 van het generator-ontwerp (2026-10-05): een ouder .issproj kent MainExecutable,
+        // OutputBaseFilename, Architecture en WizardStyle niet. Ze moeten op de afgesproken
+        // standaardwaarden uitkomen: geen hoofdprogramma, lege bestandsnaam, 64-bit en modern.
+        var service = new JsonInstallerProjectService();
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.issproj");
+        await File.WriteAllTextAsync(path, "{\"AppName\":\"Ouder project zonder generatorvelden\"}");
+        try
+        {
+            var loaded = await service.LoadAsync(path);
+
+            Assert.Equal(string.Empty, loaded.MainExecutable);
+            Assert.Equal(string.Empty, loaded.OutputBaseFilename);
+            Assert.Equal(InstallerArchitecture.X64, loaded.Architecture);
+            Assert.Equal(InstallerWizardStyle.Modern, loaded.WizardStyle);
+        }
+        finally { if (File.Exists(path)) { File.Delete(path); } }
+    }
+
+    [Fact]
+    public async Task LoadAsyncNormalizesExplicitNullGeneratorTextFields()
+    {
+        var service = new JsonInstallerProjectService();
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.issproj");
+        await File.WriteAllTextAsync(path, "{\"AppName\":\"Null velden\",\"MainExecutable\":null,\"OutputBaseFilename\":null}");
+        try
+        {
+            var loaded = await service.LoadAsync(path);
+
+            Assert.Equal(string.Empty, loaded.MainExecutable);
+            Assert.Equal(string.Empty, loaded.OutputBaseFilename);
+        }
+        finally { if (File.Exists(path)) { File.Delete(path); } }
+    }
+
+    [Theory]
+    [InlineData("{\"Architecture\":\"999\"}")]
+    [InlineData("{\"Architecture\":1}")]
+    [InlineData("{\"Architecture\":\"Arm\"}")]
+    [InlineData("{\"WizardStyle\":\"2\"}")]
+    [InlineData("{\"WizardStyle\":0}")]
+    [InlineData("{\"WizardStyle\":null}")]
+    public async Task LoadAsyncRejectsInvalidArchitectureOrWizardStyle(string json)
+    {
+        // Alleen echte enumnamen zijn toegestaan; getallen, numerieke tekst, onbekende namen en
+        // null leiden tot een duidelijke laadfout in plaats van een ongedefinieerde waarde die
+        // later in het .iss zou belanden.
+        var service = new JsonInstallerProjectService();
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.issproj");
+        await File.WriteAllTextAsync(path, json);
+        try
+        {
+            var ex = await Assert.ThrowsAsync<IOException>(() => service.LoadAsync(path));
+            Assert.IsType<System.Text.Json.JsonException>(ex.InnerException);
+        }
+        finally { if (File.Exists(path)) { File.Delete(path); } }
+    }
+
+    [Theory]
+    [InlineData("MijnApp-Installer", "Mijn App", "1.2.3", "MijnApp-Installer")]
+    [InlineData("  MijnApp-Installer  ", "Mijn App", "1.2.3", "MijnApp-Installer")]
+    [InlineData("", "Mijn App", "1.2.3", "Mijn App-1.2.3-Setup")]
+    [InlineData("   ", "Mijn App", "1.2.3", "Mijn App-1.2.3-Setup")]
+    [InlineData("", "Mijn App", "", "Mijn App-Setup")]
+    [InlineData("", "", "1.0", "1.0-Setup")]
+    [InlineData("", "", "", "Setup")]
+    [InlineData("", "Bedrijf: App", "1.0", "Bedrijf_ App-1.0-Setup")]
+    [InlineData("a/b?c", "Mijn App", "1.0", "a_b_c")]
+    [InlineData("CON", "App", "1", "_CON")]
+    [InlineData("con.txt", "App", "1", "_con.txt")]
+    [InlineData("Nul", "App", "1", "_Nul")]
+    [InlineData("COM1", "App", "1", "_COM1")]
+    [InlineData("LPT9.exe", "App", "1", "_LPT9.exe")]
+    [InlineData("CONSOLE", "App", "1", "CONSOLE")]
+    [InlineData("COM0", "App", "1", "COM0")]
+    [InlineData("MijnApp.v2", "App", "1", "MijnApp.v2")]
+    [InlineData("App.", "App", "1", "App")]
+    [InlineData("...", "App", "1", "Setup")]
+    public void GetEffectiveOutputBaseFilenameUsesCustomNameOrFallsBackToNameVersionSetup(
+        string custom, string appName, string appVersion, string expected)
+    {
+        var project = new InstallerProject
+        {
+            OutputBaseFilename = custom,
+            AppName = appName,
+            AppVersion = appVersion,
+        };
+
+        Assert.Equal(expected, project.GetEffectiveOutputBaseFilename());
     }
 
     [Fact]
