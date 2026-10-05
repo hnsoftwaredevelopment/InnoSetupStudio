@@ -122,7 +122,11 @@ public partial class MainWindow : Window
             return;
         }
 
+        // Project en pad worden samen vastgelegd: tijdens het genereren (en de dialogen) kan de
+        // gebruiker een ander project openen, en een script van project A mag nooit onder de naam
+        // of in de map van project B terechtkomen (CodeRabbit, PR #28).
         var project = _activeProject;
+        var projectFilePath = _activeProjectFilePath;
 
         // Niet-opgeslagen wijzigingen in de schermeditor zitten nog niet in het projectobject (die
         // worden pas bij Opslaan teruggeschreven). Vraag dus eerst of ze mee moeten. Bij "Nee" is het
@@ -181,10 +185,10 @@ public partial class MainWindow : Window
             OverwritePrompt = true,
         };
 
-        if (!string.IsNullOrWhiteSpace(_activeProjectFilePath))
+        if (!string.IsNullOrWhiteSpace(projectFilePath))
         {
-            dialog.InitialDirectory = Path.GetDirectoryName(_activeProjectFilePath);
-            dialog.FileName = Path.GetFileNameWithoutExtension(_activeProjectFilePath) + ".iss";
+            dialog.InitialDirectory = Path.GetDirectoryName(projectFilePath);
+            dialog.FileName = Path.GetFileNameWithoutExtension(projectFilePath) + ".iss";
         }
 
         if (dialog.ShowDialog(this) != true)
@@ -192,10 +196,22 @@ public partial class MainWindow : Window
             return;
         }
 
+        // Het filter biedt ook "Alle bestanden": kiest de gebruiker het .issproj zelf, dan zou de
+        // overschrijfbevestiging het projectbestand met scripttekst vervangen (CodeRabbit, PR #28).
+        if (!string.IsNullOrWhiteSpace(projectFilePath) && IsSameFile(dialog.FileName, projectFilePath))
+        {
+            MessageBox.Show(
+                this,
+                LocalizationManager.Instance["GenerateTargetIsProjectFile"],
+                "Inno Setup Studio",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
         try
         {
-            // UTF-8 met BOM, zoals IssGenerator.ScriptEncoding voorschrijft.
-            await File.WriteAllTextAsync(dialog.FileName, result.Script, IssGenerator.ScriptEncoding);
+            await WriteScriptAsync(dialog.FileName, result.Script);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
@@ -209,6 +225,40 @@ public partial class MainWindow : Window
         }
 
         new GenerationResultWindow(result, dialog.FileName) { Owner = this }.ShowDialog();
+    }
+
+    /// <summary>True als beide paden naar hetzelfde bestand wijzen (Windows: hoofdletterongevoelig).</summary>
+    private static bool IsSameFile(string first, string second)
+        => string.Equals(Path.GetFullPath(first), Path.GetFullPath(second), StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Schrijft het script eerst naar een tijdelijk bestand in dezelfde map en vervangt het doel pas
+    /// na een geslaagde write, zodat een mislukte write (schijf vol, netwerk weg) een bestaand
+    /// script niet afkapt (CodeRabbit, PR #28). UTF-8 met BOM, zoals
+    /// <see cref="IssGenerator.ScriptEncoding"/> voorschrijft.
+    /// </summary>
+    private static async Task WriteScriptAsync(string path, string script)
+    {
+        var fullPath = Path.GetFullPath(path);
+        var temporary = Path.Combine(Path.GetDirectoryName(fullPath)!, Path.GetRandomFileName() + ".tmp");
+        try
+        {
+            await File.WriteAllTextAsync(temporary, script, IssGenerator.ScriptEncoding);
+            File.Move(temporary, fullPath, overwrite: true);
+        }
+        catch
+        {
+            try
+            {
+                File.Delete(temporary);
+            }
+            catch (Exception cleanup) when (cleanup is IOException or UnauthorizedAccessException)
+            {
+                // Opruimen is best effort: de oorspronkelijke fout is wat de gebruiker moet zien.
+            }
+
+            throw;
+        }
     }
 
     private void SettingsButton_Click(object sender, RoutedEventArgs e) =>

@@ -82,7 +82,7 @@ public class GenerationIssueResourceTests
         {
             "ButtonGenerateScript", "DialogFilterScriptFiles", "GenerateUnsavedMessage", "GenerateResultTitle",
             "GenerateResultWrittenFormat", "GenerateResultNotWritten", "GenerateResultNoIssues",
-            "GenerateOpenFolder", "GenerateWriteFailedFormat",
+            "GenerateOpenFolder", "GenerateWriteFailedFormat", "GenerateTargetIsProjectFile",
         })
         {
             Assert.True(strings.TryGetValue(key, out var text) && !string.IsNullOrWhiteSpace(text), $"{file}: {key} ontbreekt of is leeg");

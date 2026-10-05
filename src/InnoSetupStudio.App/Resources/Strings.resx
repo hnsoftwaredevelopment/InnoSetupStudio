@@ -592,7 +592,7 @@
     <value>De pagina Taken selecteren staat aan, maar er zijn geen taken. Inno Setup toont die pagina dan niet.</value>
   </data>
   <data name="GenIssue_TasksPageShownForDesktopIcon" xml:space="preserve">
-    <value>Het bureaubladpictogram is een taak, maar de pagina Taken selecteren staat uit. De gebruiker kan de taak dan niet aanvinken en het pictogram wordt niet gemaakt.</value>
+    <value>Het bureaubladpictogram is een taak, maar de pagina Taken selecteren staat uit. Setup toont die pagina toch, omdat er een taak is.</value>
   </data>
   <data name="GenIssue_UnknownLanguage" xml:space="preserve">
     <value>De taal '{0}' is onbekend en is overgeslagen.</value>
@@ -602,5 +602,8 @@
   </data>
   <data name="GenIssue_OutputBaseFilenameDefaulted" xml:space="preserve">
     <value>Geen bestandsnaam voor de installer ingevuld. De installer krijgt de naam {0}.</value>
+  </data>
+  <data name="GenerateTargetIsProjectFile" xml:space="preserve">
+    <value>Het projectbestand kan niet als scriptbestand worden gebruikt. Kies een andere bestandsnaam, bijvoorbeeld met de extensie .iss.</value>
   </data>
 </root>

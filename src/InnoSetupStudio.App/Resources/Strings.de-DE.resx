@@ -592,7 +592,7 @@
     <value>Die Seite Aufgaben auswählen ist aktiviert, es gibt aber keine Aufgaben. Inno Setup zeigt die Seite dann nicht an.</value>
   </data>
   <data name="GenIssue_TasksPageShownForDesktopIcon" xml:space="preserve">
-    <value>Das Desktopsymbol ist eine Aufgabe, aber die Seite Aufgaben auswählen ist deaktiviert. Der Benutzer kann die Aufgabe nicht anhaken, daher wird das Symbol nicht erstellt.</value>
+    <value>Das Desktopsymbol ist eine Aufgabe, aber die Seite Aufgaben auswählen ist deaktiviert. Das Setup zeigt diese Seite trotzdem an, weil es eine Aufgabe gibt.</value>
   </data>
   <data name="GenIssue_UnknownLanguage" xml:space="preserve">
     <value>Die Sprache '{0}' ist unbekannt und wurde übersprungen.</value>
@@ -602,5 +602,8 @@
   </data>
   <data name="GenIssue_OutputBaseFilenameDefaulted" xml:space="preserve">
     <value>Kein Dateiname für das Installationsprogramm angegeben. Es heißt {0}.</value>
+  </data>
+  <data name="GenerateTargetIsProjectFile" xml:space="preserve">
+    <value>Die Projektdatei kann nicht als Skriptdatei verwendet werden. Wählen Sie einen anderen Dateinamen, zum Beispiel mit der Endung .iss.</value>
   </data>
 </root>

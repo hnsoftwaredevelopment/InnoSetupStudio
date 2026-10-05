@@ -592,7 +592,7 @@
     <value>The Select Tasks page is turned on, but there are no tasks. Inno Setup does not show the page in that case.</value>
   </data>
   <data name="GenIssue_TasksPageShownForDesktopIcon" xml:space="preserve">
-    <value>The desktop icon is a task, but the Select Tasks page is turned off. The user cannot tick the task, so the icon is not created.</value>
+    <value>The desktop icon is a task, but the Select Tasks page is turned off. Setup shows that page anyway, because there is a task.</value>
   </data>
   <data name="GenIssue_UnknownLanguage" xml:space="preserve">
     <value>The language '{0}' is unknown and was skipped.</value>
@@ -602,5 +602,8 @@
   </data>
   <data name="GenIssue_OutputBaseFilenameDefaulted" xml:space="preserve">
     <value>No installer file name entered. The installer will be named {0}.</value>
+  </data>
+  <data name="GenerateTargetIsProjectFile" xml:space="preserve">
+    <value>The project file cannot be used as the script file. Choose another file name, for example with the .iss extension.</value>
   </data>
 </root>

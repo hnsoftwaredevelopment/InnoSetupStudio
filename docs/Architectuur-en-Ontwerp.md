@@ -2838,7 +2838,7 @@ en is actief zodra er een project open is.
 **Taal van de meldingen.** `GenerationIssueFormatter` (in `InnoSetupStudio.App/Localization`) zoekt voor elke
 `GenerationIssueCode` de resx-sleutel `GenIssue_<Code>` en vult de plaatsaanduidingen `{0}`, `{1}` met de
 argumenten van de melding. De ernst heeft `GenSeverity_<Severity>`. De drie resx-bestanden hebben er 28
-sleutels bij gekregen (nu 197 per taal, zie de laatste bewuste keuze hieronder). Een beschadigde vertaling (`FormatException`) laat het venster
+sleutels bij gekregen (nu 198 per taal, inclusief de melding over de lege bestandsnaam en de weigering van het projectbestand als doel). Een beschadigde vertaling (`FormatException`) laat het venster
 niet crashen: dan verschijnt de ongeformatteerde tekst.
 
 **Bewuste keuzes.**
@@ -2850,6 +2850,12 @@ niet crashen: dan verschijnt de ongeformatteerde tekst.
   extra aanwijzing, geen enige drager van de betekenis.
 - Het script overschrijven vraagt bevestiging via `OverwritePrompt`. Het bestand is bewust een
   gegenereerd bestand: de koptekst zegt dat handmatige wijzigingen verloren gaan.
+- Het script wordt eerst naar een tijdelijk bestand in dezelfde map geschreven en pas na een geslaagde
+  write over het doelbestand heen gezet, zodat een mislukte write een bestaand script niet afkapt. Kiest de
+  gebruiker in de dialoog het `.issproj` zelf als doel (mogelijk via "Alle bestanden"), dan weigert de app dat
+  met een melding. Project en projectpad worden bij de klik samen vastgelegd, zodat het script niet onder
+  de naam van een ander project terechtkomt als de gebruiker intussen een ander project opent
+  (CodeRabbit, PR #28).
 - Een leeg veld "Bestandsnaam installer" blokkeert niets (de standaardnaam `<AppName>-<AppVersion>-Setup`
   wordt gebruikt), maar de generator meldt het sinds de test van 2026-10-05 met de Info-melding
   `OutputBaseFilenameDefaulted`. Het argument is de naam die in het script komt. Alleen een leeg of
