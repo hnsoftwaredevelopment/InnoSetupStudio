@@ -56,9 +56,11 @@ Gemeten met een proefinstaller die bij elke pagina de toestand van de drie knopp
 
 Gevolgen:
 
-1. Caption, Enabled en Visible zet de generator alleen op de pagina's waar een waarde is ingesteld. Terugzetten is niet nodig.
+1. Caption, Enabled en Visible zet de generator alleen op de pagina's waar een waarde is ingesteld. Terugzetten is niet nodig. `Enabled` schrijft de generator uitsluitend als `False`. `True` is wat Setup's eigen reset al oplevert, en een expliciet `True` kan een controle van Setup omzeilen: op de Licentie-pagina houdt Setup Volgende uitgeschakeld tot de licentie is geaccepteerd (gemeten: uitgeschakeld bij binnenkomst op die pagina), en een `NextButton.Enabled := True` in `CurPageChanged` zou die acceptatie overslaan. Het kan dus ook niet per ongeluk via het Standaardscherm gebeuren.
 2. Lettertype, lettergrootte, vet en tooltip moeten bij elke paginawissel eerst worden teruggezet naar de beginwaarde en daarna per pagina worden ingesteld. De beginwaarden worden in `InitializeWizard` vastgelegd in variabelen. Dit geldt alleen voor de combinaties van knop en eigenschap die ergens in het project worden gebruikt, zodat het script niet groter wordt dan nodig.
 3. Zonder dat terugzetten krijgt elke pagina na de eerste aangepaste pagina ook die aanpassing. Dat is de fout die deze stap moet voorkomen.
+
+Verwacht gebruik (Herbert, 2026-10-05): de meeste installers stellen de knoppen via het Standaardscherm in en wijken hooguit incidenteel op één pagina af. Voor dat incidentele geval is het terugzetten bedoeld. Wil je een knop bewust op alle schermen aanpassen, dan komt dat in het script neer op dezelfde instelling per scherm, omdat de generator de waarde van het Standaardscherm per getoond scherm uitschrijft.
 
 De Bladeren-knoppen worden niet door Setup teruggezet en bestaan maar op één pagina. Die worden eenmalig in `InitializeWizard` ingesteld.
 
@@ -150,7 +152,7 @@ Afspraken voor de uitvoer, in de lijn van de bestaande generator:
 
 ## 8. Wat niet kan, en welke meldingen er komen
 
-**Tekstkleur kan niet.** `Font.Color` compileert maar heeft geen effect op de knoppen van Setup: Windows tekent een gewone knop met de themakleur, in `modern` en in `classic` (gemeten, zie sectie 2). Dezelfde reden waarom de achtergrondkleur al eerder uit het model is geschrapt. Een kleur zou alleen werken met een zelf getekende knop, en dat is een veel grotere ingreep dan deze stap. Besloten: de generator schrijft geen kleurcode en meldt dat. De velden blijven voorlopig in het model en de editor staan (opruimen in de UI is een aparte, kleine PR, zie sectie 11).
+**Tekstkleur kan niet.** `Font.Color` compileert maar heeft geen effect op de knoppen van Setup: Windows tekent een gewone knop met de themakleur, in `modern` en in `classic` (gemeten, zie sectie 2). Dezelfde reden waarom de achtergrondkleur al eerder uit het model is geschrapt. Een kleur zou alleen werken met een zelf getekende knop, en dat is een veel grotere ingreep dan deze stap. Besloten: de generator schrijft geen kleurcode en meldt dat. De velden blijven voorlopig in het model en de editor staan (het kleurveld uit de IDE halen is een aparte, kleine PR, zie sectie 11).
 
 Meldingen die in stap 4 veranderen. Elke nieuwe code krijgt teksten in NL, EN en DE en een regel in `GenerationIssueResourceTests.ArgumentCounts`, zoals bij stap 3.
 
@@ -166,7 +168,7 @@ Bestaande meldingen die hier opnieuw gelden: `ValueContainsLineBreak` voor knopt
 ## 9. Tests
 
 - **Eenheidstests** voor `ButtonSettingsResolver`: eigen waarde wint, dan het Standaardscherm, dan niets; tekst met alleen spaties telt als leeg; `null` bij lettergrootte, vet, ingeschakeld en zichtbaar; vertalingen cascaderen niet.
-- **Generatortests**: geen `[Code]` en geen `[CustomMessages]` zonder aanpassingen; volgorde van de regels zonder en met taalvoorvoegsel; lege universele tekst met vertaling; pagina-ID per scherm; reset van lettertype en tooltip alleen waar het nodig is; Bladeren-knoppen in `InitializeWizard`; scherm dat uit staat; elke nieuwe melding in beide richtingen; regeleinde in een tekst; aanhalingsteken in een lettertypenaam.
+- **Generatortests**: `Enabled := True` wordt nooit geschreven (ook niet als het scherm True instelt en het Standaardscherm False); geen `[Code]` en geen `[CustomMessages]` zonder aanpassingen; volgorde van de regels zonder en met taalvoorvoegsel; lege universele tekst met vertaling; pagina-ID per scherm; reset van lettertype en tooltip alleen waar het nodig is; Bladeren-knoppen in `InitializeWizard`; scherm dat uit staat; elke nieuwe melding in beide richtingen; regeleinde in een tekst; aanhalingsteken in een lettertypenaam.
 - **Controle tegen de editor**: voor een reeks invoercombinaties geven `ButtonSettingsResolver` en de `Effective*`-eigenschappen van `WizardScreenEditorViewModel` dezelfde uitkomst.
 - **Goldenbestand** `Buttons.iss` met een meertalig project met alle acht schermen en beide Bladeren-knoppen. De bestaande goldenbestanden blijven ongewijzigd.
 - **ISCC-compilatietests** (in `IssCompilerTests`, zonder `/Q`, met controle op `Warning:`): één taal, drie talen met een gedeeltelijke vertaling (geen waarschuwing), speciale tekens in teksten (`'`, `"`, `%`, `%n`, `{`, `{{`, `;`, `=`, accenten, Duits en Frans), een lettertypenaam met `'`, alle acht schermen tegelijk, en een Standaardscherm dat meespeelt.
@@ -185,15 +187,15 @@ Eén PR op een eigen branch, in deze volgorde, elke stap met tests voordat de vo
 
 ## 11. Beslissingen en open punten
 
-1. **Tekstkleur. Besloten: niet genereren.** De generator schrijft geen kleurcode en meldt `ButtonTextColorNotSupported` als er een kleur is ingesteld. Daarna volgt in een aparte kleine PR het opruimen van het kleurveld in de editor (verwijderen of toelichten). Verworpen: toch genereren (compileert, maar de knoppen blijven zwart, dus misleidend) en zelf getekende knoppen (veel te grote ingreep voor deze stap).
+1. **Tekstkleur. Besloten: niet genereren.** De generator schrijft geen kleurcode en meldt `ButtonTextColorNotSupported` als er een kleur is ingesteld. Daarna volgt in een aparte kleine PR het verwijderen van het kleurveld uit de editor, het model en de voorvertoning. Een instelling die niet kan werken hoort niet in de IDE te staan, ook niet met een toelichting. Verworpen: toch genereren (compileert, maar de knoppen blijven zwart, dus misleidend) en zelf getekende knoppen of een eigen knopbibliotheek in de gegenereerde installer. Herbert wil de standaardfunctionaliteit van Inno Setup gebruiken en niets nabouwen.
 2. **Standaardscherm op pagina's zonder knopmodel. Besloten: alleen de acht schermen uit sectie 3.** Select Components, Select Tasks, Preparing, Installing en Finished houden Setup's eigen knoppen, omdat je in de editor alleen de acht schermen ziet. Gevolg: de pagina Select Tasks (die Setup toont zodra er een bureaubladpictogram-taak is) en Finished hebben dan Setup's eigen knoppen, ook als het Standaardscherm iets anders instelt. Verworpen: het Standaardscherm op alle pagina's toepassen met een `else`-tak, want dat toont een instelling die je in de editor niet kunt zien, en een verborgen of uitgeschakelde Volgende op Finished kan de gebruiker laten vastlopen.
 3. **Melding `NextButtonUnusable`. Besloten: ja, als Warning.** Het gegenereerde script heeft geen logica die Volgende later aanzet. Op de Licentie-pagina bepaalt Setup zelf wanneer Volgende aan gaat, dus daar volgt Setup zijn eigen regels.
-4. **Afgekapte tekst. Voorstel, nog niet besloten.** Een knop groeit niet mee met een lange tekst of een grote letter. Voorstel voor versie 1: niets doen en het in de handmatige testpunten noemen. Later een knopbreedte per knop toevoegen (backlog).
+4. **Afgekapte tekst. Besloten: niet in versie 1, maar wel verplicht daarna.** Een knop in Setup groeit niet mee met een lange tekst of een grote letter. De knoppen in de IDE-voorvertoning mogen dat dan ook niet doen, anders krijgt de gebruiker een verkeerd beeld van het resultaat. Het gaat om een belangrijk onderdeel van de gebruikerservaring. In versie 1 van stap 4 verandert er niets en staat het als testpunt in sectie 12. Het eerstvolgende vervolg daarna: de voorvertoning geeft knoppen dezelfde vaste breedte als Setup en kapt tekst af, en daarna een knopbreedte per knop (zie sectie 13).
 5. **Tooltip op een uitgeschakelde knop. Nog te meten.** Dat controleert Herbert in de handmatige test (sectie 12). Blijkt het niet te werken, dan wordt het een opmerking in de documentatie en geen codewijziging.
 
 ## 12. Handmatige testpunten na de bouw (voor Herbert)
 
-Genereer een `.iss` voor een project met knopaanpassingen, compileer het in Inno Setup en draai de installer. Let op:
+Testproject voor de handmatige tests: `C:\DevOps\hnsoftwaredevelopment\Test\Herbies Test.issproj`. Genereer een `.iss` voor een project met knopaanpassingen, compileer het in Inno Setup en draai de installer. Let op:
 
 - Een aangepaste Volgende-tekst op Welkom staat daar, en op de pagina erna staat weer Setup's eigen tekst.
 - Een aangepast lettertype of vet op één pagina blijft niet hangen op de volgende pagina's (inclusief Installing en Finished).
@@ -208,8 +210,9 @@ Genereer een `.iss` voor een project met knopaanpassingen, compileer het in Inno
 ## 13. Backlog na stap 4
 
 - Eigen Pascal-code naast het gegenereerde blok (een projectveld voor extra `[Code]`).
-- Knopbreedte per knop.
-- Tekstkleur uit de editor halen of toelichten (afhankelijk van het antwoord op vraag 1).
+- Verplicht na versie 1: de voorvertoning in de IDE kapt knoppen af zoals Setup (vaste breedte, geen meegroeien), daarna een knopbreedte per knop.
+- Tekstkleur uit de editor, het model en de voorvertoning verwijderen (aparte kleine PR, besloten).
 - De editor laten rekenen met `ButtonSettingsResolver` in plaats van met eigen `Effective*`-logica.
 - Knopmodellen en editors voor Select Components, Select Tasks en Finished.
+- Het script splitsen over meerdere `.iss`-bestanden (Inno Setup kent `#include`) zodra het aantal opties het gegenereerde bestand onoverzichtelijk maakt. Nu nog niet aan de orde.
 - Cascade van vertalingen via het Standaardscherm (staat al in de backlog van sectie 24).
