@@ -1,6 +1,6 @@
 # Ontwerp: dunne .iss-generator (fase 5, versie 1)
 
-Status: goedgekeurd door Herbert op 2026-10-05. Stap 2 (de generator in Core) is gebouwd en met ISCC 7.1.0 getest; wat die test aan het licht bracht staat in sectie 12. Beslissingen staan in sectie 9.
+Status: goedgekeurd door Herbert op 2026-10-05. Stap 2 (de generator in Core) is gebouwd en met ISCC 7.1.0 getest; wat die test aan het licht bracht staat in sectie 12. Stap 3 (de knop "Genereer .iss" in de app) is gebouwd, zie sectie 31 van de architectuurdoc. Beslissingen staan in sectie 9.
 
 ## 1. Doel
 

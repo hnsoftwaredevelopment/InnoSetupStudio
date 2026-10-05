@@ -50,6 +50,16 @@
                         <TextBlock Text="{loc:Loc ButtonProjectSettings}" />
                     </StackPanel>
                 </Button>
+                <!-- Stap 3 van docs/Ontwerp-Dunne-Generator.md: schrijft het .iss-bestand van het
+                     actieve project en toont de meldingen van de generator. -->
+                <Button x:Name="GenerateScriptButton" Margin="0,0,8,0" IsEnabled="False"
+                        Click="GenerateScriptButton_Click" ToolTip="{loc:Loc ButtonGenerateScript}">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource Document}" Fill="{DynamicResource Brush.TextPrimary}"
+                              Stretch="Uniform" Width="16" Height="16" Margin="0,0,8,0" />
+                        <TextBlock Text="{loc:Loc ButtonGenerateScript}" />
+                    </StackPanel>
+                </Button>
                 <Button x:Name="BuildInstallerButton" IsEnabled="False" ToolTip="{loc:Loc ButtonBuildInstaller}">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource BuildInstaller}" Fill="{DynamicResource Brush.TextPrimary}"

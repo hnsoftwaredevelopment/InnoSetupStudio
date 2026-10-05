@@ -516,4 +516,88 @@
   <data name="MainExecutableInvalidPathMessage" xml:space="preserve">
     <value>The main program must be a path relative to the source files folder, for example MyApp.exe or bin\MyApp.exe. Absolute paths and ".." are not allowed.</value>
   </data>
+  <data name="ButtonGenerateScript" xml:space="preserve">
+    <value>Generate .iss</value>
+  </data>
+  <data name="DialogFilterScriptFiles" xml:space="preserve">
+    <value>Inno Setup script (*.iss)|*.iss|All files (*.*)|*.*</value>
+  </data>
+  <data name="GenerateUnsavedMessage" xml:space="preserve">
+    <value>There are unsaved changes in the screen editor. Do you want to save them first and then generate the script? If you choose No, the script is generated from the last saved version.</value>
+  </data>
+  <data name="GenerateResultTitle" xml:space="preserve">
+    <value>Generate script</value>
+  </data>
+  <data name="GenerateResultWrittenFormat" xml:space="preserve">
+    <value>The script was written to {0}.</value>
+  </data>
+  <data name="GenerateResultNotWritten" xml:space="preserve">
+    <value>No script was written. Fix the errors below and try again.</value>
+  </data>
+  <data name="GenerateResultNoIssues" xml:space="preserve">
+    <value>No messages. The script is ready to compile.</value>
+  </data>
+  <data name="GenerateOpenFolder" xml:space="preserve">
+    <value>Open folder</value>
+  </data>
+  <data name="GenerateWriteFailedFormat" xml:space="preserve">
+    <value>The script could not be written: {0}</value>
+  </data>
+  <data name="GenSeverity_Info" xml:space="preserve">
+    <value>Info</value>
+  </data>
+  <data name="GenSeverity_Warning" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="GenSeverity_Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="GenIssue_AppIdMissing" xml:space="preserve">
+    <value>The AppId is missing.</value>
+  </data>
+  <data name="GenIssue_AppNameMissing" xml:space="preserve">
+    <value>The application name is not filled in.</value>
+  </data>
+  <data name="GenIssue_AppVersionMissing" xml:space="preserve">
+    <value>The application version is not filled in.</value>
+  </data>
+  <data name="GenIssue_SourceFilesPathMissing" xml:space="preserve">
+    <value>The source files folder is not filled in.</value>
+  </data>
+  <data name="GenIssue_ValueContainsLineBreak" xml:space="preserve">
+    <value>The value of {0} contains a line break and was left out of the script.</value>
+  </data>
+  <data name="GenIssue_SourceFilesPathNotFound" xml:space="preserve">
+    <value>The source files folder does not exist: {0}</value>
+  </data>
+  <data name="GenIssue_PageWithoutFile" xml:space="preserve">
+    <value>A wizard page is turned on, but no file was chosen ({0}). No directive was written for it.</value>
+  </data>
+  <data name="GenIssue_FileNotFound" xml:space="preserve">
+    <value>The file for {0} does not exist: {1}</value>
+  </data>
+  <data name="GenIssue_MainExecutableInvalid" xml:space="preserve">
+    <value>The main program '{0}' is not a valid path relative to the source files. No shortcuts were created.</value>
+  </data>
+  <data name="GenIssue_MainExecutableNotFound" xml:space="preserve">
+    <value>The main program '{0}' is not in the source files folder.</value>
+  </data>
+  <data name="GenIssue_ShortcutsWithoutMainExecutable" xml:space="preserve">
+    <value>A shortcut was requested, but no main program was chosen. No shortcuts were created.</value>
+  </data>
+  <data name="GenIssue_ComponentsPageNotSupported" xml:space="preserve">
+    <value>The Select Components page is turned on, but the generator does not support it yet. The script contains no components.</value>
+  </data>
+  <data name="GenIssue_TasksPageWithoutTasks" xml:space="preserve">
+    <value>The Select Tasks page is turned on, but there are no tasks. Inno Setup does not show the page in that case.</value>
+  </data>
+  <data name="GenIssue_TasksPageShownForDesktopIcon" xml:space="preserve">
+    <value>The desktop icon is a task, but the Select Tasks page is turned off. The user cannot tick the task, so the icon is not created.</value>
+  </data>
+  <data name="GenIssue_UnknownLanguage" xml:space="preserve">
+    <value>The language '{0}' is unknown and was skipped.</value>
+  </data>
+  <data name="GenIssue_ButtonSettingsNotGenerated" xml:space="preserve">
+    <value>{0} group(s) of button settings are not yet written to the script.</value>
+  </data>
 </root>
