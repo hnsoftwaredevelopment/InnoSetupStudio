@@ -516,4 +516,94 @@
   <data name="MainExecutableInvalidPathMessage" xml:space="preserve">
     <value>Het hoofdprogramma moet een pad zijn dat relatief is aan de map met bronbestanden, bijvoorbeeld MijnApp.exe of bin\MijnApp.exe. Absolute paden en ".." zijn niet toegestaan.</value>
   </data>
+  <data name="ButtonGenerateScript" xml:space="preserve">
+    <value>Genereer .iss</value>
+  </data>
+  <data name="DialogFilterScriptFiles" xml:space="preserve">
+    <value>Inno Setup-script (*.iss)|*.iss|Alle bestanden (*.*)|*.*</value>
+  </data>
+  <data name="GenerateUnsavedMessage" xml:space="preserve">
+    <value>Er zijn niet-opgeslagen wijzigingen in de schermeditor. Wilt u deze eerst opslaan en daarna het script genereren? Kiest u Nee, dan wordt het script gemaakt van de laatst opgeslagen versie.</value>
+  </data>
+  <data name="GenerateResultTitle" xml:space="preserve">
+    <value>Script genereren</value>
+  </data>
+  <data name="GenerateResultWrittenFormat" xml:space="preserve">
+    <value>Het script is geschreven naar {0}.</value>
+  </data>
+  <data name="GenerateResultNotWritten" xml:space="preserve">
+    <value>Er is geen script geschreven. Los de fouten hieronder op en probeer het opnieuw.</value>
+  </data>
+  <data name="GenerateResultNoIssues" xml:space="preserve">
+    <value>Geen meldingen. Het script is klaar om te compileren.</value>
+  </data>
+  <data name="GenerateOpenFolder" xml:space="preserve">
+    <value>Map openen</value>
+  </data>
+  <data name="GenerateWriteFailedFormat" xml:space="preserve">
+    <value>Het script kon niet worden geschreven: {0}</value>
+  </data>
+  <data name="GenSeverity_Info" xml:space="preserve">
+    <value>Info</value>
+  </data>
+  <data name="GenSeverity_Warning" xml:space="preserve">
+    <value>Waarschuwing</value>
+  </data>
+  <data name="GenSeverity_Error" xml:space="preserve">
+    <value>Fout</value>
+  </data>
+  <data name="GenIssue_AppIdMissing" xml:space="preserve">
+    <value>De AppId ontbreekt.</value>
+  </data>
+  <data name="GenIssue_AppNameMissing" xml:space="preserve">
+    <value>De applicatienaam is niet ingevuld.</value>
+  </data>
+  <data name="GenIssue_AppVersionMissing" xml:space="preserve">
+    <value>De applicatieversie is niet ingevuld.</value>
+  </data>
+  <data name="GenIssue_SourceFilesPathMissing" xml:space="preserve">
+    <value>De map met bronbestanden is niet ingevuld.</value>
+  </data>
+  <data name="GenIssue_ValueContainsLineBreak" xml:space="preserve">
+    <value>De waarde van {0} bevat een regeleinde en is niet opgenomen in het script.</value>
+  </data>
+  <data name="GenIssue_SourceFilesPathNotFound" xml:space="preserve">
+    <value>De map met bronbestanden bestaat niet: {0}</value>
+  </data>
+  <data name="GenIssue_PageWithoutFile" xml:space="preserve">
+    <value>Een wizardpagina staat aan, maar er is geen bestand gekozen ({0}). Er is geen richtlijn voor geschreven.</value>
+  </data>
+  <data name="GenIssue_FileNotFound" xml:space="preserve">
+    <value>Het bestand voor {0} bestaat niet: {1}</value>
+  </data>
+  <data name="GenIssue_MainExecutableInvalid" xml:space="preserve">
+    <value>Het hoofdprogramma '{0}' is geen geldig pad ten opzichte van de bronbestanden. Er zijn geen snelkoppelingen gemaakt.</value>
+  </data>
+  <data name="GenIssue_MainExecutableNotFound" xml:space="preserve">
+    <value>Het hoofdprogramma '{0}' staat niet in de map met bronbestanden.</value>
+  </data>
+  <data name="GenIssue_ShortcutsWithoutMainExecutable" xml:space="preserve">
+    <value>Er is een snelkoppeling gevraagd, maar er is geen hoofdprogramma gekozen. Er zijn geen snelkoppelingen gemaakt.</value>
+  </data>
+  <data name="GenIssue_ComponentsPageNotSupported" xml:space="preserve">
+    <value>De pagina Onderdelen selecteren staat aan, maar de generator ondersteunt die nog niet. Het script bevat geen onderdelen.</value>
+  </data>
+  <data name="GenIssue_TasksPageWithoutTasks" xml:space="preserve">
+    <value>De pagina Taken selecteren staat aan, maar er zijn geen taken. Inno Setup toont die pagina dan niet.</value>
+  </data>
+  <data name="GenIssue_TasksPageShownForDesktopIcon" xml:space="preserve">
+    <value>Het bureaubladpictogram is een taak, maar de pagina Taken selecteren staat uit. Setup toont die pagina toch, omdat er een taak is.</value>
+  </data>
+  <data name="GenIssue_UnknownLanguage" xml:space="preserve">
+    <value>De taal '{0}' is onbekend en is overgeslagen.</value>
+  </data>
+  <data name="GenIssue_ButtonSettingsNotGenerated" xml:space="preserve">
+    <value>{0} groep(en) knopinstellingen worden nog niet in het script gezet.</value>
+  </data>
+  <data name="GenIssue_OutputBaseFilenameDefaulted" xml:space="preserve">
+    <value>Geen bestandsnaam voor de installer ingevuld. De installer krijgt de naam {0}.</value>
+  </data>
+  <data name="GenerateTargetIsProjectFile" xml:space="preserve">
+    <value>Het projectbestand kan niet als scriptbestand worden gebruikt. Kies een andere bestandsnaam, bijvoorbeeld met de extensie .iss.</value>
+  </data>
 </root>

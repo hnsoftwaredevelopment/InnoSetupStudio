@@ -1,8 +1,10 @@
+using System.IO;
 using System.Reflection;
 using System.Windows;
 using InnoSetupStudio.App.ViewModels;
 using InnoSetupStudio.App.Views;
 using InnoSetupStudio.App.Localization;
+using InnoSetupStudio.Core.Generation;
 using InnoSetupStudio.Core.Project;
 using Microsoft.Win32;
 
@@ -103,6 +105,160 @@ public partial class MainWindow : Window
         }
 
         OpenProjectSettings(_activeProject, _activeProjectFilePath);
+    }
+
+    /// <summary>
+    /// Stap 3 van docs/Ontwerp-Dunne-Generator.md: genereert het .iss van het actieve project. Bij
+    /// fouten (ontbrekende verplichte gegevens) wordt er geen bestand geschreven en toont het
+    /// resultaatvenster alleen de meldingen. Anders vraagt een SaveFileDialog waar het script moet
+    /// komen (standaard naast het .issproj) en toont het resultaatvenster daarna waar het staat plus
+    /// de waarschuwingen en info van de generator. Het .iss is altijd een gegenereerd bestand: de
+    /// koptekst zegt dat handmatige wijzigingen verloren gaan bij opnieuw genereren.
+    /// </summary>
+    private async void GenerateScriptButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_activeProject is null)
+        {
+            return;
+        }
+
+        // Project en pad worden samen vastgelegd: tijdens het genereren (en de dialogen) kan de
+        // gebruiker een ander project openen, en een script van project A mag nooit onder de naam
+        // of in de map van project B terechtkomen (CodeRabbit, PR #28).
+        var project = _activeProject;
+        var projectFilePath = _activeProjectFilePath;
+
+        // Niet-opgeslagen wijzigingen in de schermeditor zitten nog niet in het projectobject (die
+        // worden pas bij Opslaan teruggeschreven). Vraag dus eerst of ze mee moeten. Bij "Nee" is het
+        // script van de laatst opgeslagen versie.
+        if (ScreenEditor.ViewModel is { IsDirty: true } viewModel)
+        {
+            var answer = MessageBox.Show(
+                this,
+                LocalizationManager.Instance["GenerateUnsavedMessage"],
+                LocalizationManager.Instance["UnsavedChangesTitle"],
+                MessageBoxButton.YesNoCancel,
+                MessageBoxImage.Question);
+
+            if (answer == MessageBoxResult.Cancel)
+            {
+                return;
+            }
+
+            if (answer == MessageBoxResult.Yes)
+            {
+                // Zelfde volgorde als ScreenEditor_SaveClicked: IsDirty pas na een geslaagde save false.
+                viewModel.ApplyTo(project);
+                viewModel.IsDirty = false;
+                if (!await SaveActiveProjectAsync())
+                {
+                    viewModel.IsDirty = true;
+                    return;
+                }
+            }
+        }
+
+        GenerationResult result;
+        GenerateScriptButton.IsEnabled = false;
+        try
+        {
+            // De generator controleert of mappen en bestanden bestaan; op een netwerkschijf kan dat
+            // even duren, dus niet op de UI-thread.
+            result = await Task.Run(() => new IssGenerator().Generate(project));
+        }
+        finally
+        {
+            GenerateScriptButton.IsEnabled = _activeProject is not null;
+        }
+
+        if (result.HasErrors)
+        {
+            new GenerationResultWindow(result, writtenPath: null) { Owner = this }.ShowDialog();
+            return;
+        }
+
+        var dialog = new SaveFileDialog
+        {
+            Filter = LocalizationManager.Instance["DialogFilterScriptFiles"],
+            DefaultExt = ".iss",
+            AddExtension = true,
+            OverwritePrompt = true,
+        };
+
+        if (!string.IsNullOrWhiteSpace(projectFilePath))
+        {
+            dialog.InitialDirectory = Path.GetDirectoryName(projectFilePath);
+            dialog.FileName = Path.GetFileNameWithoutExtension(projectFilePath) + ".iss";
+        }
+
+        if (dialog.ShowDialog(this) != true)
+        {
+            return;
+        }
+
+        // Het filter biedt ook "Alle bestanden": kiest de gebruiker het .issproj zelf, dan zou de
+        // overschrijfbevestiging het projectbestand met scripttekst vervangen (CodeRabbit, PR #28).
+        if (!string.IsNullOrWhiteSpace(projectFilePath) && IsSameFile(dialog.FileName, projectFilePath))
+        {
+            MessageBox.Show(
+                this,
+                LocalizationManager.Instance["GenerateTargetIsProjectFile"],
+                "Inno Setup Studio",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            await WriteScriptAsync(dialog.FileName, result.Script);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            MessageBox.Show(
+                this,
+                string.Format(LocalizationManager.Instance["GenerateWriteFailedFormat"], ex.Message),
+                "Inno Setup Studio",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            return;
+        }
+
+        new GenerationResultWindow(result, dialog.FileName) { Owner = this }.ShowDialog();
+    }
+
+    /// <summary>True als beide paden naar hetzelfde bestand wijzen (Windows: hoofdletterongevoelig).</summary>
+    private static bool IsSameFile(string first, string second)
+        => string.Equals(Path.GetFullPath(first), Path.GetFullPath(second), StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Schrijft het script eerst naar een tijdelijk bestand in dezelfde map en vervangt het doel pas
+    /// na een geslaagde write, zodat een mislukte write (schijf vol, netwerk weg) een bestaand
+    /// script niet afkapt (CodeRabbit, PR #28). UTF-8 met BOM, zoals
+    /// <see cref="IssGenerator.ScriptEncoding"/> voorschrijft.
+    /// </summary>
+    private static async Task WriteScriptAsync(string path, string script)
+    {
+        var fullPath = Path.GetFullPath(path);
+        var temporary = Path.Combine(Path.GetDirectoryName(fullPath)!, Path.GetRandomFileName() + ".tmp");
+        try
+        {
+            await File.WriteAllTextAsync(temporary, script, IssGenerator.ScriptEncoding);
+            File.Move(temporary, fullPath, overwrite: true);
+        }
+        catch
+        {
+            try
+            {
+                File.Delete(temporary);
+            }
+            catch (Exception cleanup) when (cleanup is IOException or UnauthorizedAccessException)
+            {
+                // Opruimen is best effort: de oorspronkelijke fout is wat de gebruiker moet zien.
+            }
+
+            throw;
+        }
     }
 
     private void SettingsButton_Click(object sender, RoutedEventArgs e) =>
@@ -231,6 +387,7 @@ public partial class MainWindow : Window
     private void SetProjectActionButtonsEnabled(bool enabled)
     {
         ProjectSettingsButton.IsEnabled = enabled;
+        GenerateScriptButton.IsEnabled = enabled;
     }
 
     // Inline Opslaan-knop van ScreenEditorControl (sectie 21, vervangt WizardEditorWindow's

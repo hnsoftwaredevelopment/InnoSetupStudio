@@ -2810,3 +2810,62 @@ taal-id. Info: het aantal schermen en knoppen met instellingen die pas in stap 4
 
 De ISCC-tests bouwen een installer maar voeren hem niet uit: Setup vraagt standaard om
 beheerdersrechten, wat een geautomatiseerde test niet kan afhandelen.
+
+## 31. Genereer .iss in de app (2026-10-05)
+
+Stap 3 van `docs/Ontwerp-Dunne-Generator.md`: de generator uit sectie 30 is nu vanuit de app te gebruiken.
+
+**Gedrag.** De knop "Genereer .iss" staat in de bovenbalk, tussen Projectinstellingen en Installer bouwen,
+en is actief zodra er een project open is.
+
+1. Zijn er niet-opgeslagen wijzigingen in de schermeditor, dan vraagt de app: Ja slaat ze eerst op en
+   genereert daarna, Nee genereert van de laatst opgeslagen versie, Annuleren stopt. De schermeditor
+   schrijft zijn velden pas bij Opslaan terug naar het projectobject, dus zonder deze vraag zou het script
+   stilzwijgend zonder die wijzigingen ontstaan. Het opslaan volgt dezelfde volgorde als
+   `ScreenEditor_SaveClicked`: `IsDirty` pas na een geslaagde save op `false`.
+2. De generator draait op een achtergrondthread (`Task.Run`), omdat hij controleert of mappen en bestanden
+   bestaan en dat op een netwerkschijf even kan duren. De knop staat in die tijd uit.
+3. Bij een fout (`GenerationResult.HasErrors`) wordt er geen bestand geschreven. Het resultaatvenster toont
+   alleen de meldingen en zegt dat er geen script is geschreven.
+4. Anders opent een `SaveFileDialog`, standaard in de map van het `.issproj` met de naam
+   `<projectnaam>.iss` (Herbert koos op 2026-10-05 voor de uitvoerlocatie naast het `.issproj`, aanpasbaar in
+   de dialoog). Het script wordt geschreven met `IssGenerator.ScriptEncoding` (UTF-8 met BOM). Mislukt het
+   schrijven (bestand in gebruik, geen rechten), dan volgt een foutmelding.
+5. Daarna toont `GenerationResultWindow` het pad van het script, een knop "Map openen" (Verkenner met het
+   bestand geselecteerd) en de meldingen, fouten eerst, dan waarschuwingen, dan info. Zijn er geen meldingen,
+   dan staat er dat het script klaar is om te compileren.
+
+**Taal van de meldingen.** `GenerationIssueFormatter` (in `InnoSetupStudio.App/Localization`) zoekt voor elke
+`GenerationIssueCode` de resx-sleutel `GenIssue_<Code>` en vult de plaatsaanduidingen `{0}`, `{1}` met de
+argumenten van de melding. De ernst heeft `GenSeverity_<Severity>`. De drie resx-bestanden hebben er 28
+sleutels bij gekregen (nu 198 per taal, inclusief de melding over de lege bestandsnaam en de weigering van het projectbestand als doel). Een beschadigde vertaling (`FormatException`) laat het venster
+niet crashen: dan verschijnt de ongeformatteerde tekst.
+
+**Bewuste keuzes.**
+
+- De meldingen noemen waar nodig de technische veldnaam, zoals `LicenseFilePath` of `AppName`. Dat is voor
+  een ontwikkelaar duidelijk genoeg. Een vertaling per veld naar het label in het scherm kan later.
+- De ernst staat altijd als tekst (Fout, Waarschuwing, Info) in een eigen kolom. De kleur komt uit
+  `Brush.Danger` en `Brush.Warning`, die alle negen thema's al definiëren; kleur is dus alleen een
+  extra aanwijzing, geen enige drager van de betekenis.
+- Het script overschrijven vraagt bevestiging via `OverwritePrompt`. Het bestand is bewust een
+  gegenereerd bestand: de koptekst zegt dat handmatige wijzigingen verloren gaan.
+- Het script wordt eerst naar een tijdelijk bestand in dezelfde map geschreven en pas na een geslaagde
+  write over het doelbestand heen gezet, zodat een mislukte write een bestaand script niet afkapt. Kiest de
+  gebruiker in de dialoog het `.issproj` zelf als doel (mogelijk via "Alle bestanden"), dan weigert de app dat
+  met een melding. Project en projectpad worden bij de klik samen vastgelegd, zodat het script niet onder
+  de naam van een ander project terechtkomt als de gebruiker intussen een ander project opent
+  (CodeRabbit, PR #28).
+- Een leeg veld "Bestandsnaam installer" blokkeert niets (de standaardnaam `<AppName>-<AppVersion>-Setup`
+  wordt gebruikt), maar de generator meldt het sinds de test van 2026-10-05 met de Info-melding
+  `OutputBaseFilenameDefaulted`. Het argument is de naam die in het script komt. Alleen een leeg of
+  uit spaties bestaand veld geeft de melding; een ingevulde naam die tot een andere naam wordt
+  schoongemaakt (ongeldige tekens worden `_`) geeft geen melding.
+
+**Tests** (10 nieuwe testgevallen in deze stap, plus 2 voor de melding over de lege bestandsnaam:
+191 in totaal). `GenerationIssueResourceTests` leest de drie
+resx-bestanden rechtstreeks en controleert dat elke `GenerationIssueCode` een tekst heeft in NL, EN en DE
+met precies de plaatsaanduidingen die de generator aan argumenten meegeeft, dat elke ernst een tekst heeft
+en dat de teksten van de knop en het resultaatvenster bestaan. Voegt iemand een code toe, dan faalt de test
+totdat teksten en argumentenaantal er zijn. De UI zelf (knop, dialoog, venster) is niet geautomatiseerd
+getest; dat doet Herbert handmatig.

@@ -64,6 +64,7 @@ public class IssGeneratorGoldenTests
         var project = SampleProject();
         project.AppName = "Oude {Machine} \"Plus\"";
         project.AppVersion = "2.0";
+        project.OutputBaseFilename = string.Empty; // standaardnaam uit AppName en AppVersion
         project.Architecture = InstallerArchitecture.X86;
         project.WizardStyle = InstallerWizardStyle.Classic;
         project.CreateStartMenuIcon = true;

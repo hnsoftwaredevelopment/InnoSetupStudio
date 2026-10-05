@@ -516,4 +516,94 @@
   <data name="MainExecutableInvalidPathMessage" xml:space="preserve">
     <value>Das Hauptprogramm muss ein Pfad relativ zum Quelldateien-Ordner sein, zum Beispiel MeineApp.exe oder bin\MeineApp.exe. Absolute Pfade und ".." sind nicht erlaubt.</value>
   </data>
+  <data name="ButtonGenerateScript" xml:space="preserve">
+    <value>.iss generieren</value>
+  </data>
+  <data name="DialogFilterScriptFiles" xml:space="preserve">
+    <value>Inno Setup-Skript (*.iss)|*.iss|Alle Dateien (*.*)|*.*</value>
+  </data>
+  <data name="GenerateUnsavedMessage" xml:space="preserve">
+    <value>Im Bildschirm-Editor gibt es nicht gespeicherte Änderungen. Möchten Sie diese zuerst speichern und dann das Skript generieren? Bei Nein wird das Skript aus der zuletzt gespeicherten Version erzeugt.</value>
+  </data>
+  <data name="GenerateResultTitle" xml:space="preserve">
+    <value>Skript generieren</value>
+  </data>
+  <data name="GenerateResultWrittenFormat" xml:space="preserve">
+    <value>Das Skript wurde nach {0} geschrieben.</value>
+  </data>
+  <data name="GenerateResultNotWritten" xml:space="preserve">
+    <value>Es wurde kein Skript geschrieben. Beheben Sie die Fehler unten und versuchen Sie es erneut.</value>
+  </data>
+  <data name="GenerateResultNoIssues" xml:space="preserve">
+    <value>Keine Meldungen. Das Skript kann kompiliert werden.</value>
+  </data>
+  <data name="GenerateOpenFolder" xml:space="preserve">
+    <value>Ordner öffnen</value>
+  </data>
+  <data name="GenerateWriteFailedFormat" xml:space="preserve">
+    <value>Das Skript konnte nicht geschrieben werden: {0}</value>
+  </data>
+  <data name="GenSeverity_Info" xml:space="preserve">
+    <value>Info</value>
+  </data>
+  <data name="GenSeverity_Warning" xml:space="preserve">
+    <value>Warnung</value>
+  </data>
+  <data name="GenSeverity_Error" xml:space="preserve">
+    <value>Fehler</value>
+  </data>
+  <data name="GenIssue_AppIdMissing" xml:space="preserve">
+    <value>Die AppId fehlt.</value>
+  </data>
+  <data name="GenIssue_AppNameMissing" xml:space="preserve">
+    <value>Der Anwendungsname ist nicht ausgefüllt.</value>
+  </data>
+  <data name="GenIssue_AppVersionMissing" xml:space="preserve">
+    <value>Die Anwendungsversion ist nicht ausgefüllt.</value>
+  </data>
+  <data name="GenIssue_SourceFilesPathMissing" xml:space="preserve">
+    <value>Der Ordner mit den Quelldateien ist nicht ausgefüllt.</value>
+  </data>
+  <data name="GenIssue_ValueContainsLineBreak" xml:space="preserve">
+    <value>Der Wert von {0} enthält einen Zeilenumbruch und wurde nicht in das Skript übernommen.</value>
+  </data>
+  <data name="GenIssue_SourceFilesPathNotFound" xml:space="preserve">
+    <value>Der Ordner mit den Quelldateien existiert nicht: {0}</value>
+  </data>
+  <data name="GenIssue_PageWithoutFile" xml:space="preserve">
+    <value>Eine Assistentenseite ist aktiviert, aber es wurde keine Datei gewählt ({0}). Dafür wurde keine Direktive geschrieben.</value>
+  </data>
+  <data name="GenIssue_FileNotFound" xml:space="preserve">
+    <value>Die Datei für {0} existiert nicht: {1}</value>
+  </data>
+  <data name="GenIssue_MainExecutableInvalid" xml:space="preserve">
+    <value>Das Hauptprogramm '{0}' ist kein gültiger Pfad relativ zu den Quelldateien. Es wurden keine Verknüpfungen erstellt.</value>
+  </data>
+  <data name="GenIssue_MainExecutableNotFound" xml:space="preserve">
+    <value>Das Hauptprogramm '{0}' befindet sich nicht im Ordner mit den Quelldateien.</value>
+  </data>
+  <data name="GenIssue_ShortcutsWithoutMainExecutable" xml:space="preserve">
+    <value>Es wurde eine Verknüpfung angefordert, aber kein Hauptprogramm gewählt. Es wurden keine Verknüpfungen erstellt.</value>
+  </data>
+  <data name="GenIssue_ComponentsPageNotSupported" xml:space="preserve">
+    <value>Die Seite Komponenten auswählen ist aktiviert, wird vom Generator aber noch nicht unterstützt. Das Skript enthält keine Komponenten.</value>
+  </data>
+  <data name="GenIssue_TasksPageWithoutTasks" xml:space="preserve">
+    <value>Die Seite Aufgaben auswählen ist aktiviert, es gibt aber keine Aufgaben. Inno Setup zeigt die Seite dann nicht an.</value>
+  </data>
+  <data name="GenIssue_TasksPageShownForDesktopIcon" xml:space="preserve">
+    <value>Das Desktopsymbol ist eine Aufgabe, aber die Seite Aufgaben auswählen ist deaktiviert. Das Setup zeigt diese Seite trotzdem an, weil es eine Aufgabe gibt.</value>
+  </data>
+  <data name="GenIssue_UnknownLanguage" xml:space="preserve">
+    <value>Die Sprache '{0}' ist unbekannt und wurde übersprungen.</value>
+  </data>
+  <data name="GenIssue_ButtonSettingsNotGenerated" xml:space="preserve">
+    <value>{0} Gruppe(n) von Schaltflächeneinstellungen werden noch nicht in das Skript geschrieben.</value>
+  </data>
+  <data name="GenIssue_OutputBaseFilenameDefaulted" xml:space="preserve">
+    <value>Kein Dateiname für das Installationsprogramm angegeben. Es heißt {0}.</value>
+  </data>
+  <data name="GenerateTargetIsProjectFile" xml:space="preserve">
+    <value>Die Projektdatei kann nicht als Skriptdatei verwendet werden. Wählen Sie einen anderen Dateinamen, zum Beispiel mit der Endung .iss.</value>
+  </data>
 </root>

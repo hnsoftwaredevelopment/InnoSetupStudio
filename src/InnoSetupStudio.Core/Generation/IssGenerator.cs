@@ -206,7 +206,13 @@ if (mainExecutable is not null)
             }
 
             Optional("OutputDir", Clean("OutputPath", p.OutputPath), escape: false);
-            _writer.Directive("OutputBaseFilename", p.GetEffectiveOutputBaseFilename());
+            var outputBaseFilename = p.GetEffectiveOutputBaseFilename();
+            if (string.IsNullOrWhiteSpace(p.OutputBaseFilename))
+            {
+                Add(GenerationSeverity.Info, GenerationIssueCode.OutputBaseFilenameDefaulted, outputBaseFilename);
+            }
+
+            _writer.Directive("OutputBaseFilename", outputBaseFilename);
         }
 
         private void WriteLanguagesSection()
