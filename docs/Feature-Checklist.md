@@ -59,9 +59,9 @@ Dit is een levend document: vink af (verander ⬜/🔶 naar ✅ met een verwijzi
 | AppPublisher | Naam van de uitgever. | Eigenschap | ✅ `InstallerProject.Publisher` |
 | AppPublisherURL | Website van de uitgever, getoond in Programma's en onderdelen. | Eigenschap | ✅ `InstallerProject.PublisherUrl` |
 | AppContact | Contactgegevens getoond in het Support-dialoogvenster van Programma's en onderdelen. | Eigenschap | ✅ `InstallerProject.PublisherEmail` (deels — Inno toont dit als los tekstveld, niet per se e-mail) |
-| AppSupportURL | Support-URL getoond in Programma's en onderdelen. | Eigenschap | ⬜ |
+| AppSupportURL | Support-URL getoond in Programma's en onderdelen. | Eigenschap | ✅ geschreven door de generator uit `InstallerProject.PublisherUrl` (nog geen eigen veld) |
 | AppSupportPhone | Supporttelefoonnummer getoond in Programma's en onderdelen. | Eigenschap | ⬜ |
-| AppUpdatesURL | Updates-URL getoond in Programma's en onderdelen. | Eigenschap | ⬜ |
+| AppUpdatesURL | Updates-URL getoond in Programma's en onderdelen. | Eigenschap | ✅ geschreven door de generator uit `InstallerProject.PublisherUrl` (nog geen eigen veld) |
 | AppComments | Opmerkingentekst in het Support-dialoogvenster. | Eigenschap | ⬜ |
 | AppModifyPath | Commando achter de "Wijzigen"-knop in Programma's en onderdelen. | Eigenschap | ⬜ |
 | AppReadmeFile | Leesmij-link in Programma's en onderdelen. | Eigenschap | ⬜ |
@@ -308,8 +308,8 @@ Zie sectie 25 van `Architectuur-en-Ontwerp.md` voor de volledige toelichting op 
 |---|---|---|---|
 | Uninstallable | Bepaalt of Setup überhaupt uninstall-functionaliteit meeneemt. | Eigenschap | ⬜ |
 | CreateUninstallRegKey | Registreert de app in Programma's en onderdelen. | Eigenschap | ⬜ |
-| UninstallDisplayIcon | Icoon voor de vermelding in Programma's en onderdelen. | Eigenschap | ⬜ |
-| UninstallDisplayName | Weergavenaam in Programma's en onderdelen. | Eigenschap | ⬜ |
+| UninstallDisplayIcon | Icoon voor de vermelding in Programma's en onderdelen. | Eigenschap | ✅ vaste waarde van de generator: `{app}\<hoofdprogramma>` (nog geen eigen veld) |
+| UninstallDisplayName | Weergavenaam in Programma's en onderdelen. | Eigenschap | ✅ vaste waarde van de generator: de `AppName` (nog geen eigen veld) |
 | UninstallDisplaySize | Weergegeven installatiegrootte, automatisch of handmatig. | Eigenschap | ⬜ |
 | UninstallFilesDir | Map waar uninstaller-ondersteuningsbestanden komen. | Eigenschap | ⬜ |
 | UninstallLogging | Maakt automatisch een logbestand bij het verwijderen. | Eigenschap | ⬜ |
@@ -379,7 +379,7 @@ Zie sectie 25 van `Architectuur-en-Ontwerp.md` voor de volledige toelichting op 
 
 | Richtlijn | Omschrijving | Mechanisme | Status |
 |---|---|---|---|
-| Compression | Compressiemethode en -niveau. | Eigenschap | ⬜ |
+| Compression | Compressiemethode en -niveau. | Eigenschap | ✅ vaste waarde van de generator: `lzma2` (nog geen eigen veld) |
 | CompressionThreads | Multi-threaded compressie voor LZMA2. | Eigenschap | ⬜ |
 | InternalCompressLevel | Compressieniveau van Setup's interne datastructuren. | Eigenschap | ⬜ |
 | LZMAAlgorithm | Snel vs. normaal LZMA-algoritme. | Eigenschap | ⬜ |
@@ -389,7 +389,7 @@ Zie sectie 25 van `Architectuur-en-Ontwerp.md` voor de volledige toelichting op 
 | LZMANumBlockThreads | Aantal parallelle threads voor LZMA2-compressie. | Eigenschap | ⬜ |
 | LZMANumFastBytes | "Fast bytes"-parameter, snelheid vs. efficiëntie. | Eigenschap | ⬜ |
 | LZMAUseSeparateProcess | Compressie in een apart proces. | Eigenschap | ⬜ |
-| SolidCompression | Alle bestanden samen als één blok comprimeren. | Eigenschap | ⬜ |
+| SolidCompression | Alle bestanden samen als één blok comprimeren. | Eigenschap | ✅ vaste waarde van de generator: `yes` (nog geen eigen veld) |
 | DiskClusterSize | Clustergrootte voor het opvullen van losse schijven. | Eigenschap | ⬜ |
 | DiskSliceSize | Maximale grootte per schijf-slice/.bin-bestand. | Eigenschap | ⬜ |
 | DiskSpanning | Verdeelt gecomprimeerde data over meerdere schijven. | Eigenschap | ⬜ |

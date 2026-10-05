@@ -3,9 +3,15 @@ namespace InnoSetupStudio.Core.Project;
 /// <summary>
 /// Eén taal die Inno Setup tijdens de installatie kan aanbieden: de taal-id zoals die in het
 /// Name:-veld van de [Languages]-sectie van het gegenereerde .iss-bestand terechtkomt (generator,
-/// fase 5/6, nog niet gebouwd), plus een leesbare naam voor de talenlijst in de UI.
+/// fase 5, <c>IssGenerator</c>) terechtkomt, plus een leesbare naam voor de talenlijst in de UI.
 /// </summary>
-public sealed record InnoLanguageOption(string Id, string DisplayName, bool IsBuiltIn);
+/// <param name="Id">Taal-id, ook de waarde van <c>Name:</c> in [Languages].</param>
+/// <param name="DisplayName">Leesbare Engelse naam voor de talenlijst.</param>
+/// <param name="IsBuiltIn">True voor Engels, dat Inno Setup ook zonder eigen taalbestand kent.</param>
+/// <param name="MessagesFile">De waarde van <c>MessagesFile:</c> in [Languages], bijvoorbeeld
+/// <c>compiler:Languages\Dutch.isl</c>. Met de bestandsnaam in de juiste hoofdletters, zoals die in
+/// Inno Setup's Languages-map staat.</param>
+public sealed record InnoLanguageOption(string Id, string DisplayName, bool IsBuiltIn, string MessagesFile);
 
 /// <summary>
 /// De vaste lijst talen die deze app aanbiedt bij het samenstellen van een meertalige installer
@@ -78,8 +84,12 @@ public static class InnoLanguageCatalog
             ("Ukrainian", "Ukrainian"),
         ];
 
-        var list = new List<InnoLanguageOption> { new(EnglishId, "English", IsBuiltIn: true) };
-        list.AddRange(bundled.Select(l => new InnoLanguageOption(l.FileBaseName.ToLowerInvariant(), l.DisplayName, IsBuiltIn: false)));
+        var list = new List<InnoLanguageOption> { new(EnglishId, "English", IsBuiltIn: true, MessagesFile: "compiler:Default.isl") };
+        list.AddRange(bundled.Select(l => new InnoLanguageOption(
+            l.FileBaseName.ToLowerInvariant(),
+            l.DisplayName,
+            IsBuiltIn: false,
+            MessagesFile: $"compiler:Languages\\{l.FileBaseName}.isl")));
         return list;
     }
 }
