@@ -629,6 +629,27 @@ public class InstallerProjectTests
     }
 
     [Fact]
+    public async Task LoadAsyncNormalizesExplicitNullBrowseButtonSettings()
+    {
+        // CodeRabbit (PR #23): een expliciete JSON-null overschrijft de initializer en gaf een
+        // NullReferenceException zodra de schermeditor Caption e.d. uit de instellingen las.
+        var service = new JsonInstallerProjectService();
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.issproj");
+        await File.WriteAllTextAsync(
+            path,
+            "{\"AppName\":\"Null knoppen\",\"SelectDestinationBrowseButton\":null,\"SelectProgramGroupBrowseButton\":null}");
+        try
+        {
+            var loaded = await service.LoadAsync(path);
+
+            Assert.NotNull(loaded.SelectDestinationBrowseButton);
+            Assert.NotNull(loaded.SelectProgramGroupBrowseButton);
+            Assert.Empty(loaded.SelectProgramGroupBrowseButton.CaptionByLanguage);
+        }
+        finally { if (File.Exists(path)) { File.Delete(path); } }
+    }
+
+    [Fact]
     public async Task LoadAsyncRejectsNumericTextForDisablePageMode()
     {
         // CodeRabbit (PR #23): Enum.TryParse accepteert ook numerieke tekst zoals "999" en gaf dan

@@ -46,6 +46,13 @@ public sealed class JsonInstallerProjectService : IInstallerProjectService
             loaded.InfoAfterScreenButtons ??= new();
             loaded.DefaultScreenButtons ??= new();
 
+            // De twee schermspecifieke Bladeren-knoppen (BrowseButtonSettings): zelfde risico bij
+            // een expliciete JSON-null — de schermeditor leest er rechtstreeks .Caption e.d. uit.
+            // SelectDestinationBrowseButton had deze normalisatie nog niet (CodeRabbit, PR #23,
+            // vond het bij SelectProgramGroupBrowseButton; hetzelfde gat zat hier al).
+            loaded.SelectDestinationBrowseButton ??= new();
+            loaded.SelectProgramGroupBrowseButton ??= new();
+
             // Zelfde verhaal voor SupportedLanguageIds (backlogitem 4, sectie 14): een expliciete
             // JSON-null geeft anders een NullReferenceException zodra het talenoverzicht wordt
             // geopend. Bevat een handmatig bewerkt bestand een lijst zonder Engels, dan wordt dat

@@ -2675,3 +2675,10 @@ Alle vijf bevindingen zijn gecontroleerd tegen de officiële Inno Setup-document
 - **`DisablePageModeJsonConverter`.** Numerieke tekst zoals `"999"` werd door `Enum.TryParse`
   geaccepteerd en als ongedefinieerde waarde teruggeschreven. De converter accepteert nu alleen
   gedefinieerde enumnamen. Nieuwe test: `LoadAsyncRejectsNumericTextForDisablePageMode`.
+
+Daarnaast leverde de review van de correctiecommit (2026-10-05) nog één bevinding op, ook terecht:
+een expliciete JSON-`null` voor `SelectProgramGroupBrowseButton` gaf een `NullReferenceException`
+zodra de schermeditor `Caption` las. `JsonInstallerProjectService.LoadAsync` normaliseert deze
+eigenschap nu naar `new()`, net als de schermknoppen. Hetzelfde gat zat al in
+`SelectDestinationBrowseButton`; die is in dezelfde stap meegenomen. Nieuwe test:
+`LoadAsyncNormalizesExplicitNullBrowseButtonSettings`.
