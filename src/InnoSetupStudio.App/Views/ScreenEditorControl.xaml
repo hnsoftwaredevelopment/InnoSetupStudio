@@ -7,6 +7,7 @@
              xmlns:vm="clr-namespace:InnoSetupStudio.App.ViewModels.Screens"
              xmlns:services="clr-namespace:InnoSetupStudio.App.Services"
              xmlns:wizard="clr-namespace:InnoSetupStudio.Wizard.Screens;assembly=InnoSetupStudio.Wizard"
+             xmlns:metrics="clr-namespace:InnoSetupStudio.Wizard;assembly=InnoSetupStudio.Wizard"
              Background="{DynamicResource Brush.Background}">
     <!-- Voormalig WizardEditorWindow (sectie 21, IDE-schil herontwerp): dezelfde inhoud, nu
          permanent zichtbaar in MainWindow in plaats van een apart dialoogvenster. De
@@ -542,44 +543,52 @@
                     Visibility="{Binding IsRealScreenSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <DockPanel>
                     <Border DockPanel.Dock="Bottom" BorderBrush="#FFACA899" BorderThickness="0,1,0,0" Padding="10">
-                        <DockPanel LastChildFill="False">
-                            <Button DockPanel.Dock="Left"
-                                    ToolTip="{Binding SelectedScreen.EffectiveCancelButtonTooltip}"
-                                    IsEnabled="{Binding SelectedScreen.IsCancelButtonEnabled}"
-                                    Visibility="{Binding SelectedScreen.IsCancelButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                    FontFamily="{Binding SelectedScreen.EffectiveCancelButtonFontFamily, Converter={StaticResource FontFamilyOrUnsetConverter}}"
-                                    FontSize="{Binding SelectedScreen.EffectiveCancelButtonFontSize, Converter={StaticResource FontSizeOrUnsetConverter}}"
-                                    FontWeight="{Binding SelectedScreen.EffectiveCancelButtonFontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"
-                                    Padding="12,4" MinWidth="80">
-                                <TextBlock Text="{Binding SelectedScreen.EffectiveCancelButtonCaption}"
-                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
-                            </Button>
-                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                                <Button Command="{Binding BackCommand}"
-                                        ToolTip="{Binding SelectedScreen.EffectiveBackButtonTooltip}"
-                                        Visibility="{Binding SelectedScreen.IsBackButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                        Opacity="{Binding SelectedScreen.IsBackButtonEnabled, Converter={StaticResource BooleanToOpacityConverter}}"
-                                        FontFamily="{Binding SelectedScreen.EffectiveBackButtonFontFamily, Converter={StaticResource FontFamilyOrUnsetConverter}}"
-                                        FontSize="{Binding SelectedScreen.EffectiveBackButtonFontSize, Converter={StaticResource FontSizeOrUnsetConverter}}"
-                                        FontWeight="{Binding SelectedScreen.EffectiveBackButtonFontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"
-                                        Padding="12,4" Margin="0,0,8,0" MinWidth="80">
-                                    <TextBlock Text="{Binding SelectedScreen.EffectiveBackButtonCaption}"
-                                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
-                                </Button>
-
-                                <Button Command="{Binding NextCommand}"
-                                        ToolTip="{Binding SelectedScreen.EffectiveNextButtonTooltip}"
-                                        Visibility="{Binding SelectedScreen.IsNextButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                        Opacity="{Binding SelectedScreen.IsNextButtonEnabled, Converter={StaticResource BooleanToOpacityConverter}}"
-                                        FontFamily="{Binding SelectedScreen.EffectiveNextButtonFontFamily, Converter={StaticResource FontFamilyOrUnsetConverter}}"
-                                        FontSize="{Binding SelectedScreen.EffectiveNextButtonFontSize, Converter={StaticResource FontSizeOrUnsetConverter}}"
-                                        FontWeight="{Binding SelectedScreen.EffectiveNextButtonFontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"
-                                        Padding="12,4" MinWidth="80">
-                                    <TextBlock Text="{Binding SelectedScreen.EffectiveNextButtonCaption}"
-                                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
-                                </Button>
-                            </StackPanel>
-                        </DockPanel>
+                        <!-- Indeling zoals in Setup (gemeten, docs/Ontwerp-Vaste-Knopbreedte-Voorvertoning.md):
+                             Terug en Volgende tegen elkaar, dan 10 eenheden ruimte, dan Annuleren rechts. Elke
+                             knop heeft een vaste kolom, dus een verborgen knop laat zijn plaats leeg zoals in Setup. -->
+                        <Grid HorizontalAlignment="Right">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="{x:Static metrics:SetupButtonMetrics.ColumnWidth}" />
+                                <ColumnDefinition Width="{x:Static metrics:SetupButtonMetrics.ColumnWidth}" />
+                                <ColumnDefinition Width="{x:Static metrics:SetupButtonMetrics.GapWidth}" />
+                                <ColumnDefinition Width="{x:Static metrics:SetupButtonMetrics.ColumnWidth}" />
+                            </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0"
+                                Command="{Binding BackCommand}"
+                                ToolTip="{Binding SelectedScreen.EffectiveBackButtonTooltip}"
+                                Visibility="{Binding SelectedScreen.IsBackButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                Opacity="{Binding SelectedScreen.IsBackButtonEnabled, Converter={StaticResource BooleanToOpacityConverter}}"
+                                FontFamily="{Binding SelectedScreen.EffectiveBackButtonFontFamily, Converter={StaticResource FontFamilyOrUnsetConverter}}"
+                                FontSize="{Binding SelectedScreen.EffectiveBackButtonFontSize, Converter={StaticResource FontSizeOrUnsetConverter}, FallbackValue={x:Static metrics:SetupButtonMetrics.DefaultFontSize}}"
+                                FontWeight="{Binding SelectedScreen.EffectiveBackButtonFontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"
+                                Padding="3,0" Width="{x:Static metrics:SetupButtonMetrics.Width}" Height="{x:Static metrics:SetupButtonMetrics.Height}">
+                            <TextBlock Text="{Binding SelectedScreen.EffectiveBackButtonCaption}" HorizontalAlignment="Center"
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                        </Button>
+                        <Button Grid.Column="1"
+                                Command="{Binding NextCommand}"
+                                ToolTip="{Binding SelectedScreen.EffectiveNextButtonTooltip}"
+                                Visibility="{Binding SelectedScreen.IsNextButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                Opacity="{Binding SelectedScreen.IsNextButtonEnabled, Converter={StaticResource BooleanToOpacityConverter}}"
+                                FontFamily="{Binding SelectedScreen.EffectiveNextButtonFontFamily, Converter={StaticResource FontFamilyOrUnsetConverter}}"
+                                FontSize="{Binding SelectedScreen.EffectiveNextButtonFontSize, Converter={StaticResource FontSizeOrUnsetConverter}, FallbackValue={x:Static metrics:SetupButtonMetrics.DefaultFontSize}}"
+                                FontWeight="{Binding SelectedScreen.EffectiveNextButtonFontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"
+                                Padding="3,0" Width="{x:Static metrics:SetupButtonMetrics.Width}" Height="{x:Static metrics:SetupButtonMetrics.Height}">
+                            <TextBlock Text="{Binding SelectedScreen.EffectiveNextButtonCaption}" HorizontalAlignment="Center"
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                        </Button>
+                        <Button Grid.Column="3"
+                                ToolTip="{Binding SelectedScreen.EffectiveCancelButtonTooltip}"
+                                Visibility="{Binding SelectedScreen.IsCancelButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                IsEnabled="{Binding SelectedScreen.IsCancelButtonEnabled}"
+                                FontFamily="{Binding SelectedScreen.EffectiveCancelButtonFontFamily, Converter={StaticResource FontFamilyOrUnsetConverter}}"
+                                FontSize="{Binding SelectedScreen.EffectiveCancelButtonFontSize, Converter={StaticResource FontSizeOrUnsetConverter}, FallbackValue={x:Static metrics:SetupButtonMetrics.DefaultFontSize}}"
+                                FontWeight="{Binding SelectedScreen.EffectiveCancelButtonFontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"
+                                Padding="3,0" Width="{x:Static metrics:SetupButtonMetrics.Width}" Height="{x:Static metrics:SetupButtonMetrics.Height}">
+                            <TextBlock Text="{Binding SelectedScreen.EffectiveCancelButtonCaption}" HorizontalAlignment="Center"
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                        </Button>
+                        </Grid>
                     </Border>
                     <ContentControl Content="{Binding SelectedScreen}" />
                 </DockPanel>
