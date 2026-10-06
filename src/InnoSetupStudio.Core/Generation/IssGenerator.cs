@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Text;
 using InnoSetupStudio.Core.Project;
 
@@ -6,10 +5,9 @@ namespace InnoSetupStudio.Core.Generation;
 
 /// <summary>
 /// Zet een <see cref="InstallerProject"/> om naar de tekst van een Inno Setup-script (.iss).
-/// Versie 1 ("dunne generator", zie docs/Ontwerp-Dunne-Generator.md): alleen wat Inno Setup zonder
-/// Pascal Script kan, dus de secties [Setup], [Languages], [Tasks], [Files] en [Icons]. Knopinstellingen
-/// en alles wat een [Code]-blok vraagt volgen in een latere stap en worden nu gemeld als
-/// <see cref="GenerationIssueCode.ButtonSettingsNotGenerated"/>.
+/// De secties [Setup], [Languages], [CustomMessages], [Tasks], [Files], [Icons] en [Code] (zie
+/// docs/Ontwerp-Dunne-Generator.md). [CustomMessages] en [Code] komen alleen als er knopinstellingen
+/// zijn (zie <see cref="ButtonScript"/> en docs/Ontwerp-Knopinstellingen-Generator.md).
 ///
 /// Eigenschappen van de uitvoer: deterministisch (zelfde project, zelfde tekst), alleen richtlijnen
 /// die van Inno Setup's eigen standaard afwijken (behalve de basisgegevens), en CRLF-regeleinden.
@@ -94,10 +92,13 @@ public sealed class IssGenerator
             _writer.Comment("verloren zodra het opnieuw wordt gegenereerd.");
 
             WriteSetupSection(screens, appId, appName, appVersion, mainExecutable);
-            WriteLanguagesSection();
+            var languageIds = WriteLanguagesSection();
+            var buttons = new ButtonScript(p, screens, languageIds, Add).Build();
+            WriteCustomMessagesSection(buttons.Messages);
             WriteTasksSection(screens);
             WriteFilesSection(source);
             WriteIconsSection(appName, mainExecutable);
+            WriteCodeSection(buttons.CodeLines);
             ReportUnsupported(screens);
 
             return new GenerationResult(_writer.ToString(), _issues);
@@ -215,7 +216,8 @@ if (mainExecutable is not null)
             _writer.Directive("OutputBaseFilename", outputBaseFilename);
         }
 
-        private void WriteLanguagesSection()
+        // Schrijft [Languages] en geeft de talen terug die erin staan, Engels niet meegeteld.
+        private List<string> WriteLanguagesSection()
         {
             var requested = _project.SupportedLanguageIds ?? [];
             var known = InnoLanguageCatalog.Languages.Select(l => l.Id).ToHashSet(StringComparer.Ordinal);
@@ -229,6 +231,7 @@ if (mainExecutable is not null)
             // Engels staat altijd in de lijst en altijd eerst: Setup valt voor een taal zonder
             // eigen tekst terug op de eerste taal. De rest in vaste cataloguvolgorde, voor een
             // deterministische uitvoer.
+            var languageIds = new List<string>();
             foreach (var language in InnoLanguageCatalog.Languages)
             {
                 if (language.Id == InnoLanguageCatalog.EnglishId || requested.Contains(language.Id))
@@ -236,7 +239,43 @@ if (mainExecutable is not null)
                     _writer.Entry(
                         IssWriter.Quoted("Name", language.Id),
                         IssWriter.Quoted("MessagesFile", language.MessagesFile));
+                    if (language.Id != InnoLanguageCatalog.EnglishId)
+                    {
+                        languageIds.Add(language.Id);
+                    }
                 }
+            }
+
+            return languageIds;
+        }
+
+        // De knopteksten en tooltips. Per bericht eerst de regel zonder taalvoorvoegsel, daarna de
+        // vertalingen (zie sectie 6 van docs/Ontwerp-Knopinstellingen-Generator.md).
+        private void WriteCustomMessagesSection(IReadOnlyList<CustomMessageLine> messages)
+        {
+            if (messages.Count == 0)
+            {
+                return;
+            }
+
+            _writer.Section("CustomMessages");
+            foreach (var message in messages)
+            {
+                _writer.Directive(message.Name, message.Value);
+            }
+        }
+
+        private void WriteCodeSection(IReadOnlyList<string> lines)
+        {
+            if (lines.Count == 0)
+            {
+                return;
+            }
+
+            _writer.Section("Code");
+            foreach (var line in lines)
+            {
+                _writer.CodeLine(line);
             }
         }
 
@@ -325,23 +364,6 @@ if (mainExecutable is not null)
             if (screens.ShowSelectComponentsPage)
             {
                 Add(GenerationSeverity.Warning, GenerationIssueCode.ComponentsPageNotSupported);
-            }
-
-            var p = _project;
-            var customized = new object?[]
-            {
-                p.WelcomeScreenButtons, p.LicenseScreenButtons, p.InfoBeforeScreenButtons,
-                p.UserInfoScreenButtons, p.SelectDestinationScreenButtons, p.SelectProgramGroupScreenButtons,
-                p.ReadyScreenButtons, p.InfoAfterScreenButtons, p.DefaultScreenButtons,
-                p.SelectDestinationBrowseButton, p.SelectProgramGroupBrowseButton,
-            }.Count(settings => settings is not null && HasCustomizations(settings));
-
-            if (customized > 0)
-            {
-                Add(
-                    GenerationSeverity.Info,
-                    GenerationIssueCode.ButtonSettingsNotGenerated,
-                    customized.ToString(System.Globalization.CultureInfo.InvariantCulture));
             }
         }
 
@@ -466,24 +488,5 @@ if (mainExecutable is not null)
 
         private void Add(GenerationSeverity severity, GenerationIssueCode code, params string[] arguments)
             => _issues.Add(new GenerationIssue(severity, code, arguments));
-
-        // True als er in deze instellingen (WizardScreenButtonSettings of BrowseButtonSettings) iets
-        // is aangepast: een niet-lege tekst, een gevulde dictionary of een waarde die niet null is.
-        private static bool HasCustomizations(object settings)
-        {
-            foreach (var property in settings.GetType().GetProperties())
-            {
-                switch (property.GetValue(settings))
-                {
-                    case string { Length: > 0 }:
-                    case IDictionary { Count: > 0 }:
-                    case bool:
-                    case int:
-                        return true;
-                }
-            }
-
-            return false;
-        }
     }
 }

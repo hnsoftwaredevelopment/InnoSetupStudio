@@ -334,30 +334,6 @@ public class IssGeneratorIssuesTests
     public void Untouched_button_settings_give_no_message()
         => Assert.Empty(Generate(SampleProject()).Issues);
 
-    [Fact]
-    public void Customized_button_settings_are_counted_in_an_info_message()
-    {
-        var project = SampleProject();
-        project.DefaultScreenButtons.NextButtonCaption = "Verder";
-        project.ReadyScreenButtons.CancelButtonEnabled = false;
-        project.SelectDestinationBrowseButton.Tooltip = "Kies een map";
-
-        var issue = Assert.Single(Generate(project).Issues);
-
-        Assert.Equal(GenerationSeverity.Info, issue.Severity);
-        Assert.Equal(GenerationIssueCode.ButtonSettingsNotGenerated, issue.Code);
-        Assert.Equal(new[] { "3" }, issue.Arguments);
-    }
-
-    [Fact]
-    public void Per_language_button_texts_count_as_customized()
-    {
-        var project = SampleProject();
-        project.WelcomeScreenButtons.NextButtonCaptionByLanguage["dutch"] = "Volgende";
-
-        Assert.Equal(new[] { "1" }, Assert.Single(Generate(project).Issues).Arguments);
-    }
-
     // ---- eigenschappen van de uitvoer ---------------------------------------------------------------
 
     [Fact]

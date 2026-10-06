@@ -76,9 +76,18 @@ public enum GenerationIssueCode
     /// Argumenten: de naam die in het script komt (zonder .exe).</summary>
     OutputBaseFilenameDefaulted,
 
-    /// <summary>Knopinstellingen worden nog niet vertaald (vergen een [Code]-blok). Argumenten:
-    /// aantal schermen of knoppen met aanpassingen.</summary>
-    ButtonSettingsNotGenerated,
+    /// <summary>Op knoppen is een tekstkleur ingesteld. Setup tekent zijn knoppen met de themakleur,
+    /// dus de kleur wordt niet gegenereerd. Argumenten: aantal knoppen met een tekstkleur.</summary>
+    ButtonTextColorNotSupported,
+
+    /// <summary>Een scherm met eigen knopinstellingen staat uit in het project, dus de instellingen
+    /// worden niet gebruikt. Argumenten: veldnaam van de instellingen, bijvoorbeeld
+    /// <c>LicenseScreenButtons</c>.</summary>
+    ButtonSettingsForHiddenScreen,
+
+    /// <summary>De Volgende-knop is op een getoond scherm uitgeschakeld of verborgen. Het script zet
+    /// hem nergens weer aan, dus de gebruiker kan niet verder. Argumenten: veldnaam van het scherm.</summary>
+    NextButtonUnusable,
 }
 
 /// <summary>Eén melding van de generator, zie <see cref="GenerationIssueCode"/>.</summary>

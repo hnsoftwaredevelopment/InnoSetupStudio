@@ -597,8 +597,14 @@
   <data name="GenIssue_UnknownLanguage" xml:space="preserve">
     <value>The language '{0}' is unknown and was skipped.</value>
   </data>
-  <data name="GenIssue_ButtonSettingsNotGenerated" xml:space="preserve">
-    <value>{0} group(s) of button settings are not yet written to the script.</value>
+  <data name="GenIssue_ButtonTextColorNotSupported" xml:space="preserve">
+    <value>A text color is set on {0} button(s). Setup draws its buttons in the theme color, so the color is not written to the script.</value>
+  </data>
+  <data name="GenIssue_ButtonSettingsForHiddenScreen" xml:space="preserve">
+    <value>The button settings of '{0}' are not used because that screen is turned off.</value>
+  </data>
+  <data name="GenIssue_NextButtonUnusable" xml:space="preserve">
+    <value>The Next button is disabled or hidden on the screen '{0}'. The script does not enable it again, so the user cannot continue on that screen.</value>
   </data>
   <data name="GenIssue_OutputBaseFilenameDefaulted" xml:space="preserve">
     <value>No installer file name entered. The installer will be named {0}.</value>

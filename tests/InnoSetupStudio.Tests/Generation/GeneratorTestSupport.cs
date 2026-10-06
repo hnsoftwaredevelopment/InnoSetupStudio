@@ -53,6 +53,77 @@ internal static class GeneratorTestSupport
         CreateStartMenuIcon = false,
     };
 
+    /// <summary>
+    /// Zet alle acht schermen met een knopmodel aan, kiest Engels, Nederlands en Duits en vult
+    /// knopinstellingen in die elk onderdeel van de generator raken: het Standaardscherm met een
+    /// eigen waarde erboven, vertalingen voor alle talen en voor één taal, een vertaling zonder
+    /// universele tekst, lettertype, grootte, vet, tooltip, uitgeschakeld, verborgen en beide
+    /// Bladeren-knoppen. De bestanden voor de pagina's met een bestand stelt de aanroeper in.
+    /// </summary>
+    public static void ApplyButtonSettings(InstallerProject project)
+    {
+        project.SupportedLanguageIds = ["english", "dutch", "german"];
+        var screens = project.WizardScreens;
+        screens.ShowWelcomePage = true;
+        screens.ShowLicensePage = true;
+        screens.ShowInfoBeforePage = true;
+        screens.ShowUserInfoPage = true;
+        screens.ShowSelectDestinationPage = true;
+        screens.ShowSelectProgramGroupPage = true;
+        screens.ShowReadyPage = true;
+        screens.ShowInfoAfterPage = true;
+
+        var defaults = project.DefaultScreenButtons;
+        defaults.BackButtonCaption = "Back";
+        defaults.NextButtonCaption = "Continue";
+        defaults.NextButtonTooltip = "Go on";
+        defaults.NextButtonFontBold = true;
+        defaults.CancelButtonCaption = "Stop";
+        defaults.CancelButtonFontSize = 9;
+
+        var welcome = project.WelcomeScreenButtons;
+        welcome.NextButtonCaption = "Start";
+        welcome.NextButtonCaptionByLanguage["dutch"] = "Begin";
+        welcome.NextButtonCaptionByLanguage["german"] = "Los";
+        welcome.NextButtonTooltip = "Let's go";
+        welcome.CancelButtonEnabled = false;
+
+        var license = project.LicenseScreenButtons;
+        license.NextButtonCaption = "I agree";
+        license.NextButtonCaptionByLanguage["dutch"] = "Akkoord";
+        license.NextButtonFontBold = false;
+        license.NextButtonFontFamily = "Consolas";
+
+        var infoBefore = project.InfoBeforeScreenButtons;
+        infoBefore.BackButtonCaptionByLanguage["german"] = "Zurück";
+        infoBefore.NextButtonTooltipByLanguage["dutch"] = "Lees de informatie";
+
+        var userInfo = project.UserInfoScreenButtons;
+        userInfo.NextButtonTooltip = "Enter your details";
+        userInfo.NextButtonTooltipByLanguage["dutch"] = "Vul je gegevens in";
+
+        var selectDir = project.SelectDestinationScreenButtons;
+        selectDir.NextButtonFontSize = 10;
+        var dirBrowse = project.SelectDestinationBrowseButton;
+        dirBrowse.Caption = "Find...";
+        dirBrowse.CaptionByLanguage["dutch"] = "Zoeken...";
+        dirBrowse.Tooltip = "Pick a folder";
+        dirBrowse.FontBold = true;
+
+        var groupBrowse = project.SelectProgramGroupBrowseButton;
+        groupBrowse.CaptionByLanguage["dutch"] = "Zoeken...";
+        groupBrowse.Enabled = false;
+
+        var ready = project.ReadyScreenButtons;
+        ready.NextButtonCaption = "Install now";
+        ready.NextButtonCaptionByLanguage["dutch"] = "Nu installeren";
+        ready.NextButtonFontSize = 12;
+
+        var infoAfter = project.InfoAfterScreenButtons;
+        infoAfter.CancelButtonVisible = false;
+        infoAfter.BackButtonEnabled = false;
+    }
+
     public static GenerationResult Generate(InstallerProject project, IGeneratorEnvironment? environment = null)
         => new IssGenerator(environment ?? FakeGeneratorEnvironment.Everything).Generate(project);
 

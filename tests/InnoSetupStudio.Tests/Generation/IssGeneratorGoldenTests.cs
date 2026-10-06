@@ -22,7 +22,20 @@ public class IssGeneratorGoldenTests
     [Fact]
     public void Classic_x86_multilingual_project() => AssertGolden("ClassicX86Multilingual", ClassicProject());
 
+    [Fact]
+    public void Buttons_project() => AssertGolden("Buttons", ButtonsProject());
+
     private static InstallerProject MinimalProject() => SampleProject();
+
+    private static InstallerProject ButtonsProject()
+    {
+        var project = SampleProject();
+        project.LicenseFilePath = @"C:\Docs\licentie.txt";
+        project.InfoBeforeFilePath = @"C:\Docs\voor.rtf";
+        project.InfoAfterFilePath = @"C:\Docs\na.txt";
+        ApplyButtonSettings(project);
+        return project;
+    }
 
     private static InstallerProject FullProject()
     {

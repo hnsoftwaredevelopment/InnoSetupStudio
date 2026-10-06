@@ -597,8 +597,14 @@
   <data name="GenIssue_UnknownLanguage" xml:space="preserve">
     <value>Die Sprache '{0}' ist unbekannt und wurde übersprungen.</value>
   </data>
-  <data name="GenIssue_ButtonSettingsNotGenerated" xml:space="preserve">
-    <value>{0} Gruppe(n) von Schaltflächeneinstellungen werden noch nicht in das Skript geschrieben.</value>
+  <data name="GenIssue_ButtonTextColorNotSupported" xml:space="preserve">
+    <value>Bei {0} Schaltfläche(n) ist eine Textfarbe eingestellt. Setup zeichnet seine Schaltflächen in der Designfarbe, daher wird die Farbe nicht in das Skript geschrieben.</value>
+  </data>
+  <data name="GenIssue_ButtonSettingsForHiddenScreen" xml:space="preserve">
+    <value>Die Schaltflächeneinstellungen von '{0}' werden nicht verwendet, weil dieser Bildschirm ausgeschaltet ist.</value>
+  </data>
+  <data name="GenIssue_NextButtonUnusable" xml:space="preserve">
+    <value>Die Schaltfläche Weiter ist auf dem Bildschirm '{0}' deaktiviert oder ausgeblendet. Das Skript aktiviert sie nicht wieder, daher kann der Benutzer auf diesem Bildschirm nicht fortfahren.</value>
   </data>
   <data name="GenIssue_OutputBaseFilenameDefaulted" xml:space="preserve">
     <value>Kein Dateiname für das Installationsprogramm angegeben. Es heißt {0}.</value>

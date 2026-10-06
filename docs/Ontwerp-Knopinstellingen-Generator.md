@@ -1,6 +1,6 @@
 # Ontwerp: knopinstellingen in het gegenereerde script (stap 4)
 
-Status: ontwerp, nog niet gebouwd (2026-10-05). De keuzes uit sectie 11 zijn op 2026-10-05 door Herbert gemaakt. Dit is stap 4 uit `docs/Ontwerp-Dunne-Generator.md`. Stap 1 tot en met 3 (projectvelden, `IssGenerator`, de knop "Genereer .iss") zijn gemerged. De generator schrijft nu geen knopinstellingen weg en meldt alleen dat er instellingen zijn die niet worden vertaald (`ButtonSettingsNotGenerated`).
+Status: gebouwd (2026-10-06). De keuzes uit sectie 11 zijn op 2026-10-05 door Herbert gemaakt. Dit is stap 4 uit `docs/Ontwerp-Dunne-Generator.md`. Stap 1 tot en met 3 (projectvelden, `IssGenerator`, de knop "Genereer .iss") zijn gemerged. Afwijkingen van dit ontwerp tijdens de bouw: sectie 5 (geen vergelijkingstest met de editor), sectie 6 regel 8 (teksten worden getrimd) en sectie 11 punt 6 (`Visible` alleen als `False`). Verwijzing naar de bouw: sectie 32 van `docs/Architectuur-en-Ontwerp.md`.
 
 ## 1. Doel
 
@@ -56,7 +56,7 @@ Gemeten met een proefinstaller die bij elke pagina de toestand van de drie knopp
 
 Gevolgen:
 
-1. Caption, Enabled en Visible zet de generator alleen op de pagina's waar een waarde is ingesteld. Terugzetten is niet nodig. `Enabled` schrijft de generator uitsluitend als `False`. `True` is wat Setup's eigen reset al oplevert, en een expliciet `True` kan een controle van Setup omzeilen: op de Licentie-pagina houdt Setup Volgende uitgeschakeld tot de licentie is geaccepteerd (gemeten: uitgeschakeld bij binnenkomst op die pagina), en een `NextButton.Enabled := True` in `CurPageChanged` zou die acceptatie overslaan. Het kan dus ook niet per ongeluk via het Standaardscherm gebeuren.
+1. Caption, Enabled en Visible zet de generator alleen op de pagina's waar een waarde is ingesteld. Terugzetten is niet nodig. `Enabled` schrijft de generator uitsluitend als `False`, en `Visible` ook (zie sectie 11 punt 6). `True` is wat Setup's eigen reset al oplevert, en een expliciet `True` kan een controle van Setup omzeilen: op de Licentie-pagina houdt Setup Volgende uitgeschakeld tot de licentie is geaccepteerd (gemeten: uitgeschakeld bij binnenkomst op die pagina), en een `NextButton.Enabled := True` in `CurPageChanged` zou die acceptatie overslaan. Het kan dus ook niet per ongeluk via het Standaardscherm gebeuren.
 2. Lettertype, lettergrootte, vet en tooltip moeten bij elke paginawissel eerst worden teruggezet naar de beginwaarde en daarna per pagina worden ingesteld. De beginwaarden worden in `InitializeWizard` vastgelegd in variabelen. Dit geldt alleen voor de combinaties van knop en eigenschap die ergens in het project worden gebruikt, zodat het script niet groter wordt dan nodig.
 3. Zonder dat terugzetten krijgt elke pagina na de eerste aangepaste pagina ook die aanpassing. Dat is de fout die deze stap moet voorkomen.
 
@@ -73,7 +73,7 @@ De schermeditor bepaalt de waarde van een veld in drie lagen: eigen waarde op he
 - Vertalingen per taal (`*ByLanguage`) cascaderen niet via het Standaardscherm. Dat is een eerdere, bewuste keuze (sectie 24 van de architectuurdoc) en verandert hier niet.
 - De Bladeren-knoppen hebben geen Standaardscherm en geen cascade.
 
-De bepaling van de effectieve waarde komt als losse, pure klasse in Core (`ButtonSettingsResolver`), met eigen tests. De editor behoudt zijn eigen `Effective*`-eigenschappen. Een test legt vast dat beide voor dezelfde invoer dezelfde uitkomst geven, zodat ze niet uit elkaar kunnen lopen. De editor omschrijven om de Core-klasse te gebruiken is een mogelijke vervolgstap, geen onderdeel van stap 4.
+De bepaling van de effectieve waarde staat als losse, pure klasse in Core (`ButtonSettingsResolver`), met eigen tests. De editor behoudt zijn eigen `Effective*`-eigenschappen. Een test die beide vergelijkt, zoals dit document eerst voorstelde, is niet mogelijk: het testproject verwijst alleen naar Core en niet naar de app, waar de editor in staat. De regels uit deze sectie liggen daarom vast in de tests van de resolver. Tot de editor de resolver zelf gebruikt (backlog, sectie 13) moet een wijziging van deze regels op twee plaatsen worden doorgevoerd.
 
 Een veld dat na de bepaling niet is ingesteld, levert geen code op. Een project zonder knopaanpassingen krijgt dus nog steeds geen `[Code]`- en geen `[CustomMessages]`-sectie, en het Minimal-goldenbestand verandert niet.
 
@@ -90,6 +90,7 @@ Regels voor de gegenereerde berichten:
 5. Is de universele tekst leeg maar bestaat er wel een vertaling, dan staat er een lege regel (`BtnWelcomeNextCaption=`) en controleert de code vóór het toewijzen of de tekst niet leeg is. Zo houdt Setup in talen zonder vertaling zijn eigen tekst. Is er geen enkele vertaling, dan staat er geen bericht en geen toewijzing.
 6. Een tekst met een regeleinde krijgt dezelfde behandeling als elders: het veld wordt weggelaten en er komt een `ValueContainsLineBreak`-melding.
 7. Taal-ids in een vertalingenlijst die niet meer in het project voorkomen worden genegeerd.
+8. Teksten worden getrimd, zoals alle andere tekstvelden van de generator. Spaties aan het begin of einde van een knoptekst komen dus niet in het script.
 
 Lettertypenamen zijn de enige tekst die in Pascal-code komt (`Font.Name := '...'`). Daar wordt een enkele aanhalingsteken verdubbeld.
 
@@ -102,10 +103,10 @@ Voorbeeld voor een project met Engels en Nederlands, een eigen Volgende-tekst en
 BtnWelcomeNextCaption=Start
 dutch.BtnWelcomeNextCaption=Begin
 BtnWelcomeNextTooltip=Ga verder
-BtnReadyNextCaption=Install now
-dutch.BtnReadyNextCaption=Nu installeren
 BtnSelectDirBrowseCaption=Find...
 dutch.BtnSelectDirBrowseCaption=Zoeken...
+BtnReadyNextCaption=Install now
+dutch.BtnReadyNextCaption=Nu installeren
 
 [Code]
 var
@@ -139,7 +140,7 @@ begin
 end;
 ```
 
-Dit patroon (zonder de `Btn`-berichtnamen) is gecompileerd met ISCC 7.1.0 in een proefscript, zonder fout en zonder waarschuwing.
+Dit patroon (zonder de `Btn`-berichtnamen) is gecompileerd met ISCC 7.1.0 in een proefscript, zonder fout en zonder waarschuwing. Het voorbeeld zelf staat als test in `IssGeneratorButtonTests` (`Design_document_example_is_generated_as_documented`). De berichten staan in de volgorde van de schermen (sectie 3), per scherm eerst Terug, Volgende, Annuleren en dan de Bladeren-knop; daarom staat de doelmap vóór Ready.
 
 Afspraken voor de uitvoer, in de lijn van de bestaande generator:
 
@@ -158,18 +159,18 @@ Meldingen die in stap 4 veranderen. Elke nieuwe code krijgt teksten in NL, EN en
 
 | Code | Ernst | Argumenten | Wanneer |
 |---|---|---|---|
-| `ButtonSettingsNotGenerated` | vervalt | | Er is niets meer dat niet wordt vertaald. De code, de teksten en de testregel verdwijnen. |
-| `ButtonTextColorNotSupported` | Warning | aantal knoppen met een tekstkleur | Er is op minstens één knop een tekstkleur ingesteld (na de cascade). |
+| `ButtonSettingsNotGenerated` | verwijderd | | Er is niets meer dat niet wordt vertaald. De code, de teksten en de testregel zijn verwijderd. |
+| `ButtonTextColorNotSupported` | Warning | aantal knoppen met een tekstkleur | Er is op minstens één knop een tekstkleur ingesteld (na de cascade). Geteld wordt per knop op elk getoond scherm: een kleur op de Volgende-knop van het Standaardscherm telt mee voor elk getoond scherm (vier getoonde schermen zijn vier knoppen), plus de Bladeren-knoppen op getoonde schermen. |
 | `ButtonSettingsForHiddenScreen` | Info | veldnaam van het scherm, bijvoorbeeld `LicenseScreenButtons` | Een scherm met eigen instellingen staat uit in het project. De instellingen worden niet gebruikt. |
 | `NextButtonUnusable` | Warning | veldnaam van het scherm | Na de cascade is Volgende op een getoond scherm uitgeschakeld of verborgen. De gebruiker kan dan niet verder, want het gegenereerde script zet de knop nergens weer aan. |
 
-Bestaande meldingen die hier opnieuw gelden: `ValueContainsLineBreak` voor knoptekst, tooltip en lettertype met een regeleinde.
+Bestaande meldingen die hier opnieuw gelden: `ValueContainsLineBreak` voor knoptekst, tooltip en lettertype met een regeleinde. De veldnaam in die melding is `<eigenschap van het project>.<veld van de knop>`, bijvoorbeeld `WelcomeScreenButtons.NextButtonCaption`, en bij een vertaling `WelcomeScreenButtons.NextButtonCaptionByLanguage[dutch]`. Een regeleinde in het Standaardscherm wordt één keer gemeld, niet per scherm.
 
 ## 9. Tests
 
 - **Eenheidstests** voor `ButtonSettingsResolver`: eigen waarde wint, dan het Standaardscherm, dan niets; tekst met alleen spaties telt als leeg; `null` bij lettergrootte, vet, ingeschakeld en zichtbaar; vertalingen cascaderen niet.
 - **Generatortests**: `Enabled := True` wordt nooit geschreven (ook niet als het scherm True instelt en het Standaardscherm False); geen `[Code]` en geen `[CustomMessages]` zonder aanpassingen; volgorde van de regels zonder en met taalvoorvoegsel; lege universele tekst met vertaling; pagina-ID per scherm; reset van lettertype en tooltip alleen waar het nodig is; Bladeren-knoppen in `InitializeWizard`; scherm dat uit staat; elke nieuwe melding in beide richtingen; regeleinde in een tekst; aanhalingsteken in een lettertypenaam.
-- **Controle tegen de editor**: voor een reeks invoercombinaties geven `ButtonSettingsResolver` en de `Effective*`-eigenschappen van `WizardScreenEditorViewModel` dezelfde uitkomst.
+- **Samenhang**: elke berichtnaam die de code gebruikt is gedefinieerd en elke definitie wordt gebruikt, en elk bericht zonder taalvoorvoegsel staat vóór zijn vertalingen. Een onbekende naam in `CustomMessage` is een fatale fout tijdens het draaien van Setup die ISCC niet ziet. De eerder geplande vergelijking met de `Effective*`-eigenschappen van de editor vervalt, zie sectie 5.
 - **Goldenbestand** `Buttons.iss` met een meertalig project met alle acht schermen en beide Bladeren-knoppen. De bestaande goldenbestanden blijven ongewijzigd.
 - **ISCC-compilatietests** (in `IssCompilerTests`, zonder `/Q`, met controle op `Warning:`): één taal, drie talen met een gedeeltelijke vertaling (geen waarschuwing), speciale tekens in teksten (`'`, `"`, `%`, `%n`, `{`, `{{`, `;`, `=`, accenten, Duits en Frans), een lettertypenaam met `'`, alle acht schermen tegelijk, en een Standaardscherm dat meespeelt.
 - **Geen geautomatiseerde test van het gedrag in het installatievenster.** Een stille run (`/VERYSILENT`) roept `CurPageChanged` niet aan. De proefscripts uit sectie 2 laten zien dat dit wel met een zichtbare run kan, maar dat is te kwetsbaar voor de testsuite. Dat gedeelte test Herbert met de lijst in sectie 12.
@@ -183,7 +184,9 @@ Eén PR op een eigen branch, in deze volgorde, elke stap met tests voordat de vo
 3. De `[Code]`-uitvoer: `InitializeWizard`, `CurPageChanged`, reset, Bladeren-knoppen.
 4. Nieuwe meldingen en de teksten in NL, EN en DE; `ButtonSettingsNotGenerated` verwijderen.
 5. Goldenbestand en ISCC-tests.
-6. Documentatie bijwerken (dit document, architectuurdoc sectie 30 en 31, featurechecklist) en spiegelen naar Obsidian.
+6. Documentatie bijwerken (dit document, architectuurdoc sectie 30 en 32, featurechecklist) en spiegelen naar Obsidian.
+
+Alle zes stappen zijn gebouwd (2026-10-06).
 
 ## 11. Beslissingen en open punten
 
@@ -192,6 +195,8 @@ Eén PR op een eigen branch, in deze volgorde, elke stap met tests voordat de vo
 3. **Melding `NextButtonUnusable`. Besloten: ja, als Warning.** Het gegenereerde script heeft geen logica die Volgende later aanzet. Op de Licentie-pagina bepaalt Setup zelf wanneer Volgende aan gaat, dus daar volgt Setup zijn eigen regels.
 4. **Afgekapte tekst. Besloten: niet in versie 1, maar wel verplicht daarna.** Een knop in Setup groeit niet mee met een lange tekst of een grote letter. De knoppen in de IDE-voorvertoning mogen dat dan ook niet doen, anders krijgt de gebruiker een verkeerd beeld van het resultaat. Het gaat om een belangrijk onderdeel van de gebruikerservaring. In versie 1 van stap 4 verandert er niets en staat het als testpunt in sectie 12. Het eerstvolgende vervolg daarna: de voorvertoning geeft knoppen dezelfde vaste breedte als Setup en kapt tekst af, en daarna een knopbreedte per knop (zie sectie 13).
 5. **Tooltip op een uitgeschakelde knop. Nog te meten.** Dat controleert Herbert in de handmatige test (sectie 12). Blijkt het niet te werken, dan wordt het een opmerking in de documentatie en geen codewijziging.
+
+6. **`Visible` alleen als `False` geschreven. Besloten tijdens de bouw (2026-10-06), ter bevestiging door Herbert.** Net als bij `Enabled` (sectie 4) schrijft de generator `Visible` alleen als `False`. Setup bepaalt zelf of een knop zichtbaar is (Terug is op de welkomstpagina verborgen, Annuleren op de laatste pagina) en zet `Visible` bij elke paginawissel terug, dus een expliciet `True` voegt niets toe. Het kan Setup's eigen keuze zelfs doorbreken, bijvoorbeeld Terug zichtbaar maken op de eerste pagina als dat via het Standaardscherm binnenkomt. Gevolg: een scherm met `Visible = true` boven een Standaardscherm met `false` laat de knop zichtbaar (geen code, Setup's eigen toestand), en een `true` zonder `false` erboven verandert niets.
 
 ## 12. Handmatige testpunten na de bouw (voor Herbert)
 
@@ -205,6 +210,9 @@ Testproject voor de handmatige tests: `C:\DevOps\hnsoftwaredevelopment\Test\Herb
 - Een lange knoptekst of grote letter: wordt de tekst afgekapt?
 - Bladeren-knop op de doelmap en op de startmenumap: tekst, uitgeschakeld en verborgen.
 - Annuleren verborgen op een pagina, en terug op de volgende.
+- Alleen het Standaardscherm ingesteld (bijvoorbeeld Volgende-tekst): elk getoond scherm volgt die instelling.
+- Volgende uitgeschakeld of verborgen op een scherm: het resultaatvenster van "Genereer .iss" toont de waarschuwing, en de installer laat op dat scherm niet verder gaan.
+- Tekstkleur ingesteld: waarschuwing in het resultaatvenster en de installer toont de knop met de themakleur.
 - Het script compileert zonder waarschuwingen.
 
 ## 13. Backlog na stap 4
