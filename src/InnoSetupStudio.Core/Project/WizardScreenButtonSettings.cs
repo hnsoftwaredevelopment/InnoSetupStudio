@@ -84,12 +84,9 @@ public sealed class WizardScreenButtonSettings
     /// InnoLanguageCatalog.EnglishId/InstallerProject.SupportedLanguageIds). Een lege waarde (of
     /// een ontbrekende sleutel) betekent: deze taal gebruikt ook gewoon BackButtonCaption.
     ///
-    /// Alleen bedoeld voor overschrijvingen van de Terug-knop OP DIT SCHERM; er is bewust geen
-    /// cascade via het Standaardscherm zoals bij BackButtonCaption zelf — een vertaling die voor
-    /// alle schermen moet gelden, moet dus op elk scherm apart ingevuld worden. Dat is een bewuste
-    /// vereenvoudiging ten opzichte van de drielaagse Effective*-resolutie: zonder dit zou elke
-    /// taal ook zijn eigen Standaardscherm-laag nodig hebben, wat de omvang van deze eerste versie
-    /// flink vergroot. Kan later alsnog toegevoegd worden als Herbert daar behoefte aan heeft.
+    /// Cascade (docs/Ontwerp-Vertalingen-Standaardscherm.md): per taal wint eerst de vertaling van
+    /// dit scherm, dan de eigen (universele) tekst van dit scherm, dan de vertaling van het
+    /// Standaardscherm. ButtonSettingsResolver.ResolveTranslation bevat die regel.
     ///
     /// Backward-compatible: een ouder .issproj-bestand zonder dit veld deserialiseert gewoon naar
     /// een lege dictionary (System.Text.Json roept de parameterloze constructor aan en laat een

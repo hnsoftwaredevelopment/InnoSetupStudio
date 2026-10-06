@@ -369,6 +369,9 @@
   <data name="HintLanguageOverrides" xml:space="preserve">
     <value>Leeg = de knoptekst/tooltip hierboven wordt ook voor deze taal gebruikt.</value>
   </data>
+  <data name="HintLanguageOverridesFromDefaultScreen" xml:space="preserve">
+    <value>Leeg = de knoptekst/tooltip hierboven wordt ook voor deze taal gebruikt. Staat hierboven niets, dan geldt de vertaling van het Standaardscherm, anders de tekst van het Standaardscherm, anders de eigen tekst van Setup.</value>
+  </data>
   <data name="LabelEnglishSuffix" xml:space="preserve">
     <value>(Engels)</value>
   </data>

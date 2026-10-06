@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using InnoSetupStudio.Core.Generation;
 using InnoSetupStudio.Core.Project;
 
 namespace InnoSetupStudio.App.ViewModels;
@@ -34,6 +35,31 @@ public sealed partial class LanguageOverrideRow : ObservableObject
 
     [ObservableProperty]
     private string _tooltip;
+
+    /// <summary>Grijze voorinvulling van <see cref="Caption"/> zolang die leeg is: wat er voor deze
+    /// taal geldt als de rij leeg blijft. Zie ButtonPropertiesViewModel.UpdateLanguagePlaceholders.</summary>
+    [ObservableProperty]
+    private string _captionPlaceholder = string.Empty;
+
+    /// <summary>Zie <see cref="CaptionPlaceholder"/>, maar dan voor de tooltip.</summary>
+    [ObservableProperty]
+    private string _tooltipPlaceholder = string.Empty;
+}
+
+/// <summary>
+/// Wat een knop op een gewoon scherm van het Standaardscherm kan erven: de universele tekst en
+/// tooltip en hun vertalingen per taal. Alleen gebruikt voor de voorinvulling van de vertaalrijen in
+/// het venster Knopeigenschappen (zie docs/Ontwerp-Vertalingen-Standaardscherm.md). Voor het
+/// Standaardscherm zelf en voor de Bladeren-knoppen, die niets erven, is dat <see cref="None"/>.
+/// </summary>
+public sealed record InheritedTranslations(
+    string Caption,
+    IReadOnlyDictionary<string, string> CaptionByLanguage,
+    string Tooltip,
+    IReadOnlyDictionary<string, string> TooltipByLanguage)
+{
+    public static InheritedTranslations None { get; } = new(
+        string.Empty, new Dictionary<string, string>(), string.Empty, new Dictionary<string, string>());
 }
 
 /// <summary>
@@ -70,12 +96,12 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
     // Bewaard om in Save() tegen te mergen (CodeRabbit, PR #21): LanguageOverrides bevat alleen
     // rijen voor de talen die BIJ HET OPENEN van dit scherm geselecteerd waren. Zonder deze
     // originelen zou Save() de hele dictionary herbouwen uit louter die rijen, en zo een
-    // vertaling voor een taal die ná het invullen weer uitgevinkt is in de Talen-tab (of, op het
-    // Standaardscherm, elke vertaling - zie BuildForDefaultScreenButton) stilzwijgend wegschrijven
+    // vertaling voor een taal die ná het invullen weer uitgevinkt is in de Talen-tab stilzwijgend wegschrijven
     // bij de eerstvolgende Opslaan van DIT scherm, ook als de gebruiker die taal helemaal niet
     // aanraakte. Zie MergeLanguageOverrides hieronder.
     private readonly Dictionary<string, string> _originalCaptionByLanguage;
     private readonly Dictionary<string, string> _originalTooltipByLanguage;
+    private readonly InheritedTranslations _inherited;
 
     /// <summary>Gevuurd zodra Opslaan of Sluiten/Annuleren is gekozen; het venster (zie
     /// ButtonPropertiesWindow.xaml.cs) sluit zichzelf hierop met het meegegeven DialogResult,
@@ -95,7 +121,8 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
         Func<string> getTooltip, Action<string> setTooltip, string effectiveTooltip,
         IReadOnlyList<string> nonEnglishLanguageIds,
         Func<Dictionary<string, string>> getCaptionByLanguage, Action<Dictionary<string, string>> setCaptionByLanguage,
-        Func<Dictionary<string, string>> getTooltipByLanguage, Action<Dictionary<string, string>> setTooltipByLanguage)
+        Func<Dictionary<string, string>> getTooltipByLanguage, Action<Dictionary<string, string>> setTooltipByLanguage,
+        string languageOverridesHint, InheritedTranslations inherited)
     {
         DialogTitle = dialogTitle;
         HasCaption = hasCaption;
@@ -109,6 +136,8 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
         _setTooltip = setTooltip;
         _setCaptionByLanguage = setCaptionByLanguage;
         _setTooltipByLanguage = setTooltipByLanguage;
+        _inherited = inherited;
+        LanguageOverridesHint = languageOverridesHint;
 
         EffectiveCaption = effectiveCaption;
         EffectiveFontFamily = effectiveFontFamily;
@@ -142,6 +171,8 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
                 _originalTooltipByLanguage.GetValueOrDefault(l.Id, string.Empty)))
             .ToList();
 
+        UpdateLanguagePlaceholders();
+
         foreach (var row in LanguageOverrides)
         {
             row.PropertyChanged += (_, _) => MarkDirty();
@@ -169,6 +200,37 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
     /// gebruikelijke geval) laat deze sectie dus gewoon weg, in plaats van een lege lijst te
     /// tonen.</summary>
     public bool HasLanguageOverrides => LanguageOverrides.Count > 0;
+
+    /// <summary>Toelichting onder "Vertalingen per taal". Op een gewoon scherm noemt die ook het
+    /// Standaardscherm, op het Standaardscherm en bij de Bladeren-knoppen niet (die erven niets).</summary>
+    public string LanguageOverridesHint { get; }
+
+    // Wat er voor een taal geldt als de rij leeg blijft (docs/Ontwerp-Vertalingen-Standaardscherm.md,
+    // sectie 3): de vertaling van het Standaardscherm, tenzij dit scherm zelf een tekst heeft, en
+    // anders die tekst, of de universele tekst van het Standaardscherm. Dezelfde regel als de
+    // generator (ButtonSettingsResolver.ResolveTranslation). Leeg als er niets geldt: dan houdt
+    // Setup zijn eigen tekst, die de studio niet per taal kent.
+    private void UpdateLanguagePlaceholders()
+    {
+        foreach (var row in LanguageOverrides)
+        {
+            row.CaptionPlaceholder = PlaceholderFor(Caption, _inherited.Caption, _inherited.CaptionByLanguage, row.LanguageId);
+            row.TooltipPlaceholder = PlaceholderFor(Tooltip, _inherited.Tooltip, _inherited.TooltipByLanguage, row.LanguageId);
+        }
+    }
+
+    private static string PlaceholderFor(
+        string ownText, string inheritedText, IReadOnlyDictionary<string, string> inheritedByLanguage, string languageId)
+    {
+        var translation = ButtonSettingsResolver.ResolveTranslation(
+            ownText, null, inheritedByLanguage.GetValueOrDefault(languageId));
+        if (translation.Length > 0)
+        {
+            return translation;
+        }
+
+        return !string.IsNullOrWhiteSpace(ownText) ? ownText : inheritedText;
+    }
 
     /// <summary>Toelichting onder de Ingeschakeld/Zichtbaar-checkboxes, exact overgenomen van de
     /// aanroepende schermeditor-ViewModel (HintButtonTriStateText, of voor de Bladerknop
@@ -257,6 +319,7 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
         NormalizeWhitespaceOnly(value, v => Caption = v);
         OnPropertyChanged(nameof(PreviewCaption));
         OnPropertyChanged(nameof(PreviewButtonText));
+        UpdateLanguagePlaceholders();
         MarkDirty();
     }
 
@@ -287,6 +350,7 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
     {
         NormalizeWhitespaceOnly(value, v => Tooltip = v);
         OnPropertyChanged(nameof(PreviewTooltip));
+        UpdateLanguagePlaceholders();
         MarkDirty();
     }
 

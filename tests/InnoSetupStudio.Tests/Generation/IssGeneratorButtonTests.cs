@@ -270,19 +270,96 @@ public class IssGeneratorButtonTests
         Assert.DoesNotContain("BtnReadyNextCaption=Verder", Section(result, "CustomMessages"));
     }
 
+    // ---- vertalingen via het Standaardscherm (docs/Ontwerp-Vertalingen-Standaardscherm.md) ----------
+
     [Fact]
-    public void Translations_do_not_cascade_from_the_default_screen()
+    public void Default_screen_translations_reach_every_shown_screen_unless_the_screen_has_its_own_text()
     {
         var project = SampleProject();
-        project.SupportedLanguageIds = ["dutch"];
-        project.DefaultScreenButtons.NextButtonCaption = "Verder";
+        project.SupportedLanguageIds = ["dutch", "german"];
+        project.WizardScreens.ShowWelcomePage = true;
+        project.WizardScreens.ShowReadyPage = true;
+        project.WizardScreens.ShowLicensePage = true;
+        project.LicenseFilePath = @"C:\Docs\licentie.txt";
+        project.DefaultScreenButtons.NextButtonCaption = "Continue";
         project.DefaultScreenButtons.NextButtonCaptionByLanguage["dutch"] = "Doorgaan";
+        project.DefaultScreenButtons.NextButtonCaptionByLanguage["german"] = "Weiter";
         project.WelcomeScreenButtons.NextButtonCaptionByLanguage["dutch"] = "Begin";
+        project.LicenseScreenButtons.NextButtonCaption = "I agree";
 
         var messages = Section(Generate(project), "CustomMessages");
 
+        // Welkom: geen eigen tekst. Eigen Nederlandse vertaling, Duits van het Standaardscherm.
+        Assert.Contains("BtnWelcomeNextCaption=Continue", messages);
         Assert.Contains("dutch.BtnWelcomeNextCaption=Begin", messages);
-        Assert.DoesNotContain(messages, line => line.Contains("Doorgaan", StringComparison.Ordinal));
+        Assert.Contains("german.BtnWelcomeNextCaption=Weiter", messages);
+        // Ready: alles van het Standaardscherm.
+        Assert.Contains("BtnReadyNextCaption=Continue", messages);
+        Assert.Contains("dutch.BtnReadyNextCaption=Doorgaan", messages);
+        Assert.Contains("german.BtnReadyNextCaption=Weiter", messages);
+        // Licentie: eigen tekst, dus de vertalingen van het Standaardscherm gelden niet.
+        Assert.Contains("BtnLicenseNextCaption=I agree", messages);
+        Assert.DoesNotContain(messages, line => line.Contains("BtnLicenseNextCaption", StringComparison.Ordinal) && line.Contains('.'));
+    }
+
+    [Fact]
+    public void Own_translation_wins_over_the_default_screen_next_to_an_own_text()
+    {
+        var project = SampleProject();
+        project.SupportedLanguageIds = ["dutch", "german"];
+        project.DefaultScreenButtons.NextButtonCaption = "Continue";
+        project.DefaultScreenButtons.NextButtonCaptionByLanguage["dutch"] = "Doorgaan";
+        project.DefaultScreenButtons.NextButtonCaptionByLanguage["german"] = "Weiter";
+        project.WelcomeScreenButtons.NextButtonCaption = "Start";
+        project.WelcomeScreenButtons.NextButtonCaptionByLanguage["dutch"] = "Begin";
+
+        var messages = Section(Generate(project), "CustomMessages").Where(line => line.Contains("Welcome", StringComparison.Ordinal)).ToArray();
+
+        Assert.Equal(new[] { "BtnWelcomeNextCaption=Start", "dutch.BtnWelcomeNextCaption=Begin" }, messages);
+    }
+
+    [Fact]
+    public void Default_screen_translation_without_any_universal_text_gives_a_guarded_assignment()
+    {
+        var project = SampleProject();
+        project.SupportedLanguageIds = ["dutch"];
+        project.DefaultScreenButtons.NextButtonCaptionByLanguage["dutch"] = "Doorgaan";
+
+        var result = Generate(project);
+
+        var welcome = Section(result, "CustomMessages").Where(line => line.Contains("BtnWelcomeNextCaption", StringComparison.Ordinal)).ToArray();
+        Assert.Equal(new[] { "BtnWelcomeNextCaption=", "dutch.BtnWelcomeNextCaption=Doorgaan" }, welcome);
+        Assert.Contains("if CustomMessage('BtnWelcomeNextCaption') <> '' then", CodeText(result));
+    }
+
+    [Fact]
+    public void Default_screen_translations_are_ignored_for_languages_that_are_not_in_the_project_and_for_hidden_screens()
+    {
+        var project = SampleProject();
+        project.SupportedLanguageIds = ["dutch"];
+        project.WizardScreens.ShowWelcomePage = false;
+        project.DefaultScreenButtons.NextButtonCaptionByLanguage["dutch"] = "Doorgaan";
+        project.DefaultScreenButtons.NextButtonCaptionByLanguage["german"] = "Weiter";
+
+        var result = Generate(project);
+
+        Assert.DoesNotContain(Section(result, "CustomMessages"), line => line.Contains("Welcome", StringComparison.Ordinal));
+        Assert.DoesNotContain(Section(result, "CustomMessages"), line => line.StartsWith("german.", StringComparison.Ordinal));
+        Assert.DoesNotContain("wpWelcome", CodeText(result));
+    }
+
+    [Fact]
+    public void Line_break_in_a_default_screen_translation_is_reported_once_and_left_out()
+    {
+        var project = SampleProject();
+        project.SupportedLanguageIds = ["dutch"];
+        project.DefaultScreenButtons.NextButtonCaptionByLanguage["dutch"] = "Door\ngaan";
+
+        var result = Generate(project);
+
+        var issue = Assert.Single(IssuesOf(result, GenerationIssueCode.ValueContainsLineBreak));
+        Assert.Equal(new[] { "DefaultScreenButtons.NextButtonCaptionByLanguage[dutch]" }, issue.Arguments);
+        Assert.DoesNotContain(Section(result, "CustomMessages"), line => line.Contains("Door", StringComparison.Ordinal));
     }
 
     // ---- ingeschakeld en zichtbaar -----------------------------------------------------------------
