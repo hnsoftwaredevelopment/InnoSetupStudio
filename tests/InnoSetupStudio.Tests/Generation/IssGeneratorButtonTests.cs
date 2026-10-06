@@ -385,7 +385,7 @@ public class IssGeneratorButtonTests
     }
 
     [Fact]
-    public void Bold_is_reset_to_no_style_and_set_with_fsBold()
+    public void Bold_is_captured_reset_to_the_initial_style_and_set_with_fsBold()
     {
         var project = SampleProject();
         project.WelcomeScreenButtons.NextButtonFontBold = true;
@@ -394,10 +394,11 @@ public class IssGeneratorButtonTests
         var result = Generate(project);
         var code = CodeText(result);
 
-        Assert.Contains("  WizardForm.NextButton.Font.Style := [];\n  case CurPageID of", code);
+        Assert.Contains("  InitNextFontStyle: TFontStyles;", code);
+        Assert.Contains("  InitNextFontStyle := WizardForm.NextButton.Font.Style;", code);
+        Assert.Contains("  WizardForm.NextButton.Font.Style := InitNextFontStyle;\n  case CurPageID of", code);
         Assert.Contains("WizardForm.NextButton.Font.Style := [fsBold];", code);
         Assert.DoesNotContain("wpReady", code);
-        Assert.DoesNotContain("var\n", code);
     }
 
     [Fact]

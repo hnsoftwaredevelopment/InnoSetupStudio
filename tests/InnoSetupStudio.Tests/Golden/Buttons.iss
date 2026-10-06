@@ -88,12 +88,14 @@ Source: "C:\Bron\MijnApp\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdi
 var
   InitNextFontName: String;
   InitNextFontSize: Integer;
+  InitNextFontStyle: TFontStyles;
   InitCancelFontSize: Integer;
 
 procedure InitializeWizard;
 begin
   InitNextFontName := WizardForm.NextButton.Font.Name;
   InitNextFontSize := WizardForm.NextButton.Font.Size;
+  InitNextFontStyle := WizardForm.NextButton.Font.Style;
   InitCancelFontSize := WizardForm.CancelButton.Font.Size;
   WizardForm.DirBrowseButton.Caption := CustomMessage('BtnSelectDirBrowseCaption');
   WizardForm.DirBrowseButton.Font.Style := [fsBold];
@@ -109,7 +111,7 @@ begin
   { Setup zet Font en Hint niet terug bij een paginawissel: eerst naar de beginwaarde. }
   WizardForm.NextButton.Font.Name := InitNextFontName;
   WizardForm.NextButton.Font.Size := InitNextFontSize;
-  WizardForm.NextButton.Font.Style := [];
+  WizardForm.NextButton.Font.Style := InitNextFontStyle;
   WizardForm.NextButton.Hint := '';
   WizardForm.NextButton.ShowHint := False;
   WizardForm.CancelButton.Font.Size := InitCancelFontSize;

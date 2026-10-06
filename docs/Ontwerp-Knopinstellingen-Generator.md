@@ -24,6 +24,7 @@ Alles hieronder is met Inno Setup 7.1.0 gemeten, niet alleen uit de documentatie
 | Bericht dat niet voor alle talen is gedefinieerd | ISCC geeft een waarschuwing per ontbrekende taal. Setup gebruikt dan de tekst van de eerste taal waarin het bericht is gedefinieerd. |
 | Bericht zonder taalvoorvoegsel plus berichten met taalvoorvoegsel | Geen waarschuwing, mits de regel zonder voorvoegsel vóór de regels met voorvoegsel staat. Staat hij erna, dan overschrijft hij de vertaling voor alle talen. |
 | Lege waarde bij het bericht zonder voorvoegsel | Toegestaan. `CustomMessage` geeft in talen zonder vertaling een lege tekst terug. |
+| Beginwaarden van de knoppen | Gemeten bij de start van Setup, in `modern` en `classic`: `Hint` is leeg, `ShowHint` is `False` en `Font.Style` is leeg, voor Terug, Volgende, Annuleren en beide Bladeren-knoppen; `WizardForm.ShowHint` is ook `False`. De generator legt lettertype, grootte en stijl toch vast en zet ze terug. Voor `Hint` en `ShowHint` zet de reset de gemeten beginwaarden (leeg en `False`) direct neer. |
 | Tooltip op een uitgeschakelde knop | Nog niet gecontroleerd. Zie sectie 11. |
 
 ## 3. Welk scherm hoort bij welke pagina in Setup
@@ -144,7 +145,7 @@ Dit patroon (zonder de `Btn`-berichtnamen) is gecompileerd met ISCC 7.1.0 in een
 
 Afspraken voor de uitvoer, in de lijn van de bestaande generator:
 
-- Terugzetten gebeurt alleen voor de eigenschappen die ergens in het project worden gebruikt (in het voorbeeld alleen de lettergrootte van Volgende en de tooltip). Wordt vet gebruikt, dan zet de reset `Font.Style := []` en zet een pagina met vet `[fsBold]`. Een expliciet "niet vet" op een pagina vraagt dan geen extra code. Wordt een lettertype gebruikt, dan wordt `Font.Name` op dezelfde manier vastgelegd en teruggezet.
+- Terugzetten gebeurt alleen voor de eigenschappen die ergens in het project worden gebruikt (in het voorbeeld alleen de lettergrootte van Volgende en de tooltip). Wordt vet gebruikt, dan legt `InitializeWizard` de beginstijl vast in een `TFontStyles`-variabele, zet de reset die terug en zet een pagina met vet `[fsBold]` (CodeRabbit, PR #30). Een expliciet "niet vet" op een pagina vraagt dan geen extra code. Wordt een lettertype gebruikt, dan wordt `Font.Name` op dezelfde manier vastgelegd en teruggezet.
 - Deterministisch: vaste volgorde van schermen (zoals in sectie 3), knoppen (Terug, Volgende, Annuleren) en velden, en catalogusvolgorde voor talen.
 - Sectievolgorde in het script: `[Setup]`, `[Languages]`, `[CustomMessages]`, `[Tasks]`, `[Files]`, `[Icons]`, `[Code]`.
 - CRLF en UTF-8 met BOM, net als de rest.

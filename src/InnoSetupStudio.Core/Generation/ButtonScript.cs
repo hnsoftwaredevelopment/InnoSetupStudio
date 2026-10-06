@@ -231,7 +231,10 @@ internal sealed class ButtonScript
 
             if (use.Bold)
             {
-                resets.Add(target + ".Font.Style := [];");
+                var styleVariable = "Init" + button + "FontStyle";
+                variables.Add(styleVariable + ": TFontStyles;");
+                initialize.Add(styleVariable + " := " + target + ".Font.Style;");
+                resets.Add(target + ".Font.Style := " + styleVariable + ";");
             }
 
             if (use.Tooltip)

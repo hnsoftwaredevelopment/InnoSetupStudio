@@ -2901,9 +2901,10 @@ knoppen met de themakleur (gemeten, `Font.Color` heeft geen effect). De generato
    cataloguvolgorde voor de talen die in `[Languages]` staan. Is de universele tekst leeg en is er wel een
    vertaling, dan staat er een lege regel en controleert de code vóór het toewijzen of de tekst niet leeg
    is. Zo behouden talen zonder vertaling Setup's eigen tekst.
-4. `InitializeWizard` legt de beginwaarden van lettertype en -grootte vast en stelt de Bladeren-knoppen in.
-   `CurPageChanged` zet eerst lettertype, vet en tooltip terug naar de beginwaarde (Setup doet dat niet
-   zelf) en stelt daarna per pagina (`case CurPageID of`) de waarden in. Terugzetten gebeurt alleen voor de
+4. `InitializeWizard` legt de beginwaarden van lettertype, -grootte en -stijl vast en stelt de
+   Bladeren-knoppen in. `CurPageChanged` zet eerst lettertype, vet en tooltip terug naar de beginwaarde
+   (Setup doet dat niet zelf; voor de tooltip zijn dat de gemeten beginwaarden leeg en `False`) en stelt
+   daarna per pagina (`case CurPageID of`) de waarden in. Terugzetten gebeurt alleen voor de
    combinaties van knop en eigenschap die ergens in het project worden gebruikt.
 5. `Enabled` en `Visible` worden alleen als `False` geschreven. Setup zet beide bij elke paginawissel zelf
    terug, en zet Volgende op de Licentie-pagina uit tot de licentie is geaccepteerd; een expliciet `True`
