@@ -321,9 +321,6 @@
   <data name="LabelButtonVisible" xml:space="preserve">
     <value>Sichtbar</value>
   </data>
-  <data name="LabelButtonTextColor" xml:space="preserve">
-    <value>Textfarbe</value>
-  </data>
   <data name="LabelButtonFontFamily" xml:space="preserve">
     <value>Schriftart</value>
   </data>
@@ -332,9 +329,6 @@
   </data>
   <data name="LabelButtonFontBold" xml:space="preserve">
     <value>Fett</value>
-  </data>
-  <data name="ButtonPickColor" xml:space="preserve">
-    <value>Wählen…</value>
   </data>
   <data name="SectionBrowseButton" xml:space="preserve">
     <value>Durchsuchen-Schaltfläche</value>
@@ -380,9 +374,6 @@
   </data>
   <data name="ButtonOpenProperties" xml:space="preserve">
     <value>Schaltflächeneigenschaften bearbeiten</value>
-  </data>
-  <data name="ButtonSelectColor" xml:space="preserve">
-    <value>Textfarbe auswählen</value>
   </data>
   <data name="ButtonLanguages" xml:space="preserve">
     <value>Sprachen</value>
@@ -596,9 +587,6 @@
   </data>
   <data name="GenIssue_UnknownLanguage" xml:space="preserve">
     <value>Die Sprache '{0}' ist unbekannt und wurde übersprungen.</value>
-  </data>
-  <data name="GenIssue_ButtonTextColorNotSupported" xml:space="preserve">
-    <value>Bei {0} Schaltfläche(n) ist eine Textfarbe eingestellt. Setup zeichnet seine Schaltflächen in der Designfarbe, daher wird die Farbe nicht in das Skript geschrieben.</value>
   </data>
   <data name="GenIssue_ButtonSettingsForHiddenScreen" xml:space="preserve">
     <value>Die Schaltflächeneinstellungen von '{0}' werden nicht verwendet, weil dieser Bildschirm ausgeschaltet ist.</value>

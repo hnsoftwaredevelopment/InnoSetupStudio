@@ -321,9 +321,6 @@
   <data name="LabelButtonVisible" xml:space="preserve">
     <value>Zichtbaar</value>
   </data>
-  <data name="LabelButtonTextColor" xml:space="preserve">
-    <value>Tekstkleur</value>
-  </data>
   <data name="LabelButtonFontFamily" xml:space="preserve">
     <value>Lettertype</value>
   </data>
@@ -332,9 +329,6 @@
   </data>
   <data name="LabelButtonFontBold" xml:space="preserve">
     <value>Vet</value>
-  </data>
-  <data name="ButtonPickColor" xml:space="preserve">
-    <value>Kies…</value>
   </data>
   <data name="SectionBrowseButton" xml:space="preserve">
     <value>Bladeren-knop</value>
@@ -380,9 +374,6 @@
   </data>
   <data name="ButtonOpenProperties" xml:space="preserve">
     <value>Knop eigenschappen bewerken</value>
-  </data>
-  <data name="ButtonSelectColor" xml:space="preserve">
-    <value>Selecteer de tekstkleur</value>
   </data>
   <data name="ButtonLanguages" xml:space="preserve">
     <value>Talen</value>
@@ -596,9 +587,6 @@
   </data>
   <data name="GenIssue_UnknownLanguage" xml:space="preserve">
     <value>De taal '{0}' is onbekend en is overgeslagen.</value>
-  </data>
-  <data name="GenIssue_ButtonTextColorNotSupported" xml:space="preserve">
-    <value>Op {0} knop(pen) is een tekstkleur ingesteld. Setup tekent zijn knoppen met de themakleur, dus de kleur komt niet in het script.</value>
   </data>
   <data name="GenIssue_ButtonSettingsForHiddenScreen" xml:space="preserve">
     <value>De knopinstellingen van '{0}' worden niet gebruikt, omdat dat scherm uit staat.</value>

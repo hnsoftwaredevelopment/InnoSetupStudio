@@ -7,7 +7,7 @@ namespace InnoSetupStudio.App.Converters;
 /// <summary>
 /// Zet WizardScreenEditorViewModel's EffectiveXxxFontBold (bool?, zie WizardScreenButtonSettings)
 /// om naar een System.Windows.FontWeight voor de Terug-/Volgende-/Annuleren-knoppen in de
-/// voorvertoning. Zelfde UnsetValue-bij-null-conventie als HexColorToBrushConverter: null
+/// voorvertoning. UnsetValue-bij-null-conventie: null
 /// betekent "geen override", de knop valt dan terug op zijn eigen stijl-standaardgewicht.
 /// </summary>
 public sealed class NullableBoolToFontWeightConverter : IValueConverter

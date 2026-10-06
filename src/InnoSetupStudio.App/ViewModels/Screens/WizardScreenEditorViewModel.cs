@@ -75,7 +75,6 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
             BackButtonCaption = value.BackButtonCaption;
             BackButtonEnabled = value.BackButtonEnabled;
             BackButtonVisible = value.BackButtonVisible;
-            BackButtonTextColor = value.BackButtonTextColor;
             BackButtonFontFamily = value.BackButtonFontFamily;
             BackButtonFontSize = value.BackButtonFontSize;
             BackButtonFontBold = value.BackButtonFontBold;
@@ -83,7 +82,6 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
             NextButtonCaption = value.NextButtonCaption;
             NextButtonEnabled = value.NextButtonEnabled;
             NextButtonVisible = value.NextButtonVisible;
-            NextButtonTextColor = value.NextButtonTextColor;
             NextButtonFontFamily = value.NextButtonFontFamily;
             NextButtonFontSize = value.NextButtonFontSize;
             NextButtonFontBold = value.NextButtonFontBold;
@@ -91,7 +89,6 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
             CancelButtonCaption = value.CancelButtonCaption;
             CancelButtonEnabled = value.CancelButtonEnabled;
             CancelButtonVisible = value.CancelButtonVisible;
-            CancelButtonTextColor = value.CancelButtonTextColor;
             CancelButtonFontFamily = value.CancelButtonFontFamily;
             CancelButtonFontSize = value.CancelButtonFontSize;
             CancelButtonFontBold = value.CancelButtonFontBold;
@@ -155,9 +152,6 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
         OnPropertyChanged(nameof(IsBackButtonEnabled));
         OnPropertyChanged(nameof(IsNextButtonEnabled));
         OnPropertyChanged(nameof(IsCancelButtonEnabled));
-        OnPropertyChanged(nameof(EffectiveBackButtonTextColor));
-        OnPropertyChanged(nameof(EffectiveNextButtonTextColor));
-        OnPropertyChanged(nameof(EffectiveCancelButtonTextColor));
         OnPropertyChanged(nameof(EffectiveBackButtonFontFamily));
         OnPropertyChanged(nameof(EffectiveNextButtonFontFamily));
         OnPropertyChanged(nameof(EffectiveCancelButtonFontFamily));
@@ -207,12 +201,9 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
     [ObservableProperty]
     private bool? _cancelButtonVisible;
 
-    // Tekstkleur en lettertype (backlogitem 3, sectie 14 — herzien op 2026-09-04: achtergrondkleur
+    // Lettertype (backlogitem 3, sectie 14 — herzien op 2026-09-04: achtergrondkleur
     // en bitmap zijn bewust geschrapt, zie WizardScreenButtonSettings). Zelfde leeg-is-nog-niet-
     // aangepast-conventie als Caption hierboven.
-
-    [ObservableProperty]
-    private string _backButtonTextColor = string.Empty;
 
     [ObservableProperty]
     private string _backButtonFontFamily = string.Empty;
@@ -224,9 +215,6 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
     private bool? _backButtonFontBold;
 
     [ObservableProperty]
-    private string _nextButtonTextColor = string.Empty;
-
-    [ObservableProperty]
     private string _nextButtonFontFamily = string.Empty;
 
     [ObservableProperty]
@@ -234,9 +222,6 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
 
     [ObservableProperty]
     private bool? _nextButtonFontBold;
-
-    [ObservableProperty]
-    private string _cancelButtonTextColor = string.Empty;
 
     [ObservableProperty]
     private string _cancelButtonFontFamily = string.Empty;
@@ -249,7 +234,7 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
 
     // Tooltip (backlogitem 3, sectie 17, uit het Knop-eigenschappenscherm-mockup): TNewButton is
     // een gewone TControl-afstammeling, dus Hint/ShowHint werken net zo rechtstreeks als de
-    // Font-eigenschappen (zie WizardScreenButtonSettings). Tweelaags net als TextColor/FontFamily
+    // Font-eigenschappen (zie WizardScreenButtonSettings). Tweelaags net als FontFamily
     // hieronder: eigen tekst, anders het Standaardscherm — er bestaat geen "Inno-ingebouwde"
     // derde laag voor een tooltip.
 
@@ -322,24 +307,15 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
         : !string.IsNullOrWhiteSpace(fromDefaults) ? fromDefaults
         : builtIn;
 
-    // Zelfde drielaags-resolutie als EffectiveXxxCaption hierboven voor TextColor/FontFamily
-    // (ResolveCaption hergebruikt, "builtIn" is hier altijd een lege string: geen tekstkleur/geen
+    // Zelfde drielaags-resolutie als EffectiveXxxCaption hierboven voor FontFamily
+    // (ResolveCaption hergebruikt, "builtIn" is hier altijd een lege string: geen
     // lettertype instellen = Inno Setup's eigen knopuiterlijk). FontSize/FontBold zijn geen tekst,
     // dus die gebruiken gewone null-coalescing zonder ResolveCaption; er is geen derde laag omdat
     // Inno Setup's eigen standaard lettergrootte/vetgedrukt-status niet als waarde te bepalen valt
     // — null hier betekent gewoon "geen van beide lagen heeft iets ingesteld".
 
-    /// <summary>Wat de voorvertoning daadwerkelijk als tekstkleur op de Terug-knop toont, leeg =
-    /// geen override (Inno Setup's eigen kleur blijft gelden).</summary>
-    public string EffectiveBackButtonTextColor => ResolveCaption(BackButtonTextColor, Defaults.BackButtonTextColor, string.Empty);
-
-    /// <summary>Zie <see cref="EffectiveBackButtonTextColor"/>, maar dan voor de Volgende-knop.</summary>
-    public string EffectiveNextButtonTextColor => ResolveCaption(NextButtonTextColor, Defaults.NextButtonTextColor, string.Empty);
-
-    /// <summary>Zie <see cref="EffectiveBackButtonTextColor"/>, maar dan voor de Annuleren-knop.</summary>
-    public string EffectiveCancelButtonTextColor => ResolveCaption(CancelButtonTextColor, Defaults.CancelButtonTextColor, string.Empty);
-
-    /// <summary>Zie <see cref="EffectiveBackButtonTextColor"/>, maar dan voor het lettertype.</summary>
+    /// <summary>Wat de voorvertoning daadwerkelijk als lettertype op de Terug-knop toont, leeg = geen
+    /// override (Inno Setup's eigen lettertype blijft gelden).</summary>
     public string EffectiveBackButtonFontFamily => ResolveCaption(BackButtonFontFamily, Defaults.BackButtonFontFamily, string.Empty);
 
     /// <summary>Zie <see cref="EffectiveBackButtonFontFamily"/>, maar dan voor de Volgende-knop.</summary>
@@ -359,7 +335,7 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
     /// <summary>Zie <see cref="EffectiveBackButtonTooltip"/>, maar dan voor de Annuleren-knop.</summary>
     public string EffectiveCancelButtonTooltip => ResolveCaption(CancelButtonTooltip, Defaults.CancelButtonTooltip, string.Empty);
 
-    /// <summary>Zie <see cref="EffectiveBackButtonTextColor"/>, maar dan voor de lettergrootte.</summary>
+    /// <summary>Zie <see cref="EffectiveBackButtonFontFamily"/>, maar dan voor de lettergrootte.</summary>
     public int? EffectiveBackButtonFontSize => BackButtonFontSize ?? Defaults.BackButtonFontSize;
 
     /// <summary>Zie <see cref="EffectiveBackButtonFontSize"/>, maar dan voor de Volgende-knop.</summary>
@@ -368,7 +344,7 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
     /// <summary>Zie <see cref="EffectiveBackButtonFontSize"/>, maar dan voor de Annuleren-knop.</summary>
     public int? EffectiveCancelButtonFontSize => CancelButtonFontSize ?? Defaults.CancelButtonFontSize;
 
-    /// <summary>Zie <see cref="EffectiveBackButtonTextColor"/>, maar dan voor vetgedrukt.</summary>
+    /// <summary>Zie <see cref="EffectiveBackButtonFontFamily"/>, maar dan voor vetgedrukt.</summary>
     public bool? EffectiveBackButtonFontBold => BackButtonFontBold ?? Defaults.BackButtonFontBold;
 
     /// <summary>Zie <see cref="EffectiveBackButtonFontBold"/>, maar dan voor de Volgende-knop.</summary>
@@ -445,24 +421,6 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
 
     partial void OnCancelButtonEnabledChanged(bool? value) => OnPropertyChanged(nameof(IsCancelButtonEnabled));
 
-    partial void OnBackButtonTextColorChanged(string value)
-    {
-        NormalizeWhitespaceOnly(value, v => BackButtonTextColor = v);
-        OnPropertyChanged(nameof(EffectiveBackButtonTextColor));
-    }
-
-    partial void OnNextButtonTextColorChanged(string value)
-    {
-        NormalizeWhitespaceOnly(value, v => NextButtonTextColor = v);
-        OnPropertyChanged(nameof(EffectiveNextButtonTextColor));
-    }
-
-    partial void OnCancelButtonTextColorChanged(string value)
-    {
-        NormalizeWhitespaceOnly(value, v => CancelButtonTextColor = v);
-        OnPropertyChanged(nameof(EffectiveCancelButtonTextColor));
-    }
-
     partial void OnBackButtonFontFamilyChanged(string value)
     {
         NormalizeWhitespaceOnly(value, v => BackButtonFontFamily = v);
@@ -511,51 +469,6 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
 
     partial void OnCancelButtonFontBoldChanged(bool? value) => OnPropertyChanged(nameof(EffectiveCancelButtonFontBold));
 
-    // Kleurenkiezer voor TextColor (Herberts feedback 2026-09-04: zelf een hex-code moeten
-    // intikken is foutgevoelig — je moet toevallig weten dat je "#08BDA1" nodig hebt). Gebruikt
-    // WinForms' ColorDialog (System.Windows.Forms.UseWindowsForms staat aan in het .csproj) in
-    // plaats van een eigen WPF-kleurenkiezer te bouwen: WPF heeft er zelf geen, en dit is de
-    // standaard Windows-kleurenkiezer die de gebruiker al kent uit andere programma's. Protected
-    // static zodat SelectDestinationPageEditorViewModel (erft van deze klasse) hem ook kan
-    // gebruiken voor de Bladerknop-tekstkleur, zonder een eigen kopie.
-    protected static string PickColor(string currentHex)
-    {
-        using var dialog = new System.Windows.Forms.ColorDialog { FullOpen = true };
-
-        if (!string.IsNullOrWhiteSpace(currentHex))
-        {
-            try
-            {
-                if (ColorConverter.ConvertFromString(currentHex) is Color current)
-                {
-                    dialog.Color = System.Drawing.Color.FromArgb(current.A, current.R, current.G, current.B);
-                }
-            }
-            catch (FormatException)
-            {
-                // Huidige waarde is (nog) geen geldige hex-kleur: dialoog opent dan gewoon met
-                // zijn eigen standaardkleur, geen crash.
-            }
-        }
-
-        if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK)
-        {
-            return currentHex;
-        }
-
-        var picked = dialog.Color;
-        return $"#{picked.R:X2}{picked.G:X2}{picked.B:X2}";
-    }
-
-    [RelayCommand]
-    private void PickBackButtonTextColor() => BackButtonTextColor = PickColor(BackButtonTextColor);
-
-    [RelayCommand]
-    private void PickNextButtonTextColor() => NextButtonTextColor = PickColor(NextButtonTextColor);
-
-    [RelayCommand]
-    private void PickCancelButtonTextColor() => CancelButtonTextColor = PickColor(CancelButtonTextColor);
-
     /// <summary>Tegenhanger van de <see cref="ButtonSettings"/>-init-eigenschap: leest de velden
     /// terug in een nieuwe <see cref="WizardScreenButtonSettings"/>, gebruikt door
     /// WizardEditorViewModel.ApplyTo.</summary>
@@ -564,7 +477,6 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
         BackButtonCaption = BackButtonCaption,
         BackButtonEnabled = BackButtonEnabled,
         BackButtonVisible = BackButtonVisible,
-        BackButtonTextColor = BackButtonTextColor,
         BackButtonFontFamily = BackButtonFontFamily,
         BackButtonFontSize = BackButtonFontSize,
         BackButtonFontBold = BackButtonFontBold,
@@ -572,7 +484,6 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
         NextButtonCaption = NextButtonCaption,
         NextButtonEnabled = NextButtonEnabled,
         NextButtonVisible = NextButtonVisible,
-        NextButtonTextColor = NextButtonTextColor,
         NextButtonFontFamily = NextButtonFontFamily,
         NextButtonFontSize = NextButtonFontSize,
         NextButtonFontBold = NextButtonFontBold,
@@ -580,7 +491,6 @@ public abstract partial class WizardScreenEditorViewModel : ObservableObject
         CancelButtonCaption = CancelButtonCaption,
         CancelButtonEnabled = CancelButtonEnabled,
         CancelButtonVisible = CancelButtonVisible,
-        CancelButtonTextColor = CancelButtonTextColor,
         CancelButtonFontFamily = CancelButtonFontFamily,
         CancelButtonFontSize = CancelButtonFontSize,
         CancelButtonFontBold = CancelButtonFontBold,

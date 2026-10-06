@@ -1,4 +1,3 @@
-using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using InnoSetupStudio.Core.Project;
@@ -61,7 +60,6 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
     private readonly Action<string> _setCaption;
     private readonly Action<bool?> _setEnabled;
     private readonly Action<bool?> _setVisible;
-    private readonly Action<string> _setTextColor;
     private readonly Action<string> _setFontFamily;
     private readonly Action<int?> _setFontSize;
     private readonly Action<bool?> _setFontBold;
@@ -91,7 +89,6 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
         Func<string> getCaption, Action<string> setCaption, string effectiveCaption,
         Func<bool?> getEnabled, Action<bool?> setEnabled,
         Func<bool?> getVisible, Action<bool?> setVisible,
-        Func<string> getTextColor, Action<string> setTextColor, string effectiveTextColor,
         Func<string> getFontFamily, Action<string> setFontFamily, string effectiveFontFamily,
         Func<int?> getFontSize, Action<int?> setFontSize, int? effectiveFontSize,
         Func<bool?> getFontBold, Action<bool?> setFontBold, bool? effectiveFontBold,
@@ -106,7 +103,6 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
         _setCaption = setCaption;
         _setEnabled = setEnabled;
         _setVisible = setVisible;
-        _setTextColor = setTextColor;
         _setFontFamily = setFontFamily;
         _setFontSize = setFontSize;
         _setFontBold = setFontBold;
@@ -115,7 +111,6 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
         _setTooltipByLanguage = setTooltipByLanguage;
 
         EffectiveCaption = effectiveCaption;
-        EffectiveTextColor = effectiveTextColor;
         EffectiveFontFamily = effectiveFontFamily;
         EffectiveFontSize = effectiveFontSize;
         EffectiveFontBold = effectiveFontBold;
@@ -125,7 +120,6 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
         _caption = getCaption();
         _buttonEnabled = getEnabled();
         _buttonVisible = getVisible();
-        _textColor = getTextColor();
         _fontFamily = getFontFamily();
         _fontSize = getFontSize();
         _fontBold = getFontBold();
@@ -187,8 +181,6 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
 
     public string EffectiveCaption { get; }
 
-    public string EffectiveTextColor { get; }
-
     public string EffectiveFontFamily { get; }
 
     public int? EffectiveFontSize { get; }
@@ -214,10 +206,6 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
     /// het geval <see cref="HasCaption"/> ooit weer false wordt voor een toekomstige knop zonder
     /// Caption — zie <see cref="HasCaption"/>.</summary>
     public string PreviewButtonText => HasCaption ? PreviewCaption : "Browse...";
-
-    /// <summary>Zie <see cref="PreviewCaption"/>, maar dan voor de tekstkleur van de
-    /// voorvertoning.</summary>
-    public string PreviewTextColor => ResolveEffective(TextColor, EffectiveTextColor);
 
     /// <summary>Zie <see cref="PreviewCaption"/>, maar dan voor het lettertype van de
     /// voorvertoning.</summary>
@@ -245,9 +233,6 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
 
     [ObservableProperty]
     private bool? _buttonVisible;
-
-    [ObservableProperty]
-    private string _textColor = string.Empty;
 
     [ObservableProperty]
     private string _fontFamily = string.Empty;
@@ -278,13 +263,6 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
     partial void OnButtonEnabledChanged(bool? value) => MarkDirty();
 
     partial void OnButtonVisibleChanged(bool? value) => MarkDirty();
-
-    partial void OnTextColorChanged(string value)
-    {
-        NormalizeWhitespaceOnly(value, v => TextColor = v);
-        OnPropertyChanged(nameof(PreviewTextColor));
-        MarkDirty();
-    }
 
     partial void OnFontFamilyChanged(string value)
     {
@@ -320,50 +298,12 @@ public sealed partial class ButtonPropertiesViewModel : DirtyTrackingViewModel
         }
     }
 
-    // Zelfde kleurenkiezer als WizardScreenEditorViewModel.PickColor/DefaultScreenEditorViewModel
-    // (zie daar voor de reden: Herberts feedback 2026-09-04 over foutgevoelige hex-invoer); geen
-    // gedeelde basisklasse (deze klasse erft van DirtyTrackingViewModel, niet van
-    // WizardScreenEditorViewModel), dus hier een eigen, verder identieke kopie - zelfde patroon
-    // dat DefaultScreenEditorViewModel al toepast.
-    private static string PickColor(string currentHex)
-    {
-        using var dialog = new System.Windows.Forms.ColorDialog { FullOpen = true };
-
-        if (!string.IsNullOrWhiteSpace(currentHex))
-        {
-            try
-            {
-                if (ColorConverter.ConvertFromString(currentHex) is Color current)
-                {
-                    dialog.Color = System.Drawing.Color.FromArgb(current.A, current.R, current.G, current.B);
-                }
-            }
-            catch (FormatException)
-            {
-                // Huidige waarde is (nog) geen geldige hex-kleur: dialoog opent dan gewoon met
-                // zijn eigen standaardkleur, geen crash.
-            }
-        }
-
-        if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK)
-        {
-            return currentHex;
-        }
-
-        var picked = dialog.Color;
-        return $"#{picked.R:X2}{picked.G:X2}{picked.B:X2}";
-    }
-
-    [RelayCommand]
-    private void PickTextColor() => TextColor = PickColor(TextColor);
-
     [RelayCommand]
     private void Save()
     {
         _setCaption(Caption);
         _setEnabled(ButtonEnabled);
         _setVisible(ButtonVisible);
-        _setTextColor(TextColor);
         _setFontFamily(FontFamily);
         _setFontSize(FontSize);
         _setFontBold(FontBold);

@@ -73,7 +73,6 @@ internal sealed class ButtonScript
         var defaults = Sanitize("DefaultScreenButtons", _project.DefaultScreenButtons);
         var pages = new List<PagePlan>();
         var browseButtons = new List<ButtonPlan>();
-        var textColors = 0;
 
         foreach (var spec in Specs())
         {
@@ -93,7 +92,6 @@ internal sealed class ButtonScript
                     button,
                     "WizardForm." + button + "Button",
                     effective);
-                textColors += HasTextColor(effective) ? 1 : 0;
             }
 
             var next = buttons[WizardButton.Next].Settings;
@@ -108,16 +106,7 @@ internal sealed class ButtonScript
             {
                 var effective = ButtonSettingsResolver.Resolve(Sanitize(spec.BrowseFieldName, spec.Browse));
                 browseButtons.Add(Plan("Btn" + spec.Key + "Browse", null, spec.BrowseTarget, effective));
-                textColors += HasTextColor(effective) ? 1 : 0;
             }
-        }
-
-        if (textColors > 0)
-        {
-            _report(
-                GenerationSeverity.Warning,
-                GenerationIssueCode.ButtonTextColorNotSupported,
-                [textColors.ToString(CultureInfo.InvariantCulture)]);
         }
 
         return new ButtonScriptOutput(_messages, BuildCode(pages, browseButtons));
@@ -185,8 +174,6 @@ internal sealed class ButtonScript
         _messages.AddRange(texts);
         return new MessageRef(name, Guarded: universal.Length == 0);
     }
-
-    private static bool HasTextColor(EffectiveButtonSettings settings) => !string.IsNullOrWhiteSpace(settings.TextColor);
 
     private static List<string> BuildCode(List<PagePlan> pages, List<ButtonPlan> browseButtons)
     {
@@ -382,8 +369,7 @@ internal sealed class ButtonScript
     }
 
     // Een kopie van de instellingen waarin elke tekst is getrimd. Een tekst met een regeleinde zou
-    // het .iss beschadigen: die wordt gemeld en weggelaten. De tekstkleur wordt niet gegenereerd en
-    // blijft ongemoeid.
+    // het .iss beschadigen: die wordt gemeld en weggelaten.
     private T? Sanitize<T>(string objectName, T? source)
         where T : class, new()
     {
@@ -399,9 +385,6 @@ internal sealed class ButtonScript
             var value = property.GetValue(source);
             switch (value)
             {
-                case string text when property.Name.EndsWith("TextColor", StringComparison.Ordinal):
-                    property.SetValue(clone, text);
-                    break;
                 case string text:
                     property.SetValue(clone, CleanText(fieldName, text) ?? string.Empty);
                     break;

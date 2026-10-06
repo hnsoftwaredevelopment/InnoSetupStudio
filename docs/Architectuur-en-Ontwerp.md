@@ -2877,7 +2877,8 @@ Stap 4 van `docs/Ontwerp-Dunne-Generator.md`. Het ontwerp en de metingen staan i
 schrijft nu de knopinstellingen van de schermeditor weg: tekst, tooltip, lettertype, lettergrootte,
 vet, ingeschakeld en zichtbaar voor Terug, Volgende en Annuleren op de acht schermen met een
 knopmodel, en dezelfde velden voor de twee Bladeren-knoppen. Tekstkleur kan niet: Setup tekent zijn
-knoppen met de themakleur (gemeten, `Font.Color` heeft geen effect). De generator meldt dat.
+knoppen met de themakleur (gemeten, `Font.Color` heeft geen effect). De generator schrijft geen kleurcode;
+sectie 33 beschrijft hoe het kleurveld daarna uit de IDE is gehaald.
 
 **Nieuwe en gewijzigde bestanden in `InnoSetupStudio.Core/Generation/`.**
 
@@ -2910,24 +2911,24 @@ knoppen met de themakleur (gemeten, `Font.Color` heeft geen effect). De generato
    terug, en zet Volgende op de Licentie-pagina uit tot de licentie is geaccepteerd; een expliciet `True`
    zou dat kunnen omzeilen. De afweging voor `Visible` staat in sectie 11 punt 6 van het ontwerp.
 
-**Meldingen** (`GenerationIssueCode`, teksten in NL, EN en DE; nu 200 sleutels per taal).
+**Meldingen** (`GenerationIssueCode`, teksten in NL, EN en DE; na sectie 33 196 sleutels per taal).
 
 | Code | Ernst | Argumenten | Wanneer |
 |---|---|---|---|
-| `ButtonTextColorNotSupported` | Waarschuwing | aantal knoppen | Een tekstkleur is ingesteld op een knop op een getoond scherm (na de cascade). |
 | `ButtonSettingsForHiddenScreen` | Info | veldnaam | Een scherm of Bladeren-knop met eigen instellingen staat uit in het project. |
 | `NextButtonUnusable` | Waarschuwing | veldnaam van het scherm | Volgende is op een getoond scherm uitgeschakeld of verborgen. Het script zet hem nergens weer aan. |
 
-`ButtonSettingsNotGenerated` (stap 3) is verwijderd, met zijn teksten en testregel.
+`ButtonSettingsNotGenerated` (stap 3) is verwijderd, met zijn teksten en testregel. De waarschuwing
+`ButtonTextColorNotSupported` uit de eerste versie van deze stap is in sectie 33 weer verwijderd.
 
-**Tests.** Het totaal is nu 268 testgevallen.
+**Tests.** Het totaal was na deze stap 268 testgevallen (265 na sectie 33).
 
 | Bestand | Inhoud |
 |---|---|
 | `ButtonSettingsResolverTests.cs` | Eigen waarde wint, dan het Standaardscherm, dan niets; spaties tellen als leeg; `false` van het scherm wint van `true` van het Standaardscherm; vertalingen cascaderen niet; elke knop leest zijn eigen velden; de Bladeren-knop heeft geen cascade. |
 | `IssGeneratorButtonTests.cs` | Geen code zonder aanpassingen; volgorde van de secties; berichten met en zonder taalvoorvoegsel; lege universele tekst; letterlijke teksten met speciale tekens; regeleinden; Standaardscherm; `Enabled` en `Visible` alleen als `False`; vastleggen en terugzetten van lettertype, grootte, vet en tooltip; vaste volgorde van de regels per knop; Bladeren-knoppen; schermen die uit staan; de drie nieuwe meldingen; samenhang tussen gebruikte en gedefinieerde berichtnamen; het voorbeeld uit het ontwerp. |
 | `IssGeneratorGoldenTests.cs` | Nieuw goldenbestand `Golden/Buttons.iss` (acht schermen, drie talen, beide Bladeren-knoppen). De drie bestaande bestanden zijn ongewijzigd. |
-| `IssCompilerTests.cs` | ISCC compileert zonder waarschuwing: alle schermen en drie talen in modern en classic, één taal, alleen het Standaardscherm, dertien teksten met speciale tekens (`'`, `"`, `%`, `%n`, `{`, `{{`, `{app}`, `{cm:...}`, `;`, `=`, accenten), een lettertypenaam met `'`, tekstkleur (wel een melding, geen compilatiefout) en knoppen op schermen die uit staan. |
+| `IssCompilerTests.cs` | ISCC compileert zonder waarschuwing: alle schermen en drie talen in modern en classic, één taal, alleen het Standaardscherm, dertien teksten met speciale tekens (`'`, `"`, `%`, `%n`, `{`, `{{`, `{app}`, `{cm:...}`, `;`, `=`, accenten), een lettertypenaam met `'` en knoppen op schermen die uit staan. |
 
 **Handmatig gecontroleerd door mij, eenmalig.** Het goldenscript is met kleine aanpassingen
 (`PrivilegesRequired=lowest`, tijdelijke doelmap, bestaande dummybestanden) gecompileerd en de installer
@@ -2945,3 +2946,35 @@ in sectie 12 van het ontwerp.
 - Een Standaardscherm-instelling wordt per getoond scherm uitgeschreven. Dat maakt het script langer
   (acht keer dezelfde regel), maar houdt de logica eenvoudig en voorspelbaar. Het Standaardscherm geldt
   alleen voor de acht schermen met een knopmodel.
+
+## 33. Tekstkleur uit de IDE verwijderd (2026-10-06)
+
+Stap 4 (sectie 32) toonde met een meting dat Setup de tekstkleur van knoppen niet toepast: `Font.Color`
+compileert, maar de knop blijft in de themakleur, in `modern` en in `classic`. Een instelling die niet
+kan werken hoort niet in de IDE te staan. Herbert besloot daarom het veld te verwijderen en geen eigen
+knoppen te tekenen: de IDE gebruikt de standaardfunctionaliteit van Inno Setup. De oudere secties (14
+tot en met 24) beschrijven de tekstkleur nog zoals die toen is gebouwd; deze sectie is leidend.
+
+**Wat is verwijderd.**
+
+| Onderdeel | Verwijderd |
+|---|---|
+| Model (Core) | `BackButtonTextColor`, `NextButtonTextColor` en `CancelButtonTextColor` uit `WizardScreenButtonSettings`; `TextColor` uit `BrowseButtonSettings`. |
+| Generator (Core) | `TextColor` uit `EffectiveButtonSettings` en de resolver, de telling en de melding `ButtonTextColorNotSupported` in `ButtonScript`. De uitvoer van het script verandert niet: de goldenbestanden zijn ongewijzigd. |
+| Viewmodels (App) | De kleurvelden en `Effective*TextColor` in `WizardScreenEditorViewModel`, `DefaultScreenEditorViewModel`, `SelectDestinationPageEditorViewModel` en `SelectProgramGroupPageEditorViewModel`, de kleurenkiezer (`PickColor` en de `Pick...TextColor`-opdrachten) en in `ButtonPropertiesViewModel` de kleurvelden, de voorvertoningskleur en de kiezer. |
+| Schermen (App en Wizard) | De kleurrij in het venster Knopeigenschappen, alle `Foreground`-bindingen op de tekstkleur in de schermeditor en in de voorvertoningen van de doelmap- en startmenumappagina, en de twee `HexColorToBrushConverter`-klassen met hun registraties. |
+| Bronnen | Het icoon `SelectColor`, en in het csproj `UseWindowsForms` met de twee `Using Remove`-regels (die waren alleen nodig voor het WinForms-dialoogvenster van de kleurenkiezer). |
+| Teksten | `LabelButtonTextColor`, `GenIssue_ButtonTextColorNotSupported`, en `ButtonSelectColor` en `ButtonPickColor` (die waren daarna ongebruikt), in NL, EN en DE. Dat zijn 196 sleutels per taal. |
+| Tests | De drie tekstkleurtests in `IssGeneratorButtonTests`, de ISCC-test voor een tekstkleur, de regel in `GenerationIssueResourceTests.ArgumentCounts` en de kleurvelden in de overige tests. |
+
+**Voorvertoning.** De knoppen in de voorvertoning gebruiken nu de themakleur. De `TextBlock` in elke knop
+behoudt zijn `Foreground`-binding aan de knop zelf (`RelativeSource AncestorType=Button`), omdat de
+app-brede knopstijl de kleur anders niet doorgeeft aan inhoud van buiten de `ControlTemplate`.
+
+**Oude projectbestanden.** `JsonInstallerProjectService` gebruikt de standaard serializeropties en
+negeert daardoor onbekende eigenschappen. Een `.issproj` met `...TextColor`-velden opent dus zonder
+fout, de overige knopinstellingen blijven intact en bij opslaan verdwijnen de oude velden. De test
+`LoadAsyncIgnoresTextColorFieldsFromAnOlderProjectFile` bewijst dat voor het Standaardscherm, een gewoon scherm en beide Bladeren-knoppen.
+
+**Tests.** Het totaal is nu 265 testgevallen (268 min drie generatortests, min één ISCC-test, plus de
+test voor het oude projectbestand). Build zonder waarschuwingen.

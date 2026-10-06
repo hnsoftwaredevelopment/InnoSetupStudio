@@ -28,11 +28,8 @@
                          intern als TextBlock, en die TextBlock krijgt de globale stijl - een
                          Style-Setter wint het namelijk van een via overerving doorgegeven waarde,
                          ook al lijkt "gewoon Foreground zetten op de knop" dat te moeten
-                         overrulen. Was de oorzaak van Herberts melding (2026-09-28): de
-                         wizardknoppen-tekstkleur (EffectiveXxxButtonTextColor,
-                         WizardEditorWindow.xaml) kwam daardoor nooit in de voorvertoning terecht,
-                         terwijl het lettertype (waar geen vergelijkbare globale TextBlock-regel
-                         voor bestaat) wél altijd goed doorkwam. Geen BasedOn op de globale
+                         overrulen. Zonder deze override bereikt de Foreground van de knop de knoptekst dus niet.
+                         Geen BasedOn op de globale
                          TextBlock-stijl hieronder: die stijl staat verderop in ditzelfde bestand
                          en StaticResource kan niet vooruitwijzen binnen één ResourceDictionary; de
                          globale stijl zet toch alleen Foreground, dus er is niets anders om over

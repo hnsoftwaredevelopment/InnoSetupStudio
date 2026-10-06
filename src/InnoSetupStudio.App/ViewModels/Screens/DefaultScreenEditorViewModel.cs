@@ -47,16 +47,15 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
         _wizardImageFile = wizardImageFile;
         _wizardSmallImageFile = wizardSmallImageFile;
         NonEnglishLanguageIds = nonEnglishLanguageIds;
-        // NormalizeWhitespace op de negen tekstvelden (Caption/TextColor/FontFamily x 3): deze
+        // NormalizeWhitespace op de negen tekstvelden (Caption/FontFamily/Tooltip x 3): deze
         // backingvelden worden hier rechtstreeks gezet, dus zonder deze aanroep zou een ouder,
         // al opgeslagen project met een alleen-witruimte-waarde nooit door de OnXxxChanged-hooks
-        // verderop komen (CodeRabbit-opmerking op PR #16, 2026-09-28) - TextColor/FontFamily zijn
-        // hier extra belangrijk omdat de OVERIGE schermen deze via Defaults.BackButtonTextColor
-        // enz. als terugvalwaarde lezen (zie WizardScreenEditorViewModel.EffectiveBackButtonTextColor).
+        // verderop komen (CodeRabbit-opmerking op PR #16, 2026-09-28) - FontFamily is hier extra
+        // belangrijk omdat de OVERIGE schermen deze via Defaults.BackButtonFontFamily enz. als
+        // terugvalwaarde lezen (zie WizardScreenEditorViewModel.EffectiveBackButtonFontFamily).
         _backButtonCaption = NormalizeWhitespace(settings.BackButtonCaption);
         _backButtonEnabled = settings.BackButtonEnabled;
         _backButtonVisible = settings.BackButtonVisible;
-        _backButtonTextColor = NormalizeWhitespace(settings.BackButtonTextColor);
         _backButtonFontFamily = NormalizeWhitespace(settings.BackButtonFontFamily);
         _backButtonFontSize = settings.BackButtonFontSize;
         _backButtonFontBold = settings.BackButtonFontBold;
@@ -64,7 +63,6 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
         _nextButtonCaption = NormalizeWhitespace(settings.NextButtonCaption);
         _nextButtonEnabled = settings.NextButtonEnabled;
         _nextButtonVisible = settings.NextButtonVisible;
-        _nextButtonTextColor = NormalizeWhitespace(settings.NextButtonTextColor);
         _nextButtonFontFamily = NormalizeWhitespace(settings.NextButtonFontFamily);
         _nextButtonFontSize = settings.NextButtonFontSize;
         _nextButtonFontBold = settings.NextButtonFontBold;
@@ -72,7 +70,6 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
         _cancelButtonCaption = NormalizeWhitespace(settings.CancelButtonCaption);
         _cancelButtonEnabled = settings.CancelButtonEnabled;
         _cancelButtonVisible = settings.CancelButtonVisible;
-        _cancelButtonTextColor = NormalizeWhitespace(settings.CancelButtonTextColor);
         _cancelButtonFontFamily = NormalizeWhitespace(settings.CancelButtonFontFamily);
         _cancelButtonFontSize = settings.CancelButtonFontSize;
         _cancelButtonFontBold = settings.CancelButtonFontBold;
@@ -218,25 +215,6 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
 
     private static string ResolveCaption(string own, string builtIn) => !string.IsNullOrWhiteSpace(own) ? own : builtIn;
 
-    // EffectiveXxxButtonTextColor hieronder: anders dan -FontFamily/-FontSize verderop (nog
-    // steeds altijd leeg/null, puur voor WPF-bindingsfouten, zie die toelichting), geeft dit nu de
-    // EIGEN tekstkleur terug. CodeRabbit-opmerking op PR #17 (2026-09-28): sinds sectie 17/18's
-    // ButtonSettingsSectionTemplate ook de captiontekst zelf in de Foreground van
-    // EffectiveXxxButtonTextColor toont (niet meer alleen als Placeholder.Text-hint), zou
-    // string.Empty hier betekenen dat de knoptekst op het Standaardscherm nooit de ingestelde
-    // kleur laat zien. Dit scherm ÍS de bron van de standaardwaarde (geen aparte terugvallaag),
-    // dus "effectief" is hier simpelweg de eigen waarde.
-
-    /// <summary>De eigen tekstkleur van de Terug-knop op het Standaardscherm zelf (geen aparte
-    /// terugvallaag, zie hierboven).</summary>
-    public string EffectiveBackButtonTextColor => BackButtonTextColor;
-
-    /// <summary>Zie <see cref="EffectiveBackButtonTextColor"/>, maar dan voor de Volgende-knop.</summary>
-    public string EffectiveNextButtonTextColor => NextButtonTextColor;
-
-    /// <summary>Zie <see cref="EffectiveBackButtonTextColor"/>, maar dan voor de Annuleren-knop.</summary>
-    public string EffectiveCancelButtonTextColor => CancelButtonTextColor;
-
     /// <summary>Altijd leeg: geen terugvallettertype om te tonen op het Standaardscherm zelf.</summary>
     public string EffectiveBackButtonFontFamily => string.Empty;
 
@@ -307,12 +285,9 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
         OnPropertyChanged(nameof(EffectiveCancelButtonCaption));
     }
 
-    // Zelfde tekstkleur-/lettertypevelden als WizardScreenEditorViewModel (backlogitem 3, sectie
+    // Zelfde lettertypevelden als WizardScreenEditorViewModel (backlogitem 3, sectie
     // 14), ook hier zonder Effective*-resolutie: dit scherm ÍS de bron van de standaardwaarde.
     // Achtergrondkleur en bitmap zijn bewust niet opgenomen (zie WizardScreenButtonSettings).
-
-    [ObservableProperty]
-    private string _backButtonTextColor;
 
     [ObservableProperty]
     private string _backButtonFontFamily;
@@ -327,9 +302,6 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
     private string _backButtonTooltip;
 
     [ObservableProperty]
-    private string _nextButtonTextColor;
-
-    [ObservableProperty]
     private string _nextButtonFontFamily;
 
     [ObservableProperty]
@@ -340,9 +312,6 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
 
     [ObservableProperty]
     private string _nextButtonTooltip;
-
-    [ObservableProperty]
-    private string _cancelButtonTextColor;
 
     [ObservableProperty]
     private string _cancelButtonFontFamily;
@@ -378,30 +347,12 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
     [ObservableProperty]
     private Dictionary<string, string> _cancelButtonTooltipByLanguage;
 
-    // Zelfde alleen-witruimte-normalisatie als bij de captions hierboven, nu voor TextColor/
-    // FontFamily: zonder dit zou ReadButtonSettings() (en dus het opgeslagen project) een
-    // alleen-witruimte-waarde doorgeven als "wel een eigen kleur/lettertype ingesteld" aan de
-    // OVERIGE schermen, die dit scherm als terugvalwaarde lezen via Defaults.BackButtonTextColor
+    // Zelfde alleen-witruimte-normalisatie als bij de captions hierboven, nu voor FontFamily:
+    // zonder dit zou ReadButtonSettings() (en dus het opgeslagen project) een
+    // alleen-witruimte-waarde doorgeven als "wel een eigen lettertype ingesteld" aan de
+    // OVERIGE schermen, die dit scherm als terugvalwaarde lezen via Defaults.BackButtonFontFamily
     // enz. (CodeRabbit-opmerking op PR #16, 2026-09-28). Geen Effective*-heropbouw nodig zoals bij
-    // Caption: dit scherm heeft zelf geen zichtbare terugvaltekst voor deze twee velden.
-
-    partial void OnBackButtonTextColorChanged(string value)
-    {
-        NormalizeWhitespaceOnly(value, v => BackButtonTextColor = v);
-        OnPropertyChanged(nameof(EffectiveBackButtonTextColor));
-    }
-
-    partial void OnNextButtonTextColorChanged(string value)
-    {
-        NormalizeWhitespaceOnly(value, v => NextButtonTextColor = v);
-        OnPropertyChanged(nameof(EffectiveNextButtonTextColor));
-    }
-
-    partial void OnCancelButtonTextColorChanged(string value)
-    {
-        NormalizeWhitespaceOnly(value, v => CancelButtonTextColor = v);
-        OnPropertyChanged(nameof(EffectiveCancelButtonTextColor));
-    }
+    // Caption: dit scherm heeft zelf geen zichtbare terugvaltekst voor dit veld.
 
     partial void OnBackButtonFontFamilyChanged(string value) => NormalizeWhitespaceOnly(value, v => BackButtonFontFamily = v);
 
@@ -415,48 +366,6 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
 
     partial void OnCancelButtonTooltipChanged(string value) => NormalizeWhitespaceOnly(value, v => CancelButtonTooltip = v);
 
-    // Zelfde kleurenkiezer als WizardScreenEditorViewModel.PickColor (zie daar voor de reden:
-    // Herberts feedback 2026-09-04 over foutgevoelige hex-invoer); geen gedeelde basisklasse (zie
-    // de klassencommentaar), dus hier een eigen, verder identieke kopie.
-
-    private static string PickColor(string currentHex)
-    {
-        using var dialog = new System.Windows.Forms.ColorDialog { FullOpen = true };
-
-        if (!string.IsNullOrWhiteSpace(currentHex))
-        {
-            try
-            {
-                if (ColorConverter.ConvertFromString(currentHex) is Color current)
-                {
-                    dialog.Color = System.Drawing.Color.FromArgb(current.A, current.R, current.G, current.B);
-                }
-            }
-            catch (FormatException)
-            {
-                // Huidige waarde is (nog) geen geldige hex-kleur: dialoog opent dan gewoon met
-                // zijn eigen standaardkleur, geen crash.
-            }
-        }
-
-        if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK)
-        {
-            return currentHex;
-        }
-
-        var picked = dialog.Color;
-        return $"#{picked.R:X2}{picked.G:X2}{picked.B:X2}";
-    }
-
-    [RelayCommand]
-    private void PickBackButtonTextColor() => BackButtonTextColor = PickColor(BackButtonTextColor);
-
-    [RelayCommand]
-    private void PickNextButtonTextColor() => NextButtonTextColor = PickColor(NextButtonTextColor);
-
-    [RelayCommand]
-    private void PickCancelButtonTextColor() => CancelButtonTextColor = PickColor(CancelButtonTextColor);
-
     /// <summary>Tegenhanger van de constructor: leest de velden terug in een nieuwe
     /// <see cref="WizardScreenButtonSettings"/>, gebruikt door WizardEditorViewModel.ApplyTo.</summary>
     public WizardScreenButtonSettings ReadButtonSettings() => new()
@@ -464,7 +373,6 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
         BackButtonCaption = BackButtonCaption,
         BackButtonEnabled = BackButtonEnabled,
         BackButtonVisible = BackButtonVisible,
-        BackButtonTextColor = BackButtonTextColor,
         BackButtonFontFamily = BackButtonFontFamily,
         BackButtonFontSize = BackButtonFontSize,
         BackButtonFontBold = BackButtonFontBold,
@@ -472,7 +380,6 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
         NextButtonCaption = NextButtonCaption,
         NextButtonEnabled = NextButtonEnabled,
         NextButtonVisible = NextButtonVisible,
-        NextButtonTextColor = NextButtonTextColor,
         NextButtonFontFamily = NextButtonFontFamily,
         NextButtonFontSize = NextButtonFontSize,
         NextButtonFontBold = NextButtonFontBold,
@@ -480,7 +387,6 @@ public sealed partial class DefaultScreenEditorViewModel : ObservableObject
         CancelButtonCaption = CancelButtonCaption,
         CancelButtonEnabled = CancelButtonEnabled,
         CancelButtonVisible = CancelButtonVisible,
-        CancelButtonTextColor = CancelButtonTextColor,
         CancelButtonFontFamily = CancelButtonFontFamily,
         CancelButtonFontSize = CancelButtonFontSize,
         CancelButtonFontBold = CancelButtonFontBold,

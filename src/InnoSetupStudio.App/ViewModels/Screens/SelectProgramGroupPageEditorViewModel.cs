@@ -35,7 +35,6 @@ public sealed partial class SelectProgramGroupPageEditorViewModel : WizardScreen
         _browseButtonCaption = browseButtonSettings.Caption;
         _browseButtonEnabled = browseButtonSettings.Enabled;
         _browseButtonVisible = browseButtonSettings.Visible;
-        _browseButtonTextColor = browseButtonSettings.TextColor;
         _browseButtonFontFamily = browseButtonSettings.FontFamily;
         _browseButtonFontSize = browseButtonSettings.FontSize;
         _browseButtonFontBold = browseButtonSettings.FontBold;
@@ -103,9 +102,6 @@ public sealed partial class SelectProgramGroupPageEditorViewModel : WizardScreen
     private bool? _browseButtonVisible;
 
     [ObservableProperty]
-    private string _browseButtonTextColor;
-
-    [ObservableProperty]
     private string _browseButtonFontFamily;
 
     [ObservableProperty]
@@ -126,11 +122,6 @@ public sealed partial class SelectProgramGroupPageEditorViewModel : WizardScreen
 
     [ObservableProperty]
     private Dictionary<string, string> _browseButtonTooltipByLanguage;
-
-    // Hergebruikt de kleurenkiezer van de basisklasse (WizardScreenEditorViewModel.PickColor,
-    // protected static): geen eigen kopie nodig, deze klasse erft al van die basisklasse.
-    [RelayCommand]
-    private void PickBrowseButtonTextColor() => BrowseButtonTextColor = PickColor(BrowseButtonTextColor);
 
     /// <summary>Inno Setup's eigen standaardtekst voor de Bladeren-knop, gebruikt zolang
     /// <see cref="BrowseButtonCaption"/> leeg is. Zelfde "toon de studio's eigen UI-taal, niet
@@ -186,7 +177,6 @@ public sealed partial class SelectProgramGroupPageEditorViewModel : WizardScreen
         Caption = BrowseButtonCaption,
         Enabled = BrowseButtonEnabled,
         Visible = BrowseButtonVisible,
-        TextColor = BrowseButtonTextColor,
         FontFamily = BrowseButtonFontFamily,
         FontSize = BrowseButtonFontSize,
         FontBold = BrowseButtonFontBold,

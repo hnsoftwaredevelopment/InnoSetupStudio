@@ -6,8 +6,8 @@ using System.Windows.Media;
 namespace InnoSetupStudio.Wizard.Converters;
 
 /// <summary>
-/// Kopie van InnoSetupStudio.App.Converters.FontFamilyOrUnsetConverter. Zie
-/// HexColorToBrushConverter voor waarom dit een aparte kopie is in plaats van hergebruik.
+/// Kopie van InnoSetupStudio.App.Converters.FontFamilyOrUnsetConverter. Het Wizard-project
+/// mag niet naar het App-project verwijzen, vandaar een aparte kopie.
 /// </summary>
 public sealed class FontFamilyOrUnsetConverter : IValueConverter
 {

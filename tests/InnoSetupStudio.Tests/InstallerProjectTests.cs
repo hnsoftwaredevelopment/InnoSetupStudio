@@ -103,7 +103,6 @@ public class InstallerProjectTests
             Caption = "Kiezen...",
             Enabled = false,
             Visible = true,
-            TextColor = "#FF0000",
             FontFamily = "Segoe UI",
             FontSize = 10,
             FontBold = true,
@@ -262,7 +261,6 @@ public class InstallerProjectTests
             Assert.Equal(project.SelectProgramGroupBrowseButton.Caption, loaded.SelectProgramGroupBrowseButton.Caption);
             Assert.Equal(project.SelectProgramGroupBrowseButton.Enabled, loaded.SelectProgramGroupBrowseButton.Enabled);
             Assert.Equal(project.SelectProgramGroupBrowseButton.Visible, loaded.SelectProgramGroupBrowseButton.Visible);
-            Assert.Equal(project.SelectProgramGroupBrowseButton.TextColor, loaded.SelectProgramGroupBrowseButton.TextColor);
             Assert.Equal(project.SelectProgramGroupBrowseButton.FontFamily, loaded.SelectProgramGroupBrowseButton.FontFamily);
             Assert.Equal(project.SelectProgramGroupBrowseButton.FontSize, loaded.SelectProgramGroupBrowseButton.FontSize);
             Assert.Equal(project.SelectProgramGroupBrowseButton.FontBold, loaded.SelectProgramGroupBrowseButton.FontBold);
@@ -328,6 +326,48 @@ public class InstallerProjectTests
             Assert.Equal(string.Empty, loaded.OutputBaseFilename);
             Assert.Equal(InstallerArchitecture.X64, loaded.Architecture);
             Assert.Equal(InstallerWizardStyle.Modern, loaded.WizardStyle);
+        }
+        finally { if (File.Exists(path)) { File.Delete(path); } }
+    }
+
+    [Fact]
+    public async Task LoadAsyncIgnoresTextColorFieldsFromAnOlderProjectFile()
+    {
+        // Tekstkleur van knoppen is op 2026-10-06 uit het model gehaald (Inno Setup past Font.Color
+        // niet toe op knoppen, zie Ontwerp-Knopinstellingen-Generator.md). Een ouder .issproj kan
+        // die velden nog bevatten: het moet zonder fout openen en de overige knopinstellingen
+        // intact laten.
+        const string json = """
+            {
+              "AppName": "Ouder project met tekstkleur",
+              "DefaultScreenButtons": { "NextButtonCaption": "Verder", "NextButtonTextColor": "#FF0000", "BackButtonTextColor": "#00FF00", "CancelButtonTextColor": "#0000FF" },
+              "WelcomeScreenButtons": { "NextButtonTextColor": "#FF0000" },
+              "SelectDestinationBrowseButton": { "Caption": "Zoeken", "TextColor": "#00FF00" },
+              "SelectProgramGroupBrowseButton": { "Caption": "Kiezen", "TextColor": "#00FF00" }
+            }
+            """;
+        var service = new JsonInstallerProjectService();
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.issproj");
+        await File.WriteAllTextAsync(path, json);
+        try
+        {
+            var loaded = await service.LoadAsync(path);
+
+            Assert.Equal("Ouder project met tekstkleur", loaded.AppName);
+            Assert.Equal("Verder", loaded.DefaultScreenButtons.NextButtonCaption);
+            Assert.Equal("Zoeken", loaded.SelectDestinationBrowseButton.Caption);
+            Assert.Equal("Kiezen", loaded.SelectProgramGroupBrowseButton.Caption);
+
+            // Opnieuw opslaan schrijft de oude velden niet meer weg.
+            await service.SaveAsync(path, loaded);
+            Assert.DoesNotContain("TextColor", await File.ReadAllTextAsync(path));
+
+            // En na het opnieuw laden zijn de overige knopinstellingen nog intact.
+            var reloaded = await service.LoadAsync(path);
+            Assert.Equal("Ouder project met tekstkleur", reloaded.AppName);
+            Assert.Equal("Verder", reloaded.DefaultScreenButtons.NextButtonCaption);
+            Assert.Equal("Zoeken", reloaded.SelectDestinationBrowseButton.Caption);
+            Assert.Equal("Kiezen", reloaded.SelectProgramGroupBrowseButton.Caption);
         }
         finally { if (File.Exists(path)) { File.Delete(path); } }
     }

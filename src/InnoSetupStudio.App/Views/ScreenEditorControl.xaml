@@ -17,7 +17,6 @@
     <UserControl.Resources>
         <converters:IconKeyToGeometryConverter x:Key="IconKeyToGeometryConverter" />
         <converters:BooleanToOpacityConverter x:Key="BooleanToOpacityConverter" />
-        <converters:HexColorToBrushConverter x:Key="HexColorToBrushConverter" />
         <converters:FontFamilyOrUnsetConverter x:Key="FontFamilyOrUnsetConverter" />
         <converters:FontSizeOrUnsetConverter x:Key="FontSizeOrUnsetConverter" />
         <converters:NullableBoolToFontWeightConverter x:Key="NullableBoolToFontWeightConverter" />
@@ -67,7 +66,6 @@
                     <TextBox x:Name="BackButtonCaptionBox" Grid.Column="0" Width="220" HorizontalAlignment="Left"
                              MaxLength="30"
                              Text="{Binding BackButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"
-                             Foreground="{Binding EffectiveBackButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
                              controls:Placeholder.Text="{Binding EffectiveBackButtonCaption}" />
                     <Button Grid.Column="1" Tag="Back" Click="ButtonProperties_Click"
                             ToolTip="{loc:Loc ButtonOpenProperties}" AutomationProperties.Name="{loc:Loc ButtonOpenProperties}"
@@ -85,7 +83,6 @@
                     <TextBox x:Name="NextButtonCaptionBox" Grid.Column="0" Width="220" HorizontalAlignment="Left"
                              MaxLength="30"
                              Text="{Binding NextButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"
-                             Foreground="{Binding EffectiveNextButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
                              controls:Placeholder.Text="{Binding EffectiveNextButtonCaption}" />
                     <Button Grid.Column="1" Tag="Next" Click="ButtonProperties_Click"
                             ToolTip="{loc:Loc ButtonOpenProperties}" AutomationProperties.Name="{loc:Loc ButtonOpenProperties}"
@@ -103,7 +100,6 @@
                     <TextBox x:Name="CancelButtonCaptionBox" Grid.Column="0" Width="220" HorizontalAlignment="Left"
                              MaxLength="30"
                              Text="{Binding CancelButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"
-                             Foreground="{Binding EffectiveCancelButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
                              controls:Placeholder.Text="{Binding EffectiveCancelButtonCaption}" />
                     <Button Grid.Column="1" Tag="Cancel" Click="ButtonProperties_Click"
                             ToolTip="{loc:Loc ButtonOpenProperties}" AutomationProperties.Name="{loc:Loc ButtonOpenProperties}"
@@ -311,7 +307,6 @@
                     <TextBox x:Name="ProgramGroupBrowseButtonCaptionBox" Grid.Column="0" Width="220" HorizontalAlignment="Left"
                              MaxLength="30"
                              Text="{Binding BrowseButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"
-                             Foreground="{Binding BrowseButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
                              controls:Placeholder.Text="{Binding EffectiveBrowseButtonCaption}" />
                     <Button Grid.Column="1" Click="ProgramGroupBrowseButtonProperties_Click"
                             ToolTip="{loc:Loc ButtonOpenProperties}" AutomationProperties.Name="{loc:Loc ButtonOpenProperties}"
@@ -391,7 +386,6 @@
                     <TextBox x:Name="BrowseButtonCaptionBox" Grid.Column="0" Width="220" HorizontalAlignment="Left"
                              MaxLength="30"
                              Text="{Binding BrowseButtonCaption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"
-                             Foreground="{Binding BrowseButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
                              controls:Placeholder.Text="{Binding EffectiveBrowseButtonCaption}" />
                     <Button Grid.Column="1" Click="BrowseButtonProperties_Click"
                             ToolTip="{loc:Loc ButtonOpenProperties}" AutomationProperties.Name="{loc:Loc ButtonOpenProperties}"
@@ -553,7 +547,6 @@
                                     ToolTip="{Binding SelectedScreen.EffectiveCancelButtonTooltip}"
                                     IsEnabled="{Binding SelectedScreen.IsCancelButtonEnabled}"
                                     Visibility="{Binding SelectedScreen.IsCancelButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                    Foreground="{Binding SelectedScreen.EffectiveCancelButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
                                     FontFamily="{Binding SelectedScreen.EffectiveCancelButtonFontFamily, Converter={StaticResource FontFamilyOrUnsetConverter}}"
                                     FontSize="{Binding SelectedScreen.EffectiveCancelButtonFontSize, Converter={StaticResource FontSizeOrUnsetConverter}}"
                                     FontWeight="{Binding SelectedScreen.EffectiveCancelButtonFontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"
@@ -566,7 +559,6 @@
                                         ToolTip="{Binding SelectedScreen.EffectiveBackButtonTooltip}"
                                         Visibility="{Binding SelectedScreen.IsBackButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                         Opacity="{Binding SelectedScreen.IsBackButtonEnabled, Converter={StaticResource BooleanToOpacityConverter}}"
-                                        Foreground="{Binding SelectedScreen.EffectiveBackButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
                                         FontFamily="{Binding SelectedScreen.EffectiveBackButtonFontFamily, Converter={StaticResource FontFamilyOrUnsetConverter}}"
                                         FontSize="{Binding SelectedScreen.EffectiveBackButtonFontSize, Converter={StaticResource FontSizeOrUnsetConverter}}"
                                         FontWeight="{Binding SelectedScreen.EffectiveBackButtonFontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"
@@ -579,7 +571,6 @@
                                         ToolTip="{Binding SelectedScreen.EffectiveNextButtonTooltip}"
                                         Visibility="{Binding SelectedScreen.IsNextButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                         Opacity="{Binding SelectedScreen.IsNextButtonEnabled, Converter={StaticResource BooleanToOpacityConverter}}"
-                                        Foreground="{Binding SelectedScreen.EffectiveNextButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
                                         FontFamily="{Binding SelectedScreen.EffectiveNextButtonFontFamily, Converter={StaticResource FontFamilyOrUnsetConverter}}"
                                         FontSize="{Binding SelectedScreen.EffectiveNextButtonFontSize, Converter={StaticResource FontSizeOrUnsetConverter}}"
                                         FontWeight="{Binding SelectedScreen.EffectiveNextButtonFontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"

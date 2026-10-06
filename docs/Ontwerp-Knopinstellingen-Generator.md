@@ -69,7 +69,7 @@ De Bladeren-knoppen worden niet door Setup teruggezet en bestaan maar op één p
 
 De schermeditor bepaalt de waarde van een veld in drie lagen: eigen waarde op het scherm, anders de waarde van het Standaardscherm, anders het eigen gedrag van Setup (zie sectie 11.9 en 17 van de architectuurdoc). De generator doet exact hetzelfde, zodat de installer laat zien wat de voorvertoning toonde.
 
-- Tekst, tekstkleur, lettertype en tooltip: eigen waarde als die niet leeg is of alleen uit spaties bestaat, anders de waarde van het Standaardscherm, anders niets instellen.
+- Tekst, lettertype en tooltip: eigen waarde als die niet leeg is of alleen uit spaties bestaat, anders de waarde van het Standaardscherm, anders niets instellen.
 - Lettergrootte, vet, ingeschakeld en zichtbaar: eigen waarde als die is ingesteld (`null` is niet ingesteld), anders de waarde van het Standaardscherm, anders niets instellen.
 - Vertalingen per taal (`*ByLanguage`) cascaderen niet via het Standaardscherm. Dat is een eerdere, bewuste keuze (sectie 24 van de architectuurdoc) en verandert hier niet.
 - De Bladeren-knoppen hebben geen Standaardscherm en geen cascade.
@@ -154,14 +154,14 @@ Afspraken voor de uitvoer, in de lijn van de bestaande generator:
 
 ## 8. Wat niet kan, en welke meldingen er komen
 
-**Tekstkleur kan niet.** `Font.Color` compileert maar heeft geen effect op de knoppen van Setup: Windows tekent een gewone knop met de themakleur, in `modern` en in `classic` (gemeten, zie sectie 2). Dezelfde reden waarom de achtergrondkleur al eerder uit het model is geschrapt. Een kleur zou alleen werken met een zelf getekende knop, en dat is een veel grotere ingreep dan deze stap. Besloten: de generator schrijft geen kleurcode en meldt dat. De velden blijven voorlopig in het model en de editor staan (het kleurveld uit de IDE halen is een aparte, kleine PR, zie sectie 11).
+**Tekstkleur kan niet.** `Font.Color` compileert maar heeft geen effect op de knoppen van Setup: Windows tekent een gewone knop met de themakleur, in `modern` en in `classic` (gemeten, zie sectie 2). Dezelfde reden waarom de achtergrondkleur al eerder uit het model is geschrapt. Een kleur zou alleen werken met een zelf getekende knop, en dat is een veel grotere ingreep dan deze stap. Besloten: de generator schrijft geen kleurcode, en het kleurveld is in een aparte kleine PR uit het model, de editor en de voorvertoning gehaald (2026-10-06, zie sectie 33 van de architectuurdoc). Er is daarom geen melding voor een tekstkleur: er is niets meer in te stellen. Een oud projectbestand met kleurvelden opent nog gewoon, de velden worden genegeerd en bij het opslaan niet meer weggeschreven.
 
 Meldingen die in stap 4 veranderen. Elke nieuwe code krijgt teksten in NL, EN en DE en een regel in `GenerationIssueResourceTests.ArgumentCounts`, zoals bij stap 3.
 
 | Code | Ernst | Argumenten | Wanneer |
 |---|---|---|---|
 | `ButtonSettingsNotGenerated` | verwijderd | | Er is niets meer dat niet wordt vertaald. De code, de teksten en de testregel zijn verwijderd. |
-| `ButtonTextColorNotSupported` | Warning | aantal knoppen met een tekstkleur | Er is op minstens één knop een tekstkleur ingesteld (na de cascade). Geteld wordt per knop op elk getoond scherm: een kleur op de Volgende-knop van het Standaardscherm telt mee voor elk getoond scherm (vier getoonde schermen zijn vier knoppen), plus de Bladeren-knoppen op getoonde schermen. |
+| `ButtonTextColorNotSupported` | verwijderd | | Heeft kort bestaan in de eerste versie van stap 4. Met het kleurveld uit de IDE kan er geen tekstkleur meer zijn ingesteld, dus de melding, de teksten en de testregel zijn weer verwijderd. |
 | `ButtonSettingsForHiddenScreen` | Info | veldnaam van het scherm, bijvoorbeeld `LicenseScreenButtons` | Een scherm met eigen instellingen staat uit in het project. De instellingen worden niet gebruikt. |
 | `NextButtonUnusable` | Warning | veldnaam van het scherm | Na de cascade is Volgende op een getoond scherm uitgeschakeld of verborgen. De gebruiker kan dan niet verder, want het gegenereerde script zet de knop nergens weer aan. |
 
@@ -191,7 +191,7 @@ Alle zes stappen zijn gebouwd (2026-10-06).
 
 ## 11. Beslissingen en open punten
 
-1. **Tekstkleur. Besloten: niet genereren.** De generator schrijft geen kleurcode en meldt `ButtonTextColorNotSupported` als er een kleur is ingesteld. Daarna volgt in een aparte kleine PR het verwijderen van het kleurveld uit de editor, het model en de voorvertoning. Een instelling die niet kan werken hoort niet in de IDE te staan, ook niet met een toelichting. Verworpen: toch genereren (compileert, maar de knoppen blijven zwart, dus misleidend) en zelf getekende knoppen of een eigen knopbibliotheek in de gegenereerde installer. Herbert wil de standaardfunctionaliteit van Inno Setup gebruiken en niets nabouwen.
+1. **Tekstkleur. Besloten: niet genereren en uit de IDE verwijderen (gebouwd op 2026-10-06, aparte kleine PR).** De generator schrijft geen kleurcode. Het kleurveld is uit de editor, het model en de voorvertoning verwijderd. Een instelling die niet kan werken hoort niet in de IDE te staan, ook niet met een toelichting. Verworpen: toch genereren (compileert, maar de knoppen blijven zwart, dus misleidend) en zelf getekende knoppen of een eigen knopbibliotheek in de gegenereerde installer. Herbert wil de standaardfunctionaliteit van Inno Setup gebruiken en niets nabouwen.
 2. **Standaardscherm op pagina's zonder knopmodel. Besloten: alleen de acht schermen uit sectie 3.** Select Components, Select Tasks, Preparing, Installing en Finished houden Setup's eigen knoppen, omdat je in de editor alleen de acht schermen ziet. Gevolg: de pagina Select Tasks (die Setup toont zodra er een bureaubladpictogram-taak is) en Finished hebben dan Setup's eigen knoppen, ook als het Standaardscherm iets anders instelt. Verworpen: het Standaardscherm op alle pagina's toepassen met een `else`-tak, want dat toont een instelling die je in de editor niet kunt zien, en een verborgen of uitgeschakelde Volgende op Finished kan de gebruiker laten vastlopen.
 3. **Melding `NextButtonUnusable`. Besloten: ja, als Warning.** Het gegenereerde script heeft geen logica die Volgende later aanzet. Op de Licentie-pagina bepaalt Setup zelf wanneer Volgende aan gaat, dus daar volgt Setup zijn eigen regels.
 4. **Afgekapte tekst. Besloten: niet in versie 1, maar wel verplicht daarna.** Een knop in Setup groeit niet mee met een lange tekst of een grote letter. De knoppen in de IDE-voorvertoning mogen dat dan ook niet doen, anders krijgt de gebruiker een verkeerd beeld van het resultaat. Het gaat om een belangrijk onderdeel van de gebruikerservaring. In versie 1 van stap 4 verandert er niets en staat het als testpunt in sectie 12. Het eerstvolgende vervolg daarna: de voorvertoning geeft knoppen dezelfde vaste breedte als Setup en kapt tekst af, en daarna een knopbreedte per knop (zie sectie 13).
@@ -213,14 +213,13 @@ Testproject voor de handmatige tests: `C:\DevOps\hnsoftwaredevelopment\Test\Herb
 - Annuleren verborgen op een pagina, en terug op de volgende.
 - Alleen het Standaardscherm ingesteld (bijvoorbeeld Volgende-tekst): elk getoond scherm volgt die instelling.
 - Volgende uitgeschakeld of verborgen op een scherm: het resultaatvenster van "Genereer .iss" toont de waarschuwing, en de installer laat op dat scherm niet verder gaan.
-- Tekstkleur ingesteld: waarschuwing in het resultaatvenster en de installer toont de knop met de themakleur.
+- De editor en het venster Knopeigenschappen tonen geen tekstkleur meer, en een oud projectbestand met een tekstkleur opent zonder fout.
 - Het script compileert zonder waarschuwingen.
 
 ## 13. Backlog na stap 4
 
 - Eigen Pascal-code naast het gegenereerde blok (een projectveld voor extra `[Code]`).
 - Verplicht na versie 1: de voorvertoning in de IDE kapt knoppen af zoals Setup (vaste breedte, geen meegroeien), daarna een knopbreedte per knop.
-- Tekstkleur uit de editor, het model en de voorvertoning verwijderen (aparte kleine PR, besloten).
 - De editor laten rekenen met `ButtonSettingsResolver` in plaats van met eigen `Effective*`-logica.
 - Knopmodellen en editors voor Select Components, Select Tasks en Finished.
 - Het script splitsen over meerdere `.iss`-bestanden (Inno Setup kent `#include`) zodra het aantal opties het gegenereerde bestand onoverzichtelijk maakt. Nu nog niet aan de orde.

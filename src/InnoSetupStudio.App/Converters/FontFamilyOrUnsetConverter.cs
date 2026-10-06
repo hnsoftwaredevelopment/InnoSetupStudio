@@ -8,7 +8,7 @@ namespace InnoSetupStudio.App.Converters;
 /// <summary>
 /// Zet WizardScreenEditorViewModel's EffectiveXxxFontFamily (zie WizardScreenButtonSettings) om
 /// naar een System.Windows.Media.FontFamily voor de Terug-/Volgende-/Annuleren-knoppen in de
-/// voorvertoning. Zelfde UnsetValue-bij-leeg-conventie als HexColorToBrushConverter: een lege
+/// voorvertoning. UnsetValue-bij-leeg-conventie: een lege
 /// waarde betekent "geen override", niet "gebruik een lege/standaard lettertypenaam" — de knop
 /// valt dan terug op zijn eigen stijl-standaardlettertype.
 /// </summary>

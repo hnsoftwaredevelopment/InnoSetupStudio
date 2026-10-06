@@ -24,7 +24,7 @@ namespace InnoSetupStudio.Core.Project;
 /// maken, net zoals bij de drie gedeelde knoppen.
 ///
 /// Zelfde leeg/null-is-onveranderd-conventie als WizardScreenButtonSettings: een lege
-/// Caption/TextColor/FontFamily/Tooltip of null Enabled/Visible/FontSize/FontBold laat Inno
+/// Caption/FontFamily/Tooltip of null Enabled/Visible/FontSize/FontBold laat Inno
 /// Setup's eigen standaardgedrag/-uiterlijk voor deze knop intact.
 /// </summary>
 public sealed class BrowseButtonSettings
@@ -34,8 +34,6 @@ public sealed class BrowseButtonSettings
     public bool? Enabled { get; set; }
 
     public bool? Visible { get; set; }
-
-    public string TextColor { get; set; } = string.Empty;
 
     public string FontFamily { get; set; } = string.Empty;
 

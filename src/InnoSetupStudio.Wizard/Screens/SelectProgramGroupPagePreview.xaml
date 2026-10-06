@@ -6,7 +6,6 @@
              xmlns:converters="clr-namespace:InnoSetupStudio.Wizard.Converters"
              mc:Ignorable="d" d:DesignWidth="455" d:DesignHeight="290">
     <UserControl.Resources>
-        <converters:HexColorToBrushConverter x:Key="HexColorToBrushConverter" />
         <converters:FontFamilyOrUnsetConverter x:Key="FontFamilyOrUnsetConverter" />
         <converters:FontSizeOrUnsetConverter x:Key="FontSizeOrUnsetConverter" />
         <converters:NullableBoolToFontWeightConverter x:Key="NullableBoolToFontWeightConverter" />
@@ -77,7 +76,6 @@
             <Button Grid.Column="1"
                     IsEnabled="{Binding IsBrowseButtonEnabledInPreview}"
                     Visibility="{Binding IsBrowseButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
-                    Foreground="{Binding BrowseButtonTextColor, Converter={StaticResource HexColorToBrushConverter}}"
                     FontFamily="{Binding BrowseButtonFontFamily, Converter={StaticResource FontFamilyOrUnsetConverter}}"
                     FontSize="{Binding BrowseButtonFontSize, Converter={StaticResource FontSizeOrUnsetConverter}}"
                     FontWeight="{Binding BrowseButtonFontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"
