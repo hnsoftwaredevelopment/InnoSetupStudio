@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:converters="clr-namespace:InnoSetupStudio.Wizard.Converters"
+             xmlns:metrics="clr-namespace:InnoSetupStudio.Wizard"
              mc:Ignorable="d" d:DesignWidth="455" d:DesignHeight="290">
     <UserControl.Resources>
         <converters:FontFamilyOrUnsetConverter x:Key="FontFamilyOrUnsetConverter" />
@@ -77,11 +78,12 @@
                     IsEnabled="{Binding IsBrowseButtonEnabledInPreview}"
                     Visibility="{Binding IsBrowseButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                     FontFamily="{Binding BrowseButtonFontFamily, Converter={StaticResource FontFamilyOrUnsetConverter}}"
-                    FontSize="{Binding BrowseButtonFontSize, Converter={StaticResource FontSizeOrUnsetConverter}}"
+                    FontSize="{Binding BrowseButtonFontSize, Converter={StaticResource FontSizeOrUnsetConverter}, FallbackValue={x:Static metrics:SetupButtonMetrics.DefaultFontSize}}"
                     FontWeight="{Binding BrowseButtonFontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"
                     ToolTip="{Binding BrowseButtonTooltip}"
-                    IsHitTestVisible="False" Focusable="False" IsTabStop="False" Padding="10,3">
-                <TextBlock Text="{Binding EffectiveBrowseButtonCaption}"
+                    IsHitTestVisible="False" Focusable="False" IsTabStop="False" Padding="3,0"
+                    Width="{x:Static metrics:SetupButtonMetrics.Width}" Height="{x:Static metrics:SetupButtonMetrics.Height}">
+                <TextBlock Text="{Binding EffectiveBrowseButtonCaption}" HorizontalAlignment="Center"
                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
             </Button>
         </Grid>

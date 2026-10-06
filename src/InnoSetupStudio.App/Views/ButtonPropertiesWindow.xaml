@@ -5,6 +5,7 @@
         xmlns:converters="clr-namespace:InnoSetupStudio.App.Converters"
         xmlns:controls="clr-namespace:InnoSetupStudio.App.Controls"
         xmlns:services="clr-namespace:InnoSetupStudio.App.Services"
+        xmlns:metrics="clr-namespace:InnoSetupStudio.Wizard;assembly=InnoSetupStudio.Wizard"
         Title="{Binding DialogTitle}" Height="620" Width="420" Icon="/Resources/AppIcon.ico"
         MinHeight="560" MinWidth="380"
         WindowStartupLocation="CenterOwner" ResizeMode="CanResizeWithGrip" ShowInTaskbar="False"
@@ -158,9 +159,9 @@
                          Background/afgeronde-hoeken-binding: TNewButton is een door Windows
                          getekende standaardknop zonder die twee eigenschappen (Herberts
                          2026-09-04-beslissing, zie WizardScreenButtonSettings). -->
-                    <Button Padding="12,4" MinWidth="80"
+                    <Button Padding="3,0" Width="{x:Static metrics:SetupButtonMetrics.Width}" Height="{x:Static metrics:SetupButtonMetrics.Height}"
                             FontFamily="{Binding PreviewFontFamily, Converter={StaticResource FontFamilyOrUnsetConverter}}"
-                            FontSize="{Binding PreviewFontSize, Converter={StaticResource FontSizeOrUnsetConverter}}"
+                            FontSize="{Binding PreviewFontSize, Converter={StaticResource FontSizeOrUnsetConverter}, FallbackValue={x:Static metrics:SetupButtonMetrics.DefaultFontSize}}"
                             FontWeight="{Binding PreviewFontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"
                             ToolTip="{Binding PreviewTooltip}">
                         <!-- Foreground via RelativeSource AncestorType=Button: de globale Button-stijl
@@ -168,7 +169,7 @@
                              Content dat van buiten de ControlTemplate komt (zoals deze TextBlock).
                              Hetzelfde, al langer werkende patroon als de echte Terug/Volgende/
                              Annuleren-knoppen in de installervoorvertoning (ScreenEditorControl.xaml). -->
-                        <TextBlock Text="{Binding PreviewButtonText}"
+                        <TextBlock Text="{Binding PreviewButtonText}" HorizontalAlignment="Center"
                                    Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                     </Button>
                 </Border>

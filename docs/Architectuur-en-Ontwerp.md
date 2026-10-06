@@ -3015,3 +3015,28 @@ Alleen spaties tellen als leeg. De Bladeren-knoppen hebben geen cascade.
 Het goldenbestand `Buttons.iss` is niet veranderd. De editorlogica heeft geen eenheidstests, omdat het testproject alleen naar Core verwijst. De regel zelf is wel getest via `ResolveTranslation`.
 
 **Oude projectbestanden.** Het bestandsformaat verandert niet. Vertalingen die al op het Standaardscherm stonden (bijvoorbeeld door handmatig bewerken) tellen nu mee. Een taal die je uit het project haalt houdt haar vertalingen in het bestand.
+
+
+## 35. Vaste knopbreedte en indeling van de knoppen in de voorvertoning (2026-10-06)
+
+De knoppen in de voorvertoning groeiden mee met hun tekst. Setup doet dat niet. Het ontwerp met alle metingen staat in `Ontwerp-Vaste-Knopbreedte-Voorvertoning.md`; deze sectie is leidend voor de voorvertoning.
+
+**Gemeten in Setup 7.1.0 (96 DPI, Segoe UI 9).** Terug, Volgende, Annuleren en beide Bladeren-knoppen zijn 75 bij 23. Een lange tekst maakt de knop niet breder en wordt gecentreerd aan beide kanten afgekapt, zonder puntjes. `modern` en `classic` zijn gelijk. In `[Code]` is de breedte instelbaar (`Width := 200` werkt). Terug begint op 351, Volgende op 426 en Annuleren op 511 in een clientgebied van 596 bij 432: Terug en Volgende liggen tegen elkaar, Annuleren heeft 10 ruimte, met 10 marge rechts.
+
+**Wat is gewijzigd.**
+
+| Onderdeel | Wijziging |
+|---|---|
+| `SetupButtonMetrics` (nieuw, project Wizard) | Breedte 75, hoogte 23, ruimte 10, de kolombreedtes en de terugvalwaarde 12 voor de lettergrootte. App en Wizard gebruiken deze ene plek via `{x:Static}`. |
+| Installervoorvertoning (`ScreenEditorControl.xaml`) | De drie knoppen staan in een `Grid` met vier kolommen (75, 75, 10, 75), rechts uitgelijnd: Terug, Volgende, ruimte, Annuleren. Annuleren stond links en Terug en Volgende hadden 8 ruimte. Een verborgen knop laat zijn plaats leeg zoals in Setup. |
+| Bladeren-knoppen (`SelectDestinationPagePreview.xaml`, `SelectProgramGroupPagePreview.xaml`) | Vaste 75 bij 23 in plaats van een knop die meegroeit. |
+| Voorvertoning in `ButtonPropertiesWindow.xaml` | Idem. |
+| Alle zes de knoppen | `Padding="3,0"`, `HorizontalAlignment="Center"` op de tekst en 12 als terugvalwaarde voor de lettergrootte (de knopstijl van de app zet 13, Setup 9 punten is 12 eenheden). Een zelf ingestelde lettergrootte werkt als eerder. |
+
+Geen wijziging in Core, generator, projectbestand of resourcebestanden.
+
+**Controle.** Een testprogramma buiten de repo toonde dat WPF te lange tekst op dezelfde plek afknipt als Setup (Terug "te lang voor", Volgende "eel erg lange", Annuleren "JKLMNOPQR"). Build zonder waarschuwingen, 286 tests slagen (ongewijzigd, de wijziging is alleen XAML).
+
+**Bekende afwijking, niet gewijzigd.** De lettergrootte die je zelf instelt is in Inno Setup in punten, de voorvertoning gebruikt het getal als eenheden. Een ingestelde 9 geeft kleinere tekst dan in Setup (9 tegen 12 eenheden).
+
+**Volgende stap.** Een eigen breedte per knop: de vaste waarde uit `SetupButtonMetrics` wordt de terugval en de breedte komt uit het model, de editor, de generator (`Width` in `[Code]`) en de voorvertoning.
