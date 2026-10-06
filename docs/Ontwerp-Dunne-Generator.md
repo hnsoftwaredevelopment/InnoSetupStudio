@@ -69,7 +69,7 @@ Vaste waarden die de generator zonder UI schrijft: `Compression=lzma2`, `SolidCo
 - **Escaping.** Alleen waarden die Setup tijdens de installatie als constante-tekst leest, krijgen `{{` voor een `{`: `AppId`, `AppName`, `AppVersion`, `AppPublisher`, de URL's, `AppContact`, `DefaultUserInfo*`, `UninstallDisplayName`, `UninstallDisplayIcon` en de namen en doelen in `[Icons]`. Waarden die de compiler zelf leest (`Source` in `[Files]`, `OutputDir`, `OutputBaseFilename`, `LicenseFile`, `InfoBeforeFile`, `InfoAfterFile`, `SetupIconFile`, `WizardImageFile`, `WizardSmallImageFile`) worden niet geëscaped: daar is `{{` letterlijke tekst. Parameters tussen aanhalingstekens krijgen `""` voor een aanhalingsteken. Regeleinden in een waarde zijn een fout. `DefaultDirName` en `DefaultGroupName` zijn de uitzondering: dat zijn bewust constanten-teksten. Een naam die als map of snelkoppeling wordt aangemaakt (de terugvalwaarden van die twee, en de namen in `[Icons]`) wordt eerst bestandsnaam-veilig gemaakt: tekens die Windows niet toestaat (zoals een aanhalingsteken) worden `_`.
 - **Codering.** UTF-8 met BOM en CRLF-regeleinden, zodat niet-ASCII-tekens (bijvoorbeeld "é" in een bedrijfsnaam) goed compileren. Inno Setup 7.1.0 leest UTF-8 ook zonder BOM goed; de BOM blijft staan omdat Inno Setup 6 een bestand zonder BOM als ANSI leest.
 - **Padseparatoren.** Windows-paden blijven met backslash.
-- **Volgorde van secties.** `[Setup]`, `[Languages]`, `[Tasks]`, `[Files]`, `[Icons]`. Binnen `[Setup]` gegroepeerd (toepassing, mappen, pagina's, uiterlijk, uitvoer) met commentaarregels.
+- **Volgorde van secties.** `[Setup]`, `[Languages]`, `[Tasks]`, `[Files]`, `[Icons]`. Sinds stap 4 komen `[CustomMessages]` (na `[Languages]`) en `[Code]` (laatste) erbij, alleen als er knopinstellingen zijn. Binnen `[Setup]` gegroepeerd (toepassing, mappen, pagina's, uiterlijk, uitvoer) met commentaarregels.
 
 ## 6. Meldingen (GenerationIssue)
 
@@ -77,7 +77,7 @@ Drie niveaus. Een fout blokkeert het schrijven van het bestand, een waarschuwing
 
 - Fout: lege `AppName`, `AppVersion` of `AppId`; lege `SourceFilesPath`; regeleinde in een waarde.
 - Waarschuwing: pagina aangevinkt maar bestand ontbreekt (Licentie, Info Before, Info After); `SourceFilesPath` bestaat niet op schijf; `MainExecutable` ingevuld maar niet te vinden in `SourceFilesPath` of met een ongeldig pad; `CreateStartMenuIcon` aan zonder hoofdbestand; Select Components of Select Tasks aangevinkt terwijl daar nog niets voor gegenereerd wordt.
-- Info: knopinstellingen die in versie 1 niet worden vertaald (aantal schermen en knoppen dat instellingen heeft), per-taal-teksten die niet worden vertaald, Bladeren-knopinstellingen.
+- Info: de standaardnaam van de installer, en sinds stap 4 knopinstellingen op een scherm dat uit staat (`ButtonSettingsForHiddenScreen`). De meldingen voor knopinstellingen (tekstkleur, Volgende onbruikbaar) staan in `docs/Ontwerp-Knopinstellingen-Generator.md`.
 
 De meldingen krijgen een stabiele code (bijvoorbeeld `ISS001`) en een resx-sleutel, zodat ze in NL, EN en DE verschijnen zoals de rest van de UI.
 
@@ -97,13 +97,13 @@ Elke stap is een eigen feature-branch en PR, met handmatige test door Herbert v�
 1. **Projectvelden (gebouwd, zie sectie 29 van de architectuurdoc).** `MainExecutable`, `OutputBaseFilename` (leeg = `<AppName>-<AppVersion>-Setup`), architectuurkeuze 32-bit of 64-bit (standaard 64-bit voor nieuwe projecten, bestaande projecten zonder deze JSON-sleutel krijgen ook 64-bit) en `WizardStyle` (classic of modern, standaard modern). Daarbij de UI in Projectinstellingen, de drie resx-bestanden, JSON-compatibiliteit voor oudere `.issproj`-bestanden en tests. Het `ProjectSettingsViewModel` heeft hier geen pass-through nodig, want deze velden worden in Projectinstellingen zelf bewerkt.
 2. **Generator in Core.** `IssGenerator`, `IssWriter`, meldingen, de aanpassing aan `InnoLanguageCatalog`, golden-file tests en de ISCC-integratietest. Geen UI, dus geen handmatige UI-test; Herbert controleert wel een gegenereerd voorbeeld in Inno Setup's IDE.
 3. **Genereer .iss in de app.** Menu-item of knop, SaveFileDialog met standaardlocatie naast het `.issproj`, weergave van de meldingen. Daarna test Herbert de volledige keten: project maken, genereren, compileren in ISIDE of met ISCC, installer draaien.
-4. **Knopinstellingen via `[Code]`** (aparte PR na stap 3). Een `CurPageChanged`-procedure per scherm voor captions, enabled, visible, lettertype, lettergrootte, vet en tooltip (tekstkleur kan niet, zie `docs/Ontwerp-Knopinstellingen-Generator.md`), plus de twee Bladeren-knoppen en de per-taal-teksten via `[CustomMessages]`. Dat vergt een eigen ontwerp: toewijzing van scherm naar `wpWelcome`, `wpSelectDir` enzovoort, Pascal-escaping, en de Standaardscherm-cascade. Dat ontwerp staat in `docs/Ontwerp-Knopinstellingen-Generator.md`.
+4. **Knopinstellingen via `[Code]`** (gebouwd op 2026-10-06, zie sectie 32 van de architectuurdoc). Een `CurPageChanged`-procedure per scherm voor captions, enabled, visible, lettertype, lettergrootte, vet en tooltip (tekstkleur kan niet, zie `docs/Ontwerp-Knopinstellingen-Generator.md`), plus de twee Bladeren-knoppen en de per-taal-teksten via `[CustomMessages]`. Dat vergt een eigen ontwerp: toewijzing van scherm naar `wpWelcome`, `wpSelectDir` enzovoort, Pascal-escaping, en de Standaardscherm-cascade. Dat ontwerp staat in `docs/Ontwerp-Knopinstellingen-Generator.md`.
 
 ## 9. Beslissingen van Herbert (2026-10-05)
 
 | Onderwerp | Keuze |
 |---|---|
-| Knopinstellingen | Eigen vervolgstap (stap 4). Versie 1 meldt wat is overgeslagen. |
+| Knopinstellingen | Eigen vervolgstap (stap 4), gebouwd op 2026-10-06. |
 | Nieuwe projectvelden | Hoofduitvoerbestand, naam uitvoerbestand, 32-bit of 64-bit, WizardStyle als keuzelijst. |
 | Paden | Absolute paden zoals ze nu in het project staan. Projectrelatieve paden volgen als aparte stap (het openstaande CodeRabbit-punt over `ProjectAssetService.Import`, zie de architectuurdoc). |
 | Uitvoerlocatie | Naast het `.issproj`, via een SaveFileDialog die Herbert kan aanpassen. |
@@ -117,7 +117,7 @@ Aanvullende beslissingen (Herbert, 2026-10-05, na het lezen van dit ontwerp):
 
 ## 10. Buiten versie 1
 
-- `[Code]`, dus alle knopinstellingen en de Bladeren-knoppen (stap 4).
+- Eigen `[Code]` van de gebruiker naast het gegenereerde blok voor de knoppen (zie de backlog in `docs/Ontwerp-Knopinstellingen-Generator.md`).
 - Eén installer voor meerdere architecturen (x86 en x64 samen). Inno Setup kiest dan op basis van
   het besturingssysteem welke bestanden worden geïnstalleerd, de gebruiker kiest niet zelf. Dat
   werkt met `Check: Is64BitInstallMode` in `[Files]`, zoals in `64BitTwoArch.iss` in de map

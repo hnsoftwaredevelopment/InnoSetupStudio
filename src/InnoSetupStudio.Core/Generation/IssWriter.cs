@@ -51,6 +51,13 @@ internal sealed class IssWriter
         Line(string.Join("; ", parameters));
     }
 
+    /// <summary>Een regel in een sectie met vrije tekst, zoals [Code]. Een lege tekst geeft een lege regel.</summary>
+    public void CodeLine(string text)
+    {
+        FlushHeading();
+        Line(text);
+    }
+
     public static string Quoted(string key, string value) => key + ": \"" + IssEscape.Quoted(value) + "\"";
 
     public static string Raw(string key, string value) => key + ": " + value;

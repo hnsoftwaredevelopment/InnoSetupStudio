@@ -209,6 +209,111 @@ public sealed class IssCompilerTests : IDisposable
 
         await AssertCompilesAsync(project, expected);
     }
+    // ---- knopinstellingen (stap 4) ------------------------------------------------------------------
+
+    [IsccTheory]
+    [InlineData(InstallerWizardStyle.Modern)]
+    [InlineData(InstallerWizardStyle.Classic)]
+    public async Task Button_settings_for_all_screens_and_three_languages_compile_without_warnings(InstallerWizardStyle style)
+    {
+        var project = NewProject();
+        project.WizardStyle = style;
+        project.LicenseFilePath = LicenseFile;
+        project.InfoBeforeFilePath = InfoBeforeFile;
+        project.InfoAfterFilePath = InfoAfterFile;
+        GeneratorTestSupport.ApplyButtonSettings(project);
+
+        await AssertCompilesAsync(project, "MijnApp-1.0-Setup.exe");
+    }
+
+    [IsccFact]
+    public async Task Button_settings_in_a_single_language_project_compile()
+    {
+        var project = NewProject();
+        project.WelcomeScreenButtons.NextButtonCaption = "Start";
+        project.WelcomeScreenButtons.NextButtonTooltip = "Ga verder";
+        project.WelcomeScreenButtons.NextButtonFontFamily = "Consolas";
+        project.WelcomeScreenButtons.NextButtonFontSize = 11;
+        project.WelcomeScreenButtons.NextButtonFontBold = true;
+
+        await AssertCompilesAsync(project, "MijnApp-1.0-Setup.exe");
+    }
+
+    [IsccFact]
+    public async Task Only_the_default_screen_with_settings_compiles()
+    {
+        var project = NewProject();
+        project.DefaultScreenButtons.BackButtonCaption = "Terug";
+        project.DefaultScreenButtons.NextButtonCaption = "Verder";
+        project.DefaultScreenButtons.NextButtonFontSize = 10;
+        project.DefaultScreenButtons.NextButtonFontBold = true;
+        project.DefaultScreenButtons.CancelButtonVisible = false;
+
+        await AssertCompilesAsync(project, "MijnApp-1.0-Setup.exe");
+    }
+
+    [IsccTheory]
+    [InlineData("It's")]
+    [InlineData("\"Quoted\"")]
+    [InlineData("100%")]
+    [InlineData("%n %1 %%")]
+    [InlineData("{app}")]
+    [InlineData("{")]
+    [InlineData("{{")]
+    [InlineData("a{b}c")]
+    [InlineData("{cm:CreateDesktopIcon}")]
+    [InlineData("a;b")]
+    [InlineData("a=b")]
+    [InlineData("Größe é à ç")]
+    [InlineData("Install > now")]
+    public async Task Special_characters_in_button_texts_compile_without_warnings(string text)
+    {
+        var project = NewProject();
+        project.SupportedLanguageIds = ["english", "dutch", "german"];
+        var welcome = project.WelcomeScreenButtons;
+        welcome.NextButtonCaption = text;
+        welcome.NextButtonTooltip = text;
+        welcome.NextButtonCaptionByLanguage["dutch"] = text + " NL";
+        welcome.NextButtonTooltipByLanguage["german"] = text + " DE";
+        project.SelectDestinationBrowseButton.Caption = text;
+
+        await AssertCompilesAsync(project, "MijnApp-1.0-Setup.exe");
+    }
+
+    [IsccFact]
+    public async Task Font_name_with_an_apostrophe_compiles()
+    {
+        var project = NewProject();
+        project.WelcomeScreenButtons.NextButtonFontFamily = "Segoe 'UI'";
+
+        await AssertCompilesAsync(project, "MijnApp-1.0-Setup.exe");
+    }
+
+    [IsccFact]
+    public async Task Text_color_is_reported_but_the_script_still_compiles()
+    {
+        var project = NewProject();
+        project.DefaultScreenButtons.NextButtonTextColor = "#FF0000";
+        project.DefaultScreenButtons.NextButtonCaption = "Verder";
+
+        var result = new IssGenerator().Generate(project);
+        Assert.Contains(result.Issues, issue => issue.Code == GenerationIssueCode.ButtonTextColorNotSupported);
+
+        await AssertCompilesAsync(project, "MijnApp-1.0-Setup.exe");
+    }
+
+    [IsccFact]
+    public async Task Button_settings_on_screens_that_are_turned_off_compile()
+    {
+        var project = NewProject();
+        project.WizardScreens.ShowWelcomePage = false;
+        project.WizardScreens.ShowSelectDestinationPage = false;
+        project.WelcomeScreenButtons.NextButtonCaption = "Start";
+        project.SelectDestinationBrowseButton.Caption = "Zoeken";
+
+        await AssertCompilesAsync(project, "MijnApp-1.0-Setup.exe");
+    }
+
     [IsccFact]
     public async Task Unescaped_app_id_does_not_compile()
     {

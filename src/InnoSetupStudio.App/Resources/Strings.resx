@@ -597,8 +597,14 @@
   <data name="GenIssue_UnknownLanguage" xml:space="preserve">
     <value>De taal '{0}' is onbekend en is overgeslagen.</value>
   </data>
-  <data name="GenIssue_ButtonSettingsNotGenerated" xml:space="preserve">
-    <value>{0} groep(en) knopinstellingen worden nog niet in het script gezet.</value>
+  <data name="GenIssue_ButtonTextColorNotSupported" xml:space="preserve">
+    <value>Op {0} knop(pen) is een tekstkleur ingesteld. Setup tekent zijn knoppen met de themakleur, dus de kleur komt niet in het script.</value>
+  </data>
+  <data name="GenIssue_ButtonSettingsForHiddenScreen" xml:space="preserve">
+    <value>De knopinstellingen van '{0}' worden niet gebruikt, omdat dat scherm uit staat.</value>
+  </data>
+  <data name="GenIssue_NextButtonUnusable" xml:space="preserve">
+    <value>De knop Volgende is op het scherm '{0}' uitgeschakeld of verborgen. Het script zet hem niet weer aan, dus de gebruiker kan op dat scherm niet verder.</value>
   </data>
   <data name="GenIssue_OutputBaseFilenameDefaulted" xml:space="preserve">
     <value>Geen bestandsnaam voor de installer ingevuld. De installer krijgt de naam {0}.</value>

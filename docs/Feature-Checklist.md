@@ -252,9 +252,9 @@ Dit is een levend document: vink af (verander ⬜/🔶 naar ✅ met een verwijzi
 | UsedUserAreasWarning | Onderdrukt de waarschuwing over per-gebruiker-installatiegebieden. | Eigenschap | ⬜ |
 | ShowLanguageDialog | Toont een taalkeuzedialoog bij opstarten van Setup. | Eigenschap | ⬜ (zie ook categorie 18, Talen) |
 | LanguageDetectionMethod | Bepaalt hoe Setup automatisch een standaardtaal kiest. | Eigenschap | ⬜ (zie ook categorie 18, Talen) |
-| InitializeWizard | Pascal-event om de wizard/wizardpagina's bij opstarten aan te passen. | Pascal | ⬜ (fase 6) |
+| InitializeWizard | Pascal-event om de wizard/wizardpagina's bij opstarten aan te passen. | Pascal | 🔶 gegenereerd voor knopinstellingen (Bladeren-knoppen en beginwaarden); eigen code volgt in fase 6 |
 | ShouldSkipPage | Pascal-event om een wizardpagina over te slaan. | Pascal | ⬜ (fase 6) |
-| CurPageChanged | Pascal-event dat vuurt nadat een nieuwe pagina getoond is. | Pascal | ⬜ (fase 6) |
+| CurPageChanged | Pascal-event dat vuurt nadat een nieuwe pagina getoond is. | Pascal | 🔶 gegenereerd voor knopinstellingen per scherm; eigen code volgt in fase 6 |
 | NextButtonClick / BackButtonClick / CancelButtonClick | Pascal-events voor eigen navigatielogica. | Pascal | ⬜ (fase 6) |
 | InitializeSetup / DeinitializeSetup | Pascal-events bij start/einde van Setup. | Pascal | ⬜ (fase 6) |
 
@@ -266,12 +266,12 @@ Dit is een levend document: vink af (verander ⬜/🔶 naar ✅ met een verwijzi
 | ShowLanguageDialog | Toont een taalkeuzedialoog bij opstarten. | Eigenschap | ⬜ |
 | LanguageDetectionMethod | Hoe Setup automatisch een standaardtaal kiest. | Eigenschap | ⬜ |
 | UsePreviousLanguage | Onthoudt de eerder gekozen installertaal bij een update. | Eigenschap | ✅ `InstallerProject.UsePreviousLanguage` (tabblad Overige instellingen) |
-| (knopteksten per taal) | Vertaalde Terug/Volgende/Annuleren/Bladeren-teksten en tooltips. | Eigenschap | ✅ `WizardScreenButtonSettings`/`BrowseButtonSettings` `*ByLanguage`-dictionaries |
+| (knopteksten per taal) | Vertaalde Terug/Volgende/Annuleren/Bladeren-teksten en tooltips. | Eigenschap | ✅ `WizardScreenButtonSettings`/`BrowseButtonSettings` `*ByLanguage`-dictionaries, gegenereerd via `[CustomMessages]` (stap 4) |
 | [Languages] MessagesFile | Welk(e) .isl-bestand(en) de standaardteksten voor een taal levert. | Eigenschap | ⬜ |
 | [Languages] LicenseFile | Taalspecifiek licentiebestand, overschrijft het algemene LicenseFile. | Eigenschap | ⬜ |
 | [Languages] InfoBeforeFile / InfoAfterFile | Taalspecifieke Info Before/After-bestanden. | Eigenschap | ⬜ |
 | [LangOptions] | Lettertype, LCID, RightToLeft e.d. per taal. | Eigenschap | ⬜ (zie categorie 31) |
-| [Messages] / [CustomMessages] | Alle overige, losse interfaceteksten per taal. | Sectie-item | ⬜ (zie categorie 31) |
+| [Messages] / [CustomMessages] | Alle overige, losse interfaceteksten per taal. | Sectie-item | 🔶 `[CustomMessages]` gegenereerd voor knopteksten en tooltips; `[Messages]` en eigen berichten ⬜ (zie categorie 31) |
 
 ## 19. Tabblad: Overige instellingen
 
@@ -650,7 +650,7 @@ Gedeelde parameters (Tasks/Types/Components): `Languages`, `MinVersion`, `OnlyBe
 | LangOptions: WelcomeFontName / WelcomeFontSize | Lettertype en -grootte van de grote kop op Welcome/Finished. | ⬜ |
 | LangOptions: RightToLeft | Markeert de taal als rechts-naar-links. | ⬜ |
 | [Messages] | Overschrijft elke berichtsleutel uit Default.isl (100+ stuks), plus BeveledLabel en HelpTextNote. | ⬜ |
-| [CustomMessages] | Eigen Key=Tekst-paren, aan te roepen via `{cm:KeyName}`. | ⬜ (relevant zodra de generator knopteksten e.d. als CustomMessages gaat wegschrijven, zie sectie 24 Architectuur-en-Ontwerp.md) |
+| [CustomMessages] | Eigen Key=Tekst-paren, aan te roepen via `{cm:KeyName}`. | 🔶 de generator schrijft knopteksten en tooltips als `Btn...`-berichten met `CustomMessage()` (sectie 32 Architectuur-en-Ontwerp.md); eigen berichten van de gebruiker ⬜ |
 
 ## 32. Pascal Script: Setup Event Functions
 
@@ -659,7 +659,7 @@ Alle hieronder genoemde functies zijn optionele event-functies die in de `[Code]
 | Functie | Omschrijving | Mechanisme | Status |
 |---|---|---|---|
 | InitializeSetup | Aangeroepen direct bij start van Setup, vóór enig scherm. Kan `False` teruggeven om Setup af te breken. | Pascal | 🔶 (fase 6) |
-| InitializeWizard | Aangeroepen na InitializeSetup, voordat de wizard getoond wordt — meestal gebruikt om eigen pagina's aan de wizard toe te voegen. | Pascal | 🔶 (fase 6) |
+| InitializeWizard | Aangeroepen na InitializeSetup, voordat de wizard getoond wordt — meestal gebruikt om eigen pagina's aan de wizard toe te voegen. | Pascal | 🔶 gegenereerd voor knopinstellingen; eigen code (fase 6) |
 | DeinitializeSetup | Aangeroepen vlak voordat Setup.exe afsluit (ook na annuleren of een fout). | Pascal | 🔶 (fase 6) |
 | CurStepChanged | Aangeroepen bij elke overgang tussen installatiestappen (ssInstall, ssPostInstall, enzovoort) — de meest gebruikte hook voor eigen installatielogica. | Pascal | 🔶 (fase 6) |
 | CurInstallProgressChanged | Aangeroepen telkens als de voortgangsbalk op de Installing-pagina verandert. | Pascal | 🔶 (fase 6) |
@@ -667,7 +667,7 @@ Alle hieronder genoemde functies zijn optionele event-functies die in de `[Code]
 | BackButtonClick | Aangeroepen als de gebruiker op Terug klikt; kan `False` teruggeven om te blokkeren. | Pascal | 🔶 (fase 6) |
 | CancelButtonClick | Aangeroepen als de gebruiker op Annuleren klikt, vóór de bevestigingsdialoog. | Pascal | 🔶 (fase 6) |
 | ShouldSkipPage | Aangeroepen per pagina om te bepalen of die pagina overgeslagen moet worden. | Pascal | 🔶 (fase 6) |
-| CurPageChanged | Aangeroepen nadat de wizard naar een nieuwe pagina is gegaan. | Pascal | 🔶 (fase 6) |
+| CurPageChanged | Aangeroepen nadat de wizard naar een nieuwe pagina is gegaan. | Pascal | 🔶 gegenereerd voor knopinstellingen; eigen code (fase 6) |
 | CheckPassword | Aangeroepen om een door de gebruiker ingevoerd wachtwoord zelf te valideren (naast/in plaats van de ingebouwde Password-richtlijn-check). | Pascal | 🔶 (fase 6, zie ook categorie 24 Beveiliging) |
 | NeedRestart | Aangeroepen aan het eind van de installatie om te bepalen of een herstart nodig is. | Pascal | 🔶 (fase 6) |
 | UpdateReadyMemo | Aangeroepen om de samenvattingstekst op de Ready to Install-pagina zelf samen te stellen. | Pascal | 🔶 (fase 6) |
