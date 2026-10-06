@@ -94,7 +94,7 @@ Dit is een levend document: vink af (verander ⬜/🔶 naar ✅ met een verwijzi
 | Richtlijn | Omschrijving | Mechanisme | Status |
 |---|---|---|---|
 | DisableWelcomePage | Aan/uit-schakeling, zie tabblad Schermen hierboven. | Eigenschap | ✅ (zie categorie 2) |
-| (knoppen Terug/Volgende/Annuleren) | Tekst/tooltip/kleur/lettertype/zichtbaarheid per taal. | Eigenschap | ✅ `InstallerProject.WelcomeScreenButtons` |
+| (knoppen Terug/Volgende/Annuleren) | Tekst/tooltip/lettertype/zichtbaarheid per taal. | Eigenschap | ✅ `InstallerProject.WelcomeScreenButtons` |
 | WizardImageFile / WizardImageFileDynamicDark | Afbeelding links op de Welcome-pagina (en Finished-pagina). | Eigenschap | ✅ `InstallerProject.WizardImageFile` (alleen lichte variant, geen dark-mode-variant) |
 
 ## 4. Wizardscherm: License
@@ -102,7 +102,7 @@ Dit is een levend document: vink af (verander ⬜/🔶 naar ✅ met een verwijzi
 | Richtlijn | Omschrijving | Mechanisme | Status |
 |---|---|---|---|
 | LicenseFile | Pad naar het licentiebestand. | Eigenschap | ✅ `InstallerProject.LicenseFilePath` |
-| (knoppen Terug/Volgende/Annuleren) | Tekst/tooltip/kleur/lettertype/zichtbaarheid per taal. | Eigenschap | ✅ `InstallerProject.LicenseScreenButtons` |
+| (knoppen Terug/Volgende/Annuleren) | Tekst/tooltip/lettertype/zichtbaarheid per taal. | Eigenschap | ✅ `InstallerProject.LicenseScreenButtons` |
 
 ## 5. Wizardscherm: Password
 
@@ -116,7 +116,7 @@ Dit is een levend document: vink af (verander ⬜/🔶 naar ✅ met een verwijzi
 | Richtlijn | Omschrijving | Mechanisme | Status |
 |---|---|---|---|
 | InfoBeforeFile | Pad naar het leesmij-/infobestand vóór installatie. | Eigenschap | ✅ `InstallerProject.InfoBeforeFilePath` |
-| (knoppen Terug/Volgende/Annuleren) | Tekst/tooltip/kleur/lettertype/zichtbaarheid per taal. | Eigenschap | ✅ `InstallerProject.InfoBeforeScreenButtons` |
+| (knoppen Terug/Volgende/Annuleren) | Tekst/tooltip/lettertype/zichtbaarheid per taal. | Eigenschap | ✅ `InstallerProject.InfoBeforeScreenButtons` |
 
 ## 7. Wizardscherm: User Info
 
@@ -127,7 +127,7 @@ Dit is een levend document: vink af (verander ⬜/🔶 naar ✅ met een verwijzi
 | DefaultUserInfoOrg | Standaard vooringevulde organisatie. Ondersteunt constants. | Eigenschap | ✅ `InstallerProject.DefaultUserInfoOrg` |
 | DefaultUserInfoSerial | Standaard vooringevuld serienummer. Ondersteunt constants. | Eigenschap | ✅ `InstallerProject.DefaultUserInfoSerial` |
 | UsePreviousUserInfo | Onthoudt eerder ingevulde naam/organisatie/serienummer bij een update. | Eigenschap | ✅ `InstallerProject.UsePreviousUserInfo` |
-| (knoppen Terug/Volgende/Annuleren) | Tekst/tooltip/kleur/lettertype/zichtbaarheid per taal. | Eigenschap | ✅ `InstallerProject.UserInfoScreenButtons` |
+| (knoppen Terug/Volgende/Annuleren) | Tekst/tooltip/lettertype/zichtbaarheid per taal. | Eigenschap | ✅ `InstallerProject.UserInfoScreenButtons` |
 | CheckSerial | Pascal-event om een serienummer zelf te valideren. Zonder deze functie toont Inno Setup het serienummerveld niet. | Pascal | ⬜ (fase 6) |
 
 ## 8. Wizardscherm: Select Destination Location
@@ -136,8 +136,8 @@ Dit is een levend document: vink af (verander ⬜/🔶 naar ✅ met een verwijzi
 |---|---|---|---|
 | DefaultDirName | Standaard voorgestelde installatiemap. | Eigenschap | ✅ `InstallerProject.DefaultDirName` |
 | DisableDirPage | Hoe de pagina zich gedraagt: altijd tonen (`no`), nooit tonen (`yes`) of overslaan als dezelfde applicatie al geïnstalleerd is (`auto`, Inno Setup's eigen standaard). Het project staat standaard op altijd tonen. | Eigenschap | ✅ `InstallerProject.DirPageMode` (`DisablePageMode`; JSON-sleutel nog `AllowUserToChangeDir`) |
-| (Bladerknop) | Tekst/tooltip/kleur/lettertype per taal van de Bladeren-knop. | Eigenschap | ✅ `InstallerProject.SelectDestinationBrowseButton` |
-| (knoppen Terug/Volgende/Annuleren) | Tekst/tooltip/kleur/lettertype/zichtbaarheid per taal. | Eigenschap | ✅ `InstallerProject.SelectDestinationScreenButtons` |
+| (Bladerknop) | Tekst/tooltip/lettertype per taal van de Bladeren-knop. | Eigenschap | ✅ `InstallerProject.SelectDestinationBrowseButton` |
+| (knoppen Terug/Volgende/Annuleren) | Tekst/tooltip/lettertype/zichtbaarheid per taal. | Eigenschap | ✅ `InstallerProject.SelectDestinationScreenButtons` |
 | AllowNetworkDrive | Mag de map op een netwerkschijf staan. | Eigenschap | ⬜ |
 | AllowRootDirectory | Mag de map de root van een schijf zijn. | Eigenschap | ⬜ |
 | AllowUNCPath | Mag de gebruiker een UNC-pad invoeren. | Eigenschap | ⬜ |
@@ -167,8 +167,8 @@ Dit is een levend document: vink af (verander ⬜/🔶 naar ✅ met een verwijzi
 | DefaultGroupName | Standaard voorgestelde startmenugroep. | Eigenschap | ✅ `InstallerProject.DefaultGroupName` |
 | AppendDefaultGroupName | Stuurt Inno Setup's eigen Bladeren-dialoog: kiest de gebruiker daar een bestaande map, dan plakt Setup de laatste component van `DefaultGroupName` erachter. | Eigenschap | ✅ `InstallerProject.AppendDefaultGroupName` |
 | AlwaysUsePersonalGroup | Startmenugroep altijd voor de huidige gebruiker, nooit "Alle gebruikers". | Eigenschap | ✅ `InstallerProject.AlwaysUsePersonalGroup` |
-| (Bladerknop) | Tekst/tooltip/kleur/lettertype/zichtbaarheid per taal van de Bladeren-knop (`WizardForm.GroupBrowseButton`). | Eigenschap | ✅ `InstallerProject.SelectProgramGroupBrowseButton` |
-| (knoppen Terug/Volgende/Annuleren) | Tekst/tooltip/kleur/lettertype/zichtbaarheid per taal. | Eigenschap | ✅ `InstallerProject.SelectProgramGroupScreenButtons` |
+| (Bladerknop) | Tekst/tooltip/lettertype/zichtbaarheid per taal van de Bladeren-knop (`WizardForm.GroupBrowseButton`). | Eigenschap | ✅ `InstallerProject.SelectProgramGroupBrowseButton` |
+| (knoppen Terug/Volgende/Annuleren) | Tekst/tooltip/lettertype/zichtbaarheid per taal. | Eigenschap | ✅ `InstallerProject.SelectProgramGroupScreenButtons` |
 | AllowNoIcons | Voegt een aanvinkvakje toe waarmee de eindgebruiker tijdens installatie zelf van alle snelkoppelingen kan afzien (apart van de bouwtijd-keuze `CreateStartMenuIcon`, zie categorie 19). | Eigenschap | ⬜ |
 | UsePreviousGroup | Onthoudt de eerder gekozen startmenugroep bij een update. | Eigenschap | ✅ `InstallerProject.UsePreviousGroup` (tabblad Overige instellingen) |
 
@@ -188,7 +188,7 @@ Dit is een levend document: vink af (verander ⬜/🔶 naar ✅ met een verwijzi
 | DisableReadyMemo | Verbergt de samenvattingstekst op deze pagina. | Eigenschap | ✅ `InstallerProject.DisableReadyMemo` |
 | AlwaysShowDirOnReadyPage | Toont de gekozen installatiemap altijd in de samenvatting. | Eigenschap | ✅ `InstallerProject.AlwaysShowDirOnReadyPage` |
 | AlwaysShowGroupOnReadyPage | Toont de gekozen startmenugroep altijd in de samenvatting. | Eigenschap | ✅ `InstallerProject.AlwaysShowGroupOnReadyPage` |
-| (knoppen Terug/Volgende/Annuleren) | Tekst/tooltip/kleur/lettertype/zichtbaarheid per taal. | Eigenschap | ✅ `InstallerProject.ReadyScreenButtons` |
+| (knoppen Terug/Volgende/Annuleren) | Tekst/tooltip/lettertype/zichtbaarheid per taal. | Eigenschap | ✅ `InstallerProject.ReadyScreenButtons` |
 | UpdateReadyMemo | Pascal-event om de samenvattingstekst zelf samen te stellen. | Pascal | ⬜ (fase 6) |
 
 ## 13. Wizardscherm: Preparing to Install
@@ -213,7 +213,7 @@ Dit is een levend document: vink af (verander ⬜/🔶 naar ✅ met een verwijzi
 | Richtlijn | Omschrijving | Mechanisme | Status |
 |---|---|---|---|
 | InfoAfterFile | Pad naar het leesmij-/infobestand na installatie. | Eigenschap | ✅ `InstallerProject.InfoAfterFilePath` |
-| (knoppen Terug/Volgende/Annuleren) | Tekst/tooltip/kleur/lettertype/zichtbaarheid per taal. | Eigenschap | ✅ `InstallerProject.InfoAfterScreenButtons` |
+| (knoppen Terug/Volgende/Annuleren) | Tekst/tooltip/lettertype/zichtbaarheid per taal. | Eigenschap | ✅ `InstallerProject.InfoAfterScreenButtons` |
 
 ## 16. Wizardscherm: Setup Completed
 

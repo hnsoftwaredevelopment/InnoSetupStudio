@@ -632,47 +632,6 @@ public class IssGeneratorButtonTests
         Assert.False(HasIssue(Generate(project), GenerationIssueCode.NextButtonUnusable));
     }
 
-    // ---- tekstkleur ---------------------------------------------------------------------------------
-
-    [Fact]
-    public void Text_color_is_not_generated_and_gives_a_warning_with_the_number_of_buttons()
-    {
-        var project = SampleProject();
-        project.DefaultScreenButtons.NextButtonTextColor = "#FF0000";
-        project.SelectDestinationBrowseButton.TextColor = "#00FF00";
-
-        var result = Generate(project);
-
-        var issue = Assert.Single(IssuesOf(result, GenerationIssueCode.ButtonTextColorNotSupported));
-        Assert.Equal(GenerationSeverity.Warning, issue.Severity);
-        Assert.Equal(new[] { "5" }, issue.Arguments);
-        Assert.DoesNotContain("[Code]", result.Script);
-        Assert.DoesNotContain("Color", result.Script);
-    }
-
-    [Fact]
-    public void Text_color_next_to_other_settings_leaves_those_settings_intact()
-    {
-        var project = SampleProject();
-        project.WelcomeScreenButtons.NextButtonTextColor = "#FF0000";
-        project.WelcomeScreenButtons.NextButtonCaption = "Start";
-
-        var result = Generate(project);
-
-        Assert.Equal(new[] { "1" }, Assert.Single(IssuesOf(result, GenerationIssueCode.ButtonTextColorNotSupported)).Arguments);
-        Assert.Contains("BtnWelcomeNextCaption=Start", Section(result, "CustomMessages"));
-        Assert.DoesNotContain("Color", result.Script);
-    }
-
-    [Fact]
-    public void Text_color_on_a_hidden_screen_gives_no_color_warning()
-    {
-        var project = SampleProject();
-        project.LicenseScreenButtons.NextButtonTextColor = "#FF0000";
-
-        Assert.False(HasIssue(Generate(project), GenerationIssueCode.ButtonTextColorNotSupported));
-    }
-
     // ---- samenhang tussen [CustomMessages] en [Code] ---------------------------------------------------
 
     // Een onbekende berichtnaam in CustomMessage() is een fatale fout tijdens het draaien van Setup,

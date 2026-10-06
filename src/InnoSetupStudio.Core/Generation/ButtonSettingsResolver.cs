@@ -20,7 +20,6 @@ public sealed record EffectiveButtonSettings(
     string Caption,
     bool? Enabled,
     bool? Visible,
-    string TextColor,
     string FontFamily,
     int? FontSize,
     bool? FontBold,
@@ -53,7 +52,6 @@ public static class ButtonSettingsResolver
             Text(own.Caption, fallback.Caption),
             own.Enabled ?? fallback.Enabled,
             own.Visible ?? fallback.Visible,
-            Text(own.TextColor, fallback.TextColor),
             Text(own.FontFamily, fallback.FontFamily),
             own.FontSize ?? fallback.FontSize,
             own.FontBold ?? fallback.FontBold,
@@ -74,7 +72,6 @@ public static class ButtonSettingsResolver
             Text(browse.Caption, string.Empty),
             browse.Enabled,
             browse.Visible,
-            Text(browse.TextColor, string.Empty),
             Text(browse.FontFamily, string.Empty),
             browse.FontSize,
             browse.FontBold,
@@ -117,7 +114,6 @@ public static class ButtonSettingsResolver
         string? Caption,
         bool? Enabled,
         bool? Visible,
-        string? TextColor,
         string? FontFamily,
         int? FontSize,
         bool? FontBold,
@@ -135,15 +131,15 @@ public static class ButtonSettingsResolver
             return button switch
             {
                 WizardButton.Back => new Fields(
-                    s.BackButtonCaption, s.BackButtonEnabled, s.BackButtonVisible, s.BackButtonTextColor,
+                    s.BackButtonCaption, s.BackButtonEnabled, s.BackButtonVisible,
                     s.BackButtonFontFamily, s.BackButtonFontSize, s.BackButtonFontBold, s.BackButtonTooltip,
                     s.BackButtonCaptionByLanguage, s.BackButtonTooltipByLanguage),
                 WizardButton.Next => new Fields(
-                    s.NextButtonCaption, s.NextButtonEnabled, s.NextButtonVisible, s.NextButtonTextColor,
+                    s.NextButtonCaption, s.NextButtonEnabled, s.NextButtonVisible,
                     s.NextButtonFontFamily, s.NextButtonFontSize, s.NextButtonFontBold, s.NextButtonTooltip,
                     s.NextButtonCaptionByLanguage, s.NextButtonTooltipByLanguage),
                 WizardButton.Cancel => new Fields(
-                    s.CancelButtonCaption, s.CancelButtonEnabled, s.CancelButtonVisible, s.CancelButtonTextColor,
+                    s.CancelButtonCaption, s.CancelButtonEnabled, s.CancelButtonVisible,
                     s.CancelButtonFontFamily, s.CancelButtonFontSize, s.CancelButtonFontBold, s.CancelButtonTooltip,
                     s.CancelButtonCaptionByLanguage, s.CancelButtonTooltipByLanguage),
                 _ => throw new ArgumentOutOfRangeException(nameof(button), button, null),

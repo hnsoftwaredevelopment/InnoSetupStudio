@@ -26,7 +26,6 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
         _browseButtonCaption = browseButtonSettings.Caption;
         _browseButtonEnabled = browseButtonSettings.Enabled;
         _browseButtonVisible = browseButtonSettings.Visible;
-        _browseButtonTextColor = browseButtonSettings.TextColor;
         _browseButtonFontFamily = browseButtonSettings.FontFamily;
         _browseButtonFontSize = browseButtonSettings.FontSize;
         _browseButtonFontBold = browseButtonSettings.FontBold;
@@ -111,9 +110,6 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
     private bool? _browseButtonVisible;
 
     [ObservableProperty]
-    private string _browseButtonTextColor;
-
-    [ObservableProperty]
     private string _browseButtonFontFamily;
 
     [ObservableProperty]
@@ -134,12 +130,6 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
 
     [ObservableProperty]
     private Dictionary<string, string> _browseButtonTooltipByLanguage;
-
-    // Hergebruikt de kleurenkiezer van de basisklasse (WizardScreenEditorViewModel.PickColor,
-    // protected static): geen eigen kopie nodig, deze klasse erft al van die basisklasse (anders
-    // dan DefaultScreenEditorViewModel, die geen gedeelde basisklasse heeft).
-    [RelayCommand]
-    private void PickBrowseButtonTextColor() => BrowseButtonTextColor = PickColor(BrowseButtonTextColor);
 
     /// <summary>Inno Setup's eigen standaardtekst voor de Bladeren-knop, gebruikt zolang
     /// <see cref="BrowseButtonCaption"/> leeg is. Zelfde "toon de studio's eigen UI-taal, niet
@@ -205,7 +195,6 @@ public sealed partial class SelectDestinationPageEditorViewModel : WizardScreenE
         Caption = BrowseButtonCaption,
         Enabled = BrowseButtonEnabled,
         Visible = BrowseButtonVisible,
-        TextColor = BrowseButtonTextColor,
         FontFamily = BrowseButtonFontFamily,
         FontSize = BrowseButtonFontSize,
         FontBold = BrowseButtonFontBold,

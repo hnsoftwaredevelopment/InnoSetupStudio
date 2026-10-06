@@ -33,7 +33,6 @@ public class GenerationIssueResourceTests
         [GenerationIssueCode.TasksPageWithoutTasks] = 0,
         [GenerationIssueCode.TasksPageShownForDesktopIcon] = 0,
         [GenerationIssueCode.UnknownLanguage] = 1,
-        [GenerationIssueCode.ButtonTextColorNotSupported] = 1,
         [GenerationIssueCode.ButtonSettingsForHiddenScreen] = 1,
         [GenerationIssueCode.NextButtonUnusable] = 1,
         [GenerationIssueCode.OutputBaseFilenameDefaulted] = 1,

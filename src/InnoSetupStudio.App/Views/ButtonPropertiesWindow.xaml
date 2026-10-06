@@ -18,7 +18,6 @@
          SelectDestinationPageEditorViewModel te binden. -->
     <Window.Resources>
         <converters:IconKeyToGeometryConverter x:Key="IconKeyToGeometryConverter" />
-        <converters:HexColorToBrushConverter x:Key="HexColorToBrushConverter" />
         <converters:FontFamilyOrUnsetConverter x:Key="FontFamilyOrUnsetConverter" />
         <converters:FontSizeOrUnsetConverter x:Key="FontSizeOrUnsetConverter" />
         <converters:NullableBoolToFontWeightConverter x:Key="NullableBoolToFontWeightConverter" />
@@ -64,16 +63,12 @@
                                    Foreground="{DynamicResource Brush.TextSecondary}"
                                    Visibility="{Binding HasLanguageOverrides, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     </StackPanel>
-                    <!-- Foreground volgt de (nog niet opgeslagen) tekstkleur hieronder, precies
-                         zoals Herberts mockup vraagt: "hier kan de knoptekst al in worden
-                         aangepast en wordt getoond in de geselecteerde kleur". -->
                     <TextBox Text="{Binding Caption, UpdateSourceTrigger=PropertyChanged}"
-                             Foreground="{Binding PreviewTextColor, Converter={StaticResource HexColorToBrushConverter}}"
                              controls:Placeholder.Text="{Binding EffectiveCaption}"
                              AutomationProperties.LabeledBy="{Binding ElementName=CaptionLabel}" />
                 </StackPanel>
 
-                <!-- Tooltip staat hier direct onder Tekst (niet verderop na TextColor/FontFamily/
+                <!-- Tooltip staat hier direct onder Tekst (niet verderop na FontFamily/
                      FontSize), zodat het patroon gelijk is aan de rijen in de sectie Vertalingen
                      per taal hieronder, die ook steeds Tooltip direct onder Tekst tonen (Herberts
                      melding 2026-10-01: "logischer... Tooltip voor de standaard taal direct onder
@@ -88,20 +83,6 @@
                     <TextBox Text="{Binding Tooltip, UpdateSourceTrigger=PropertyChanged}"
                              controls:Placeholder.Text="{Binding EffectiveTooltip}"
                              AutomationProperties.LabeledBy="{Binding ElementName=TooltipLabel}" />
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                    <TextBlock x:Name="TextColorLabel" Text="{loc:Loc LabelButtonTextColor}" Width="96" VerticalAlignment="Center" />
-                    <Border Width="20" Height="20" BorderBrush="#FFACA899" BorderThickness="1" Margin="0,0,6,0"
-                            Background="{Binding PreviewTextColor, Converter={StaticResource HexColorToBrushConverter}}" />
-                    <TextBox Width="100" Text="{Binding TextColor, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,6,0"
-                             controls:Placeholder.Text="{Binding EffectiveTextColor}"
-                             AutomationProperties.LabeledBy="{Binding ElementName=TextColorLabel}" />
-                    <Button Command="{Binding PickTextColorCommand}" ToolTip="{loc:Loc ButtonSelectColor}"
-                            AutomationProperties.Name="{loc:Loc ButtonSelectColor}">
-                        <Path Data="{StaticResource SelectColor}" Fill="{DynamicResource Brush.TextPrimary}"
-                              Stretch="Uniform" Width="16" Height="16" />
-                    </Button>
                 </StackPanel>
 
                 <StackPanel Margin="0,0,0,12">
@@ -176,20 +157,14 @@
                          getekende standaardknop zonder die twee eigenschappen (Herberts
                          2026-09-04-beslissing, zie WizardScreenButtonSettings). -->
                     <Button Padding="12,4" MinWidth="80"
-                            Foreground="{Binding PreviewTextColor, Converter={StaticResource HexColorToBrushConverter}}"
                             FontFamily="{Binding PreviewFontFamily, Converter={StaticResource FontFamilyOrUnsetConverter}}"
                             FontSize="{Binding PreviewFontSize, Converter={StaticResource FontSizeOrUnsetConverter}}"
                             FontWeight="{Binding PreviewFontBold, Converter={StaticResource NullableBoolToFontWeightConverter}}"
                             ToolTip="{Binding PreviewTooltip}">
-                        <!-- Foreground hier herhaald i.p.v. op het vertrouwen dat de knop zijn
-                             tekst automatisch doorgeeft (2026-09-30, Herberts melding: gekozen
-                             Tekstkleur kwam hier niet aan, tekst bleef zwart): de globale
-                             Button-stijl (Themes/Styles.xaml) probeert dat via een
-                             ControlTemplate.Resources-stijl met TemplatedParent, maar
-                             TemplatedParent lost niet op voor Content dat van buiten de template
-                             komt (zoals deze TextBlock) - alleen voor elementen die letterlijk in
-                             de ControlTemplate zelf staan. RelativeSource AncestorType=Button is
-                             hetzelfde, al langer werkende patroon als de echte Terug/Volgende/
+                        <!-- Foreground via RelativeSource AncestorType=Button: de globale Button-stijl
+                             (Themes/Styles.xaml) geeft de Foreground niet via TemplatedParent door aan
+                             Content dat van buiten de ControlTemplate komt (zoals deze TextBlock).
+                             Hetzelfde, al langer werkende patroon als de echte Terug/Volgende/
                              Annuleren-knoppen in de installervoorvertoning (ScreenEditorControl.xaml). -->
                         <TextBlock Text="{Binding PreviewButtonText}"
                                    Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />

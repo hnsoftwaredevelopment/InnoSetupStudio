@@ -321,9 +321,6 @@
   <data name="LabelButtonVisible" xml:space="preserve">
     <value>Visible</value>
   </data>
-  <data name="LabelButtonTextColor" xml:space="preserve">
-    <value>Text color</value>
-  </data>
   <data name="LabelButtonFontFamily" xml:space="preserve">
     <value>Font</value>
   </data>
@@ -332,9 +329,6 @@
   </data>
   <data name="LabelButtonFontBold" xml:space="preserve">
     <value>Bold</value>
-  </data>
-  <data name="ButtonPickColor" xml:space="preserve">
-    <value>Pick…</value>
   </data>
   <data name="SectionBrowseButton" xml:space="preserve">
     <value>Browse button</value>
@@ -380,9 +374,6 @@
   </data>
   <data name="ButtonOpenProperties" xml:space="preserve">
     <value>Edit button properties</value>
-  </data>
-  <data name="ButtonSelectColor" xml:space="preserve">
-    <value>Select the text color</value>
   </data>
   <data name="ButtonLanguages" xml:space="preserve">
     <value>Languages</value>
@@ -596,9 +587,6 @@
   </data>
   <data name="GenIssue_UnknownLanguage" xml:space="preserve">
     <value>The language '{0}' is unknown and was skipped.</value>
-  </data>
-  <data name="GenIssue_ButtonTextColorNotSupported" xml:space="preserve">
-    <value>A text color is set on {0} button(s). Setup draws its buttons in the theme color, so the color is not written to the script.</value>
   </data>
   <data name="GenIssue_ButtonSettingsForHiddenScreen" xml:space="preserve">
     <value>The button settings of '{0}' are not used because that screen is turned off.</value>

@@ -13,20 +13,18 @@ namespace InnoSetupStudio.Core.Project;
 /// ingeschakeld/zichtbaar-gedrag: Inno Setup's eigen logica (bijvoorbeeld dat Terug op het eerste
 /// scherm vanzelf uitstaat) blijft dan intact. Alleen expliciet true/false overschrijft dat.
 ///
-/// TextColor/FontFamily/FontSize/FontBold (backlogitem uit sectie 14 van de architectuurdoc)
-/// volgen dezelfde leeg-is-onveranderd-conventie als Caption: een lege string/null laat Inno
-/// Setup's eigen knopuiterlijk intact. TextColor is hex-tekst ("#RRGGBB" of "#AARRGGBB", zoals
-/// WPF's eigen ColorConverter accepteert) in plaats van een eigen kleurtype, zodat dit model — net
-/// als de rest van dit bestand — geen WPF-afhankelijkheid nodig heeft (InnoSetupStudio.Core kent
-/// geen System.Windows). De generator (fase 5/6) zal deze velden, net als Caption, moeten omzetten
-/// naar Pascal Script op TNewButton: Font.Color/Font.Name/Font.Size/Font.Style zijn gewone
-/// TFont-eigenschappen die op een standaardknop direct werken.
+/// FontFamily/FontSize/FontBold (backlogitem uit sectie 14 van de architectuurdoc) volgen dezelfde
+/// leeg-is-onveranderd-conventie als Caption: een lege string/null laat Inno Setup's eigen
+/// knopuiterlijk intact. De generator zet deze velden, net als Caption, om naar Pascal Script op
+/// TNewButton: Font.Name/Font.Size/Font.Style zijn gewone TFont-eigenschappen die op een
+/// standaardknop direct werken.
 ///
-/// Achtergrondkleur en een bitmap op de knop zijn bewust NIET opgenomen: TNewButton wordt door
-/// Windows' eigen thema-engine getekend, dus een achtergrondkleur of bitmap zetten vereist het
-/// uitschakelen van de Windows-thematisering en een zelf-getekende knop (OnPaint-achtig) in Pascal
-/// Script — vergelijkbare extra generatorwerk voor beide, en niet iets wat Inno Setup's
-/// standaardknop native ondersteunt. Herbert heeft dit expliciet geschrapt (2026-09-04). Diezelfde
+/// Tekstkleur, achtergrondkleur en een bitmap op de knop zijn bewust NIET opgenomen: TNewButton wordt
+/// door Windows' eigen thema-engine getekend, dus Font.Color heeft geen effect (gemeten in Inno Setup
+/// 7.1.0, in modern en classic) en een achtergrondkleur of bitmap vereist een zelf-getekende knop,
+/// wat niet iets is wat Inno Setup's standaardknop native ondersteunt. De achtergrondkleur is op
+/// 2026-09-04 geschrapt, de tekstkleur op 2026-10-06 (Herbert). Oudere .issproj-bestanden met een
+/// tekstkleur blijven openen: de JSON-lezer negeert onbekende velden. Diezelfde
 /// afweging gold niet voor Tooltip hieronder (backlogitem 3, sectie 17): TNewButton is een gewone
 /// TControl-afstammeling, dus Hint/ShowHint werken net zo rechtstreeks als de Font-eigenschappen.
 /// </summary>
@@ -37,8 +35,6 @@ public sealed class WizardScreenButtonSettings
     public bool? BackButtonEnabled { get; set; }
 
     public bool? BackButtonVisible { get; set; }
-
-    public string BackButtonTextColor { get; set; } = string.Empty;
 
     public string BackButtonFontFamily { get; set; } = string.Empty;
 
@@ -54,8 +50,6 @@ public sealed class WizardScreenButtonSettings
 
     public bool? NextButtonVisible { get; set; }
 
-    public string NextButtonTextColor { get; set; } = string.Empty;
-
     public string NextButtonFontFamily { get; set; } = string.Empty;
 
     public int? NextButtonFontSize { get; set; }
@@ -69,8 +63,6 @@ public sealed class WizardScreenButtonSettings
     public bool? CancelButtonEnabled { get; set; }
 
     public bool? CancelButtonVisible { get; set; }
-
-    public string CancelButtonTextColor { get; set; } = string.Empty;
 
     public string CancelButtonFontFamily { get; set; } = string.Empty;
 

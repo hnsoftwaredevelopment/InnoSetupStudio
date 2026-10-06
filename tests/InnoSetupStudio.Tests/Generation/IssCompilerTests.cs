@@ -290,19 +290,6 @@ public sealed class IssCompilerTests : IDisposable
     }
 
     [IsccFact]
-    public async Task Text_color_is_reported_but_the_script_still_compiles()
-    {
-        var project = NewProject();
-        project.DefaultScreenButtons.NextButtonTextColor = "#FF0000";
-        project.DefaultScreenButtons.NextButtonCaption = "Verder";
-
-        var result = new IssGenerator().Generate(project);
-        Assert.Contains(result.Issues, issue => issue.Code == GenerationIssueCode.ButtonTextColorNotSupported);
-
-        await AssertCompilesAsync(project, "MijnApp-1.0-Setup.exe");
-    }
-
-    [IsccFact]
     public async Task Button_settings_on_screens_that_are_turned_off_compile()
     {
         var project = NewProject();

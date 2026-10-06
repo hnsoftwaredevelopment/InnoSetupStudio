@@ -6,8 +6,8 @@ namespace InnoSetupStudio.App.Converters;
 
 /// <summary>
 /// Zet WizardScreenEditorViewModel's EffectiveXxxFontSize (int?, zie WizardScreenButtonSettings)
-/// om naar een double voor WPF's Control.FontSize in de voorvertoning. Zelfde UnsetValue-bij-
-/// leeg-conventie als HexColorToBrushConverter: null betekent "geen override", de knop valt dan
+/// om naar een double voor WPF's Control.FontSize in de voorvertoning. UnsetValue-bij-
+/// leeg-conventie: null betekent "geen override", de knop valt dan
 /// terug op zijn eigen stijl-standaardgrootte.
 /// </summary>
 public sealed class FontSizeOrUnsetConverter : IValueConverter

@@ -5,8 +5,8 @@ using System.Windows.Data;
 namespace InnoSetupStudio.Wizard.Converters;
 
 /// <summary>
-/// Kopie van InnoSetupStudio.App.Converters.NullableBoolToFontWeightConverter. Zie
-/// HexColorToBrushConverter voor waarom dit een aparte kopie is in plaats van hergebruik.
+/// Kopie van InnoSetupStudio.App.Converters.NullableBoolToFontWeightConverter. Het Wizard-project
+/// mag niet naar het App-project verwijzen, vandaar een aparte kopie.
 /// </summary>
 public sealed class NullableBoolToFontWeightConverter : IValueConverter
 {

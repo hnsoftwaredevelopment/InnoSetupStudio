@@ -19,7 +19,6 @@ public class ButtonSettingsResolverTests
         Assert.Equal(string.Empty, result.Caption);
         Assert.Null(result.Enabled);
         Assert.Null(result.Visible);
-        Assert.Equal(string.Empty, result.TextColor);
         Assert.Equal(string.Empty, result.FontFamily);
         Assert.Null(result.FontSize);
         Assert.Null(result.FontBold);
@@ -41,15 +40,14 @@ public class ButtonSettingsResolverTests
     [Fact]
     public void Own_text_wins_over_the_default_screen()
     {
-        var screen = new WizardScreenButtonSettings { NextButtonCaption = "Start", NextButtonTooltip = "Ga door", NextButtonFontFamily = "Consolas", NextButtonTextColor = "#FF0000" };
-        var defaults = new WizardScreenButtonSettings { NextButtonCaption = "Verder", NextButtonTooltip = "Verder", NextButtonFontFamily = "Arial", NextButtonTextColor = "#00FF00" };
+        var screen = new WizardScreenButtonSettings { NextButtonCaption = "Start", NextButtonTooltip = "Ga door", NextButtonFontFamily = "Consolas" };
+        var defaults = new WizardScreenButtonSettings { NextButtonCaption = "Verder", NextButtonTooltip = "Verder", NextButtonFontFamily = "Arial" };
 
         var result = Resolve(screen, defaults);
 
         Assert.Equal("Start", result.Caption);
         Assert.Equal("Ga door", result.Tooltip);
         Assert.Equal("Consolas", result.FontFamily);
-        Assert.Equal("#FF0000", result.TextColor);
     }
 
     [Theory]
@@ -57,15 +55,14 @@ public class ButtonSettingsResolverTests
     [InlineData("   ")]
     public void Empty_or_blank_own_text_falls_back_to_the_default_screen(string own)
     {
-        var screen = new WizardScreenButtonSettings { NextButtonCaption = own, NextButtonTooltip = own, NextButtonFontFamily = own, NextButtonTextColor = own };
-        var defaults = new WizardScreenButtonSettings { NextButtonCaption = "Verder", NextButtonTooltip = "Tip", NextButtonFontFamily = "Arial", NextButtonTextColor = "#00FF00" };
+        var screen = new WizardScreenButtonSettings { NextButtonCaption = own, NextButtonTooltip = own, NextButtonFontFamily = own };
+        var defaults = new WizardScreenButtonSettings { NextButtonCaption = "Verder", NextButtonTooltip = "Tip", NextButtonFontFamily = "Arial" };
 
         var result = Resolve(screen, defaults);
 
         Assert.Equal("Verder", result.Caption);
         Assert.Equal("Tip", result.Tooltip);
         Assert.Equal("Arial", result.FontFamily);
-        Assert.Equal("#00FF00", result.TextColor);
     }
 
     [Fact]
@@ -138,11 +135,11 @@ public class ButtonSettingsResolverTests
     {
         var screen = new WizardScreenButtonSettings
         {
-            BackButtonCaption = "back", BackButtonEnabled = false, BackButtonVisible = false, BackButtonTextColor = "#010101",
+            BackButtonCaption = "back", BackButtonEnabled = false, BackButtonVisible = false,
             BackButtonFontFamily = "backfont", BackButtonFontSize = 11, BackButtonFontBold = true, BackButtonTooltip = "backtip",
-            NextButtonCaption = "next", NextButtonEnabled = true, NextButtonVisible = true, NextButtonTextColor = "#020202",
+            NextButtonCaption = "next", NextButtonEnabled = true, NextButtonVisible = true,
             NextButtonFontFamily = "nextfont", NextButtonFontSize = 12, NextButtonFontBold = false, NextButtonTooltip = "nexttip",
-            CancelButtonCaption = "cancel", CancelButtonEnabled = null, CancelButtonVisible = false, CancelButtonTextColor = "#030303",
+            CancelButtonCaption = "cancel", CancelButtonEnabled = null, CancelButtonVisible = false,
             CancelButtonFontFamily = "cancelfont", CancelButtonFontSize = 13, CancelButtonFontBold = true, CancelButtonTooltip = "canceltip",
         };
         screen.BackButtonCaptionByLanguage["dutch"] = "terug";
@@ -157,17 +154,17 @@ public class ButtonSettingsResolverTests
         switch (button)
         {
             case WizardButton.Back:
-                Assert.Equal(("back", false, false, "#010101", "backfont", 11, true, "backtip"), Tuple(result));
+                Assert.Equal(("back", false, false, "backfont", 11, true, "backtip"), Tuple(result));
                 Assert.Equal("terug", result.CaptionByLanguage["dutch"]);
                 Assert.Equal("terugtip", result.TooltipByLanguage["dutch"]);
                 break;
             case WizardButton.Next:
-                Assert.Equal(("next", true, true, "#020202", "nextfont", 12, false, "nexttip"), Tuple(result));
+                Assert.Equal(("next", true, true, "nextfont", 12, false, "nexttip"), Tuple(result));
                 Assert.Equal("volgende", result.CaptionByLanguage["dutch"]);
                 Assert.Equal("volgendetip", result.TooltipByLanguage["dutch"]);
                 break;
             default:
-                Assert.Equal(("cancel", (bool?)null, false, "#030303", "cancelfont", 13, true, "canceltip"), Tuple(result));
+                Assert.Equal(("cancel", (bool?)null, false, "cancelfont", 13, true, "canceltip"), Tuple(result));
                 Assert.Equal("annuleren", result.CaptionByLanguage["dutch"]);
                 Assert.Equal("annulerentip", result.TooltipByLanguage["dutch"]);
                 break;
@@ -179,7 +176,7 @@ public class ButtonSettingsResolverTests
     {
         var browse = new BrowseButtonSettings
         {
-            Caption = "Zoeken...", Enabled = false, Visible = true, TextColor = "#123456", FontFamily = "Arial",
+            Caption = "Zoeken...", Enabled = false, Visible = true, FontFamily = "Arial",
             FontSize = 10, FontBold = true, Tooltip = "Kies een map",
         };
         browse.CaptionByLanguage["dutch"] = "Zoek";
@@ -187,7 +184,7 @@ public class ButtonSettingsResolverTests
 
         var result = ButtonSettingsResolver.Resolve(browse);
 
-        Assert.Equal(("Zoeken...", (bool?)false, (bool?)true, "#123456", "Arial", (int?)10, (bool?)true, "Kies een map"), Tuple(result));
+        Assert.Equal(("Zoeken...", (bool?)false, (bool?)true, "Arial", (int?)10, (bool?)true, "Kies een map"), Tuple(result));
         Assert.Equal("Zoek", result.CaptionByLanguage["dutch"]);
         Assert.Empty(result.TooltipByLanguage);
     }
@@ -202,6 +199,6 @@ public class ButtonSettingsResolverTests
         Assert.Empty(result.CaptionByLanguage);
     }
 
-    private static (string, bool?, bool?, string, string, int?, bool?, string) Tuple(EffectiveButtonSettings s)
-        => (s.Caption, s.Enabled, s.Visible, s.TextColor, s.FontFamily, s.FontSize, s.FontBold, s.Tooltip);
+    private static (string, bool?, bool?, string, int?, bool?, string) Tuple(EffectiveButtonSettings s)
+        => (s.Caption, s.Enabled, s.Visible, s.FontFamily, s.FontSize, s.FontBold, s.Tooltip);
 }
