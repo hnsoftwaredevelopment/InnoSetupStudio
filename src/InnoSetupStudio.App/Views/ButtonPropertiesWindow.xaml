@@ -127,7 +127,7 @@
                 <StackPanel Visibility="{Binding HasLanguageOverrides, Converter={StaticResource BooleanToVisibilityConverter}}"
                             Margin="0,16,0,4">
                     <TextBlock Text="{loc:Loc SectionLanguageOverrides}" FontWeight="Bold" Margin="0,0,0,4" />
-                    <TextBlock Text="{loc:Loc HintLanguageOverrides}" FontSize="11" TextWrapping="Wrap"
+                    <TextBlock Text="{Binding LanguageOverridesHint}" FontSize="11" TextWrapping="Wrap"
                                Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,8" />
                     <ItemsControl ItemsSource="{Binding LanguageOverrides}">
                         <ItemsControl.ItemTemplate>
@@ -137,10 +137,12 @@
                                         <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" Margin="0,0,0,6" />
                                         <TextBlock Text="{loc:Loc LabelButtonCaption}" FontSize="11"
                                                    Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,2" />
-                                        <TextBox Text="{Binding Caption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,6" />
+                                        <TextBox Text="{Binding Caption, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,6"
+                                                 controls:Placeholder.Text="{Binding CaptionPlaceholder}" />
                                         <TextBlock Text="{loc:Loc LabelButtonTooltip}" FontSize="11"
                                                    Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,2" />
-                                        <TextBox Text="{Binding Tooltip, UpdateSourceTrigger=PropertyChanged}" />
+                                        <TextBox Text="{Binding Tooltip, UpdateSourceTrigger=PropertyChanged}"
+                                                 controls:Placeholder.Text="{Binding TooltipPlaceholder}" />
                                     </StackPanel>
                                 </Border>
                             </DataTemplate>

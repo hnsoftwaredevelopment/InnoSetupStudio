@@ -71,7 +71,7 @@ De schermeditor bepaalt de waarde van een veld in drie lagen: eigen waarde op he
 
 - Tekst, lettertype en tooltip: eigen waarde als die niet leeg is of alleen uit spaties bestaat, anders de waarde van het Standaardscherm, anders niets instellen.
 - Lettergrootte, vet, ingeschakeld en zichtbaar: eigen waarde als die is ingesteld (`null` is niet ingesteld), anders de waarde van het Standaardscherm, anders niets instellen.
-- Vertalingen per taal (`*ByLanguage`) cascaderen niet via het Standaardscherm. Dat is een eerdere, bewuste keuze (sectie 24 van de architectuurdoc) en verandert hier niet.
+- Vertalingen per taal (`*ByLanguage`) cascaderen sinds sectie 34 van de architectuurdoc wel via het Standaardscherm (ontwerp in `Ontwerp-Vertalingen-Standaardscherm.md`). In deze stap (4) gebeurde dat nog niet.
 - De Bladeren-knoppen hebben geen Standaardscherm en geen cascade.
 
 De bepaling van de effectieve waarde staat als losse, pure klasse in Core (`ButtonSettingsResolver`), met eigen tests. De editor behoudt zijn eigen `Effective*`-eigenschappen. Een test die beide vergelijkt, zoals dit document eerst voorstelde, is niet mogelijk: het testproject verwijst alleen naar Core en niet naar de app, waar de editor in staat. De regels uit deze sectie liggen daarom vast in de tests van de resolver. Tot de editor de resolver zelf gebruikt (backlog, sectie 13) moet een wijziging van deze regels op twee plaatsen worden doorgevoerd.
@@ -169,7 +169,7 @@ Bestaande meldingen die hier opnieuw gelden: `ValueContainsLineBreak` voor knopt
 
 ## 9. Tests
 
-- **Eenheidstests** voor `ButtonSettingsResolver`: eigen waarde wint, dan het Standaardscherm, dan niets; tekst met alleen spaties telt als leeg; `null` bij lettergrootte, vet, ingeschakeld en zichtbaar; vertalingen cascaderen niet.
+- **Eenheidstests** voor `ButtonSettingsResolver`: eigen waarde wint, dan het Standaardscherm, dan niets; tekst met alleen spaties telt als leeg; `null` bij lettergrootte, vet, ingeschakeld en zichtbaar; vertalingen cascaderen sinds sectie 34 wel (zie `Ontwerp-Vertalingen-Standaardscherm.md`).
 - **Generatortests**: `Enabled := True` wordt nooit geschreven (ook niet als het scherm True instelt en het Standaardscherm False); geen `[Code]` en geen `[CustomMessages]` zonder aanpassingen; volgorde van de regels zonder en met taalvoorvoegsel; lege universele tekst met vertaling; pagina-ID per scherm; reset van lettertype en tooltip alleen waar het nodig is; Bladeren-knoppen in `InitializeWizard`; scherm dat uit staat; elke nieuwe melding in beide richtingen; regeleinde in een tekst; aanhalingsteken in een lettertypenaam.
 - **Samenhang**: elke berichtnaam die de code gebruikt is gedefinieerd en elke definitie wordt gebruikt, en elk bericht zonder taalvoorvoegsel staat vóór zijn vertalingen. Een onbekende naam in `CustomMessage` is een fatale fout tijdens het draaien van Setup die ISCC niet ziet. De eerder geplande vergelijking met de `Effective*`-eigenschappen van de editor vervalt, zie sectie 5.
 - **Goldenbestand** `Buttons.iss` met een meertalig project met alle acht schermen en beide Bladeren-knoppen. De bestaande goldenbestanden blijven ongewijzigd.
@@ -223,4 +223,4 @@ Testproject voor de handmatige tests: `C:\DevOps\hnsoftwaredevelopment\Test\Herb
 - De editor laten rekenen met `ButtonSettingsResolver` in plaats van met eigen `Effective*`-logica.
 - Knopmodellen en editors voor Select Components, Select Tasks en Finished.
 - Het script splitsen over meerdere `.iss`-bestanden (Inno Setup kent `#include`) zodra het aantal opties het gegenereerde bestand onoverzichtelijk maakt. Nu nog niet aan de orde.
-- Cascade van vertalingen via het Standaardscherm (staat al in de backlog van sectie 24).
+- Cascade van vertalingen via het Standaardscherm: gebouwd, zie sectie 34 van de architectuurdoc.

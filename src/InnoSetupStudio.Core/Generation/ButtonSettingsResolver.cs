@@ -13,8 +13,9 @@ public enum WizardButton
 /// <summary>
 /// De waarden van één knop op één scherm nadat de drie lagen zijn toegepast (eigen waarde op het
 /// scherm, anders het Standaardscherm). Een lege tekst of een <c>null</c> betekent: niet ingesteld,
-/// Setup's eigen gedrag blijft. De twee dictionaries bevatten alleen niet-lege vertalingen van het
-/// scherm zelf; die cascaderen niet via het Standaardscherm.
+/// Setup's eigen gedrag blijft. De twee dictionaries bevatten alleen niet-lege vertalingen, per taal
+/// bepaald met <see cref="ButtonSettingsResolver.ResolveTranslation"/> (eigen vertaling, anders de
+/// vertaling van het Standaardscherm, tenzij het scherm zelf een tekst heeft).
 /// </summary>
 public sealed record EffectiveButtonSettings(
     string Caption,
@@ -32,7 +33,8 @@ public sealed record EffectiveButtonSettings(
 /// schermeditor (zie sectie 5 van docs/Ontwerp-Knopinstellingen-Generator.md). Tekstvelden: eigen
 /// waarde als die niet leeg is of alleen uit spaties bestaat, anders die van het Standaardscherm.
 /// Lettergrootte, vet, ingeschakeld en zichtbaar: eigen waarde als die is ingesteld, anders die van
-/// het Standaardscherm. Puur en zonder toestand, zodat de generator er rechtstreeks van uit kan gaan.
+/// het Standaardscherm. Vertalingen per taal: zie <see cref="ResolveTranslation"/>. Puur en zonder
+/// toestand, zodat de generator er rechtstreeks van uit kan gaan.
 /// </summary>
 public static class ButtonSettingsResolver
 {
@@ -56,8 +58,30 @@ public static class ButtonSettingsResolver
             own.FontSize ?? fallback.FontSize,
             own.FontBold ?? fallback.FontBold,
             Text(own.Tooltip, fallback.Tooltip),
-            NonBlank(own.CaptionByLanguage),
-            NonBlank(own.TooltipByLanguage));
+            Translations(own.Caption, own.CaptionByLanguage, fallback.CaptionByLanguage),
+            Translations(own.Tooltip, own.TooltipByLanguage, fallback.TooltipByLanguage));
+    }
+
+    /// <summary>
+    /// De vertaling die voor één taal geldt, of een lege tekst als er geen vertaling is en de
+    /// universele tekst blijft gelden. Eerste regel die van toepassing is: een eigen vertaling van
+    /// het scherm; een eigen tekst van het scherm (die geldt dan voor deze taal, zie sectie 2 van
+    /// docs/Ontwerp-Vertalingen-Standaardscherm.md); de vertaling van het Standaardscherm.
+    /// Tekst met alleen spaties telt als leeg. Publiek zodat de editor dezelfde regel gebruikt.
+    /// </summary>
+    public static string ResolveTranslation(string? ownText, string? ownTranslation, string? defaultTranslation)
+    {
+        if (!string.IsNullOrWhiteSpace(ownTranslation))
+        {
+            return ownTranslation;
+        }
+
+        if (!string.IsNullOrWhiteSpace(ownText))
+        {
+            return string.Empty;
+        }
+
+        return string.IsNullOrWhiteSpace(defaultTranslation) ? string.Empty : defaultTranslation;
     }
 
     /// <summary>Effectieve waarden van een Bladeren-knop: geen Standaardscherm, dus geen cascade.</summary>
@@ -88,6 +112,32 @@ public static class ButtonSettingsResolver
         }
 
         return string.IsNullOrWhiteSpace(fromDefaults) ? string.Empty : fromDefaults;
+    }
+
+    // Per taal die in het scherm of in het Standaardscherm voorkomt de geldende vertaling
+    // (ResolveTranslation). Alleen talen met een vertaling komen in het resultaat.
+    private static Dictionary<string, string> Translations(
+        string? ownText,
+        Dictionary<string, string>? own,
+        Dictionary<string, string>? fromDefaults)
+    {
+        var result = new Dictionary<string, string>(StringComparer.Ordinal);
+        var languages = (own?.Keys ?? Enumerable.Empty<string>()).Concat(fromDefaults?.Keys ?? Enumerable.Empty<string>());
+
+        foreach (var language in languages)
+        {
+            var text = ResolveTranslation(
+                ownText,
+                own is not null && own.TryGetValue(language, out var ownTranslation) ? ownTranslation : null,
+                fromDefaults is not null && fromDefaults.TryGetValue(language, out var defaultTranslation) ? defaultTranslation : null);
+
+            if (text.Length > 0)
+            {
+                result[language] = text;
+            }
+        }
+
+        return result;
     }
 
     private static Dictionary<string, string> NonBlank(Dictionary<string, string>? translations)

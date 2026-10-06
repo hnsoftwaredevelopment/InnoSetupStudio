@@ -254,6 +254,33 @@ public sealed class IssCompilerTests : IDisposable
 
     [IsccTheory]
     [InlineData("It's")]
+    [InlineData("100% {app}")]
+    [InlineData("Größe é; a=b")]
+    public async Task Default_screen_translations_compile_without_warnings(string text)
+    {
+        var project = NewProject();
+        project.SupportedLanguageIds = ["english", "dutch", "german"];
+        project.WizardScreens.ShowReadyPage = true;
+        project.DefaultScreenButtons.NextButtonCaption = text;
+        project.DefaultScreenButtons.NextButtonCaptionByLanguage["dutch"] = text + " NL";
+        project.DefaultScreenButtons.NextButtonTooltipByLanguage["german"] = text + " DE";
+        project.ReadyScreenButtons.NextButtonCaptionByLanguage["german"] = "Los";
+
+        await AssertCompilesAsync(project, "MijnApp-1.0-Setup.exe");
+    }
+
+    [IsccFact]
+    public async Task Default_screen_with_only_a_translation_and_no_universal_text_compiles()
+    {
+        var project = NewProject();
+        project.SupportedLanguageIds = ["english", "dutch"];
+        project.DefaultScreenButtons.NextButtonCaptionByLanguage["dutch"] = "Doorgaan";
+
+        await AssertCompilesAsync(project, "MijnApp-1.0-Setup.exe");
+    }
+
+    [IsccTheory]
+    [InlineData("It's")]
     [InlineData("\"Quoted\"")]
     [InlineData("100%")]
     [InlineData("%n %1 %%")]

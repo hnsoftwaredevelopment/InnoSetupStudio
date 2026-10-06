@@ -266,7 +266,7 @@ Dit is een levend document: vink af (verander ⬜/🔶 naar ✅ met een verwijzi
 | ShowLanguageDialog | Toont een taalkeuzedialoog bij opstarten. | Eigenschap | ⬜ |
 | LanguageDetectionMethod | Hoe Setup automatisch een standaardtaal kiest. | Eigenschap | ⬜ |
 | UsePreviousLanguage | Onthoudt de eerder gekozen installertaal bij een update. | Eigenschap | ✅ `InstallerProject.UsePreviousLanguage` (tabblad Overige instellingen) |
-| (knopteksten per taal) | Vertaalde Terug/Volgende/Annuleren/Bladeren-teksten en tooltips. | Eigenschap | ✅ `WizardScreenButtonSettings`/`BrowseButtonSettings` `*ByLanguage`-dictionaries, gegenereerd via `[CustomMessages]` (stap 4) |
+| (knopteksten per taal) | Vertaalde Terug/Volgende/Annuleren/Bladeren-teksten en tooltips. | Eigenschap | ✅ `WizardScreenButtonSettings`/`BrowseButtonSettings` `*ByLanguage`-dictionaries, gegenereerd via `[CustomMessages]` (stap 4); vertalingen van het Standaardscherm gelden voor elk scherm dat zelf niets heeft ingevuld (architectuurdoc sectie 34) |
 | [Languages] MessagesFile | Welk(e) .isl-bestand(en) de standaardteksten voor een taal levert. | Eigenschap | ⬜ |
 | [Languages] LicenseFile | Taalspecifiek licentiebestand, overschrijft het algemene LicenseFile. | Eigenschap | ⬜ |
 | [Languages] InfoBeforeFile / InfoAfterFile | Taalspecifieke Info Before/After-bestanden. | Eigenschap | ⬜ |

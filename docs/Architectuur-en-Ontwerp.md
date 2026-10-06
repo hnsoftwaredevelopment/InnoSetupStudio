@@ -2075,7 +2075,7 @@ Standaardscherm-laag nodig (een extra set dictionaries op `DefaultScreenEditorVi
 live-doormelding naar elk scherm net als `RaiseEffectivePropertiesChanged` dat voor de bestaande
 Effective*-eigenschappen doet) — dat vergroot de omvang van deze eerste versie aanzienlijk. Kan
 later alsnog toegevoegd worden als Herbert daar in de praktijk behoefte aan blijkt te hebben
-(genoteerd als backlogitem hieronder).
+(genoteerd als backlogitem hieronder). Sinds sectie 34 is deze vereenvoudiging opgeheven: vertalingen cascaderen nu wel via het Standaardscherm.
 
 ### UI: nieuwe sectie in ButtonPropertiesWindow, alleen zichtbaar voor een meertalig project
 
@@ -2114,8 +2114,7 @@ dictionaries op dat scherm na een save/load-cyclus leeg (niet null) blijven. Smo
 
 ### Backlog
 
-- Cascade van per-taal-vertalingen via het Standaardscherm (zie hierboven) — alleen oppakken als
-  Herbert in de praktijk tegen de huidige "elk scherm apart invullen"-beperking aanloopt.
+- Cascade van per-taal-vertalingen via het Standaardscherm: gebouwd, zie sectie 34.
 - De generator (fase 5/6, nog niet gebouwd) moet deze dictionaries omzetten naar een
   `[CustomMessages]`-sectie (`MyBackCaption.dutch=Terug` enz.) plus `CustomMessage(...)`-aanroepen
   in de Pascal Script `CurPageChanged`-event-handler, in plaats van de huidige aanname (vóór dit
@@ -2925,7 +2924,7 @@ sectie 33 beschrijft hoe het kleurveld daarna uit de IDE is gehaald.
 
 | Bestand | Inhoud |
 |---|---|
-| `ButtonSettingsResolverTests.cs` | Eigen waarde wint, dan het Standaardscherm, dan niets; spaties tellen als leeg; `false` van het scherm wint van `true` van het Standaardscherm; vertalingen cascaderen niet; elke knop leest zijn eigen velden; de Bladeren-knop heeft geen cascade. |
+| `ButtonSettingsResolverTests.cs` | Eigen waarde wint, dan het Standaardscherm, dan niets; spaties tellen als leeg; `false` van het scherm wint van `true` van het Standaardscherm; vertalingen cascaderen sinds sectie 34 wel; elke knop leest zijn eigen velden; de Bladeren-knop heeft geen cascade. |
 | `IssGeneratorButtonTests.cs` | Geen code zonder aanpassingen; volgorde van de secties; berichten met en zonder taalvoorvoegsel; lege universele tekst; letterlijke teksten met speciale tekens; regeleinden; Standaardscherm; `Enabled` en `Visible` alleen als `False`; vastleggen en terugzetten van lettertype, grootte, vet en tooltip; vaste volgorde van de regels per knop; Bladeren-knoppen; schermen die uit staan; de drie nieuwe meldingen; samenhang tussen gebruikte en gedefinieerde berichtnamen; het voorbeeld uit het ontwerp. |
 | `IssGeneratorGoldenTests.cs` | Nieuw goldenbestand `Golden/Buttons.iss` (acht schermen, drie talen, beide Bladeren-knoppen). De drie bestaande bestanden zijn ongewijzigd. |
 | `IssCompilerTests.cs` | ISCC compileert zonder waarschuwing: alle schermen en drie talen in modern en classic, één taal, alleen het Standaardscherm, dertien teksten met speciale tekens (`'`, `"`, `%`, `%n`, `{`, `{{`, `{app}`, `{cm:...}`, `;`, `=`, accenten), een lettertypenaam met `'` en knoppen op schermen die uit staan. |
@@ -2978,3 +2977,41 @@ fout, de overige knopinstellingen blijven intact en bij opslaan verdwijnen de ou
 
 **Tests.** Het totaal is nu 265 testgevallen (268 min drie generatortests, min één ISCC-test, plus de
 test voor het oude projectbestand). Build zonder waarschuwingen.
+
+
+## 34. Vertalingen van knopteksten via het Standaardscherm (2026-10-06)
+
+Herbert zag bij de test van sectie 33 dat het Standaardscherm de knopteksten en tooltips wel kent, maar geen
+vertalingen per taal. Dat was de bewuste vereenvoudiging uit sectie 24. Het ontwerp staat in
+`Ontwerp-Vertalingen-Standaardscherm.md`; deze sectie is leidend en vervangt de vereenvoudiging uit sectie 24
+en de oplossing met `NoLanguageOverridesOnDefaultScreen` uit dezelfde sectie.
+
+**Regels.** Per knop, per taal, voor tekst en tooltip apart. Voor één taal wint de eerste regel die van toepassing is:
+
+1. Het scherm heeft een eigen vertaling voor die taal.
+2. Het scherm heeft een eigen tekst (Engels of universeel) maar geen vertaling voor die taal: die eigen tekst geldt.
+3. Het scherm heeft niets: de vertaling van het Standaardscherm voor die taal, anders de universele tekst van het Standaardscherm, anders de eigen tekst van Setup.
+
+Alleen spaties tellen als leeg. De Bladeren-knoppen hebben geen cascade.
+
+**Wat is gewijzigd.**
+
+| Onderdeel | Wijziging |
+|---|---|
+| `ButtonSettingsResolver` (Core) | `Resolve` bepaalt de vertalingenlijsten met de drie regels, uit de lijsten van het scherm en van het Standaardscherm. De regel zit in de publieke methode `ResolveTranslation(ownText, ownTranslation, defaultTranslation)`, zodat de generator en de editor dezelfde regel gebruiken. |
+| `ButtonScript` (Core) | Ongewijzigd. Die schrijft de vertalingen uit het resolverresultaat al weg, ook als de universele tekst leeg is (lege regel plus beveiligde toewijzing). Een regeleinde in een vertaling van het Standaardscherm wordt één keer gemeld. |
+| `ButtonPropertiesViewModel` (App) | `LanguageOverrideRow` heeft `CaptionPlaceholder` en `TooltipPlaceholder`. Het record `InheritedTranslations` brengt de waarden van het Standaardscherm binnen. De voorinvulling gebruikt `ResolveTranslation` en wordt bijgewerkt zodra je de eigen tekst of tooltip wijzigt. |
+| `ButtonPropertiesWindow.xaml` en `ScreenEditorControl.xaml.cs` | De vertaalrijen tonen de voorinvulling als grijze tekst. De knoppen van het Standaardscherm tonen nu de vertaalrijen (`vm.NonEnglishLanguageIds`), `NoLanguageOverridesOnDefaultScreen` is vervallen. De hint bevat op gewone schermen een extra zin (`HintLanguageOverridesFromDefaultScreen`). |
+| Teksten | Eén nieuwe sleutel in NL, EN en DE. Dat zijn 197 sleutels per taal. |
+
+**Tests.** Het totaal is nu 286 testgevallen (265 na sectie 33). Nieuw of vervangen:
+
+| Bestand | Dekking |
+|---|---|
+| `ButtonSettingsResolverTests.cs` | De vier voorbeeldrijen uit het ontwerp, talen die alleen het Standaardscherm heeft, lege vertalingen, tekst en tooltip apart, elke knop eigen vertalingen, en `ResolveTranslation` in de volgorde van de regels. |
+| `IssGeneratorButtonTests.cs` | Vertalingen van het Standaardscherm bereiken elk getoond scherm, eigen vertaling wint, een Standaardscherm zonder universele tekst geeft een beveiligde toewijzing, talen buiten het project en verborgen schermen worden genegeerd, een regeleinde wordt één keer gemeld. |
+| `IssCompilerTests.cs` | Twee ISCC-tests: vertalingen van het Standaardscherm met speciale tekens (`It's`, `100% {app}`, `Größe é; a=b`) en alleen een vertaling zonder universele tekst. Beide compileren zonder waarschuwing. |
+
+Het goldenbestand `Buttons.iss` is niet veranderd. De editorlogica heeft geen eenheidstests, omdat het testproject alleen naar Core verwijst. De regel zelf is wel getest via `ResolveTranslation`.
+
+**Oude projectbestanden.** Het bestandsformaat verandert niet. Vertalingen die al op het Standaardscherm stonden (bijvoorbeeld door handmatig bewerken) tellen nu mee. Een taal die je uit het project haalt houdt haar vertalingen in het bestand.

@@ -109,23 +109,109 @@ public class ButtonSettingsResolverTests
         Assert.False(result.Visible);
     }
 
-    [Fact]
-    public void Translations_come_from_the_screen_only_and_skip_blank_values()
+    // ---- vertalingen per taal (docs/Ontwerp-Vertalingen-Standaardscherm.md) ------------------------
+
+    // De vier rijen uit het voorbeeld in sectie 2 van het ontwerp: Standaardscherm met tekst "Verder"
+    // en Nederlandse vertaling "Doorgaan", daarna wat het scherm zelf heeft. Duits heeft het
+    // Standaardscherm niet, dus Duits krijgt nooit een eigen regel: de universele tekst geldt.
+    [Theory]
+    [InlineData("", "", "Verder", "Doorgaan")]
+    [InlineData("Akkoord", "", "Akkoord", null)]
+    [InlineData("Akkoord", "Ja", "Akkoord", "Ja")]
+    [InlineData("", "Ja", "Verder", "Ja")]
+    public void Translations_follow_the_cascade_of_the_design(string screenText, string screenDutch, string expectedUniversal, string? expectedDutch)
     {
-        var screen = new WizardScreenButtonSettings();
-        screen.NextButtonCaptionByLanguage["dutch"] = "Volgende";
-        screen.NextButtonCaptionByLanguage["german"] = "  ";
-        screen.NextButtonTooltipByLanguage["dutch"] = "Ga verder";
+        var defaults = new WizardScreenButtonSettings { NextButtonCaption = "Verder" };
+        defaults.NextButtonCaptionByLanguage["dutch"] = "Doorgaan";
+        var screen = new WizardScreenButtonSettings { NextButtonCaption = screenText };
+        screen.NextButtonCaptionByLanguage["dutch"] = screenDutch;
+
+        var result = Resolve(screen, defaults);
+
+        Assert.Equal(expectedUniversal, result.Caption);
+        if (expectedDutch is null)
+        {
+            Assert.Empty(result.CaptionByLanguage);
+        }
+        else
+        {
+            Assert.Equal(expectedDutch, Assert.Single(result.CaptionByLanguage).Value);
+            Assert.Equal("dutch", Assert.Single(result.CaptionByLanguage).Key);
+        }
+    }
+
+    [Fact]
+    public void Languages_that_only_the_default_screen_has_are_included()
+    {
         var defaults = new WizardScreenButtonSettings();
         defaults.NextButtonCaptionByLanguage["french"] = "Suivant";
         defaults.NextButtonTooltipByLanguage["french"] = "Continuer";
 
+        var result = Resolve(new WizardScreenButtonSettings(), defaults);
+
+        Assert.Equal(string.Empty, result.Caption);
+        Assert.Equal("Suivant", result.CaptionByLanguage["french"]);
+        Assert.Equal("Continuer", result.TooltipByLanguage["french"]);
+    }
+
+    [Fact]
+    public void Blank_translations_do_not_count_on_the_screen_or_on_the_default_screen()
+    {
+        var screen = new WizardScreenButtonSettings();
+        screen.NextButtonCaptionByLanguage["dutch"] = "  ";
+        screen.NextButtonCaptionByLanguage["german"] = "";
+        var defaults = new WizardScreenButtonSettings();
+        defaults.NextButtonCaptionByLanguage["dutch"] = "Doorgaan";
+        defaults.NextButtonCaptionByLanguage["german"] = "   ";
+        defaults.NextButtonCaptionByLanguage["french"] = " ";
+
         var result = Resolve(screen, defaults);
 
         Assert.Equal(new[] { "dutch" }, result.CaptionByLanguage.Keys);
-        Assert.Equal("Volgende", result.CaptionByLanguage["dutch"]);
-        Assert.Equal(new[] { "dutch" }, result.TooltipByLanguage.Keys);
+        Assert.Equal("Doorgaan", result.CaptionByLanguage["dutch"]);
     }
+
+    [Fact]
+    public void Caption_and_tooltip_cascade_separately()
+    {
+        var defaults = new WizardScreenButtonSettings();
+        defaults.NextButtonCaptionByLanguage["dutch"] = "Doorgaan";
+        defaults.NextButtonTooltipByLanguage["dutch"] = "Ga verder";
+        var screen = new WizardScreenButtonSettings { NextButtonCaption = "Akkoord" };
+
+        var result = Resolve(screen, defaults);
+
+        Assert.Empty(result.CaptionByLanguage);
+        Assert.Equal("Ga verder", result.TooltipByLanguage["dutch"]);
+    }
+
+    [Fact]
+    public void Each_button_cascades_its_own_translations()
+    {
+        var defaults = new WizardScreenButtonSettings();
+        defaults.BackButtonCaptionByLanguage["dutch"] = "Vorige";
+        defaults.CancelButtonTooltipByLanguage["dutch"] = "Stoppen";
+
+        var back = Resolve(new WizardScreenButtonSettings(), defaults, WizardButton.Back);
+        var next = Resolve(new WizardScreenButtonSettings(), defaults, WizardButton.Next);
+        var cancel = Resolve(new WizardScreenButtonSettings(), defaults, WizardButton.Cancel);
+
+        Assert.Equal("Vorige", back.CaptionByLanguage["dutch"]);
+        Assert.Empty(next.CaptionByLanguage);
+        Assert.Empty(next.TooltipByLanguage);
+        Assert.Equal("Stoppen", cancel.TooltipByLanguage["dutch"]);
+        Assert.Empty(cancel.CaptionByLanguage);
+    }
+
+    [Theory]
+    [InlineData("", "Ja", "Doorgaan", "Ja")]
+    [InlineData("Akkoord", "Ja", "Doorgaan", "Ja")]
+    [InlineData("Akkoord", "", "Doorgaan", "")]
+    [InlineData("  ", "", "Doorgaan", "Doorgaan")]
+    [InlineData("", "  ", "  ", "")]
+    [InlineData(null, null, null, "")]
+    public void ResolveTranslation_applies_the_three_rules_in_order(string? ownText, string? ownTranslation, string? defaultTranslation, string expected)
+        => Assert.Equal(expected, ButtonSettingsResolver.ResolveTranslation(ownText, ownTranslation, defaultTranslation));
 
     [Theory]
     [InlineData(WizardButton.Back)]
