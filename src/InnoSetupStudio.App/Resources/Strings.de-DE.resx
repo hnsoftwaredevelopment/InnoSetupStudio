@@ -370,7 +370,7 @@
     <value>Leer = die obige Beschriftung/Tooltip wird auch für diese Sprache verwendet.</value>
   </data>
   <data name="HintLanguageOverridesFromDefaultScreen" xml:space="preserve">
-    <value>Leer = die obige Beschriftung/Tooltip wird auch für diese Sprache verwendet. Ist oben nichts eingetragen, gilt die Übersetzung aus „Standardbildschirm“.</value>
+    <value>Leer = die obige Beschriftung/Tooltip wird auch für diese Sprache verwendet. Ist oben nichts eingetragen, gilt die Übersetzung aus „Standardbildschirm“, sonst dessen Text, sonst der eigene Text von Setup.</value>
   </data>
   <data name="LabelEnglishSuffix" xml:space="preserve">
     <value>(Englisch)</value>

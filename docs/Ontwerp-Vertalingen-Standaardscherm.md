@@ -1,6 +1,6 @@
 ﻿# Ontwerp: vertalingen van knopteksten via het Standaardscherm
 
-Datum: 2026-10-06. Status: ontwerp, ter goedkeuring door Herbert. Bouw volgt na akkoord.
+Datum: 2026-10-06. Status: goedgekeurd door Herbert en gebouwd in PR #32.
 
 ## 1. Aanleiding
 
@@ -43,7 +43,7 @@ Geen cascade voor de twee Bladeren-knoppen. Ze hebben geen Standaardscherm-laag 
 
 - Het venster Knopeigenschappen toont voor de knoppen van het Standaardscherm de vertaalrijen. `NoLanguageOverridesOnDefaultScreen` vervalt.
 - Op een gewoon scherm toont een lege vertaalrij als voorinvulling (grijze tekst) wat er dan geldt: de eigen tekst van het scherm zoals die nu in het venster staat, anders de vertaling van het Standaardscherm voor die taal, anders de Engelse tekst van het Standaardscherm. Zo zie je zonder te rekenen wat de gebruiker in die taal krijgt. De voorinvulling past zich aan terwijl je de tekst bovenin wijzigt.
-- De hint onder "Vertalingen per taal" krijgt een tweede zin voor gewone schermen: "Staat hierboven niets, dan geldt de vertaling van het Standaardscherm." Op het Standaardscherm blijft alleen de eerste zin staan. Dat is één nieuwe tekstsleutel (`HintLanguageOverridesFromDefaultScreen`) naast de bestaande hint, in NL, EN en DE.
+- De hint onder "Vertalingen per taal" krijgt een tweede zin voor gewone schermen: "Staat hierboven niets, dan geldt de vertaling van het Standaardscherm, anders de tekst van het Standaardscherm, anders de eigen tekst van Setup." Op het Standaardscherm blijft alleen de eerste zin staan. Dat is één nieuwe tekstsleutel (`HintLanguageOverridesFromDefaultScreen`) naast de bestaande hint, in NL, EN en DE.
 - `Save` blijft de vertalingen samenvoegen met de oorspronkelijke lijst (CodeRabbit-fix uit PR #21), dus talen die niet als rij zichtbaar zijn blijven behouden.
 - Het projectformaat verandert niet: de lijsten van het Standaardscherm bestonden al in het model en in het JSON-bestand, ze waren alleen niet via de IDE te vullen.
 
