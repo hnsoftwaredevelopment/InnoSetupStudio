@@ -361,6 +361,13 @@ public class InstallerProjectTests
             // Opnieuw opslaan schrijft de oude velden niet meer weg.
             await service.SaveAsync(path, loaded);
             Assert.DoesNotContain("TextColor", await File.ReadAllTextAsync(path));
+
+            // En na het opnieuw laden zijn de overige knopinstellingen nog intact.
+            var reloaded = await service.LoadAsync(path);
+            Assert.Equal("Ouder project met tekstkleur", reloaded.AppName);
+            Assert.Equal("Verder", reloaded.DefaultScreenButtons.NextButtonCaption);
+            Assert.Equal("Zoeken", reloaded.SelectDestinationBrowseButton.Caption);
+            Assert.Equal("Kiezen", reloaded.SelectProgramGroupBrowseButton.Caption);
         }
         finally { if (File.Exists(path)) { File.Delete(path); } }
     }
